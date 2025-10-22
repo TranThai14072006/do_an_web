@@ -142,18 +142,28 @@ button:hover {
 /* Nút kiểu thẻ <a> */
 .btn {
     display: inline-block;
-    width: 100%;
-    padding: 5px;
-    background-color: #8e4b00;         /* vàng đồng đậm */
-    color: #f8ce86;                    /* chữ vàng nhạt */
+    width: 300px;                   /* độ rộng nút */
+    height: 45px;                   /* độ cao nút */
+    line-height: 45px;              /* căn giữa chữ */
+    background-color: #8e4b00;
+    color: #f8ce86;
     border-radius: 8px;
     text-decoration: none;
     font-size: 16px;
     font-weight: bold;
     text-align: center;
     transition: all 0.3s ease;
+    margin-left: 10px;
     box-shadow: 0 4px 10px rgba(142, 75, 0, 0.3);
 }
+
+.btn:hover {
+    background-color: #f8ce86;
+    color: #8e4b00;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    transform: scale(1.03);
+}
+
 
 .btn:hover {
     background-color: #f8ce86;         /* nền sáng lên */
