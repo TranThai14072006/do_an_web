@@ -132,3 +132,29 @@ button:hover {
 .links a:hover {
     text-decoration: underline;
 }
+/* Nút kiểu thẻ <a> */
+.btn {
+    display: inline-block;
+    width: 100%;
+    padding: 5px;
+    background-color: #8e4b00;         /* vàng đồng đậm */
+    color: #f8ce86;                    /* chữ vàng nhạt */
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(142, 75, 0, 0.3);
+}
+
+.btn:hover {
+    background-color: #f8ce86;         /* nền sáng lên */
+    color: #8e4b00;                    /* chữ chuyển sang vàng đồng đậm */
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    transform: scale(1.03);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
