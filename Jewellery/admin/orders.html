@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Orders Management</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>Jewelry Store Manager</header>
+  <nav>
+    <a href="index.html">Trang chủ</a>
+    <a href="imports.html">Import Product</a>
+    <a href="pricing.html">Price</a>
+    <a href="stock.html">Stock</a>
+  </nav>
+  <main>
+    <h2>Orders Management</h2>
+    <form>
+      <div class="form-group">
+        <label>From date:</label>
+        <input type="date">
+      </div>
+      <div class="form-group">
+        <label>By the date:</label>
+        <input type="date">
+      </div>
+      <div class="form-group">
+        <label>Status:</label>
+        <select>
+          <option>New order</option>
+          <option>Processed</option>
+          <option>Delivered</option>
+          <option>Cancelled</option>
+        </select>
+      </div>
+      <button type="submit">Find orders</button>
+    </form>
+
+    <h3>Order list</h3>
+    <table>
+      <tr>
+        <th>Order code</th>
+        <th>Booking date</th>
+        <th>Client</th>
+        <th>Total amount</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>#DH001</td>
+        <td>20/10/2025</td>
+        <td>Hồng Tỷ</td>
+        <td>2.300.000</td>
+        <td>Status</td>
+      </tr>
+    </table>
+  </main>
+  <footer>© Alibaba and 36 Thanh Hoa guys Jewelry</footer>
+</body>
+</html>
