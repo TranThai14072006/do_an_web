@@ -1,6 +1,6 @@
 /* Căn giữa nội dung */
 body {
-    background: url('../images/background_login.jpg') no-repeat center center/cover;
+    background: url('../images/User_login2.jpg') no-repeat center center/cover;
     font-family: Arial, sans-serif;
     /* background: linear-gradient(135deg, #74b9ff, #a29bfe); */
     display: flex;
@@ -12,10 +12,10 @@ body {
 
 /* Hộp login */
 .login-container {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.07);
     padding: 40px 30px;
     border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
     width: 320px;
     text-align: center;
 }
@@ -23,7 +23,7 @@ body {
 /* Tiêu đề */
 .login-container h2 {
     margin-bottom: 25px;
-    color: #2d3436;
+    color: #f8ce86;
 }
 
 /* Ô nhập */
@@ -36,28 +36,66 @@ body {
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
-    color: #636e72;
+    color: #f8ce86;
 }
 
 .input-group input {
     width: 100%;
     padding: 10px;
-    border: 1px solid #dfe6e9;
+    border: 1px solid rgba(142, 75, 0, 0.6); /* viền vàng đồng */
     border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15); /* nền trong suốt */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
     outline: none;
     transition: 0.3s;
+    box-shadow: 0 0 10px rgba(142, 75, 0, 0.3); /* ánh vàng đồng nhẹ */
+}
+/* Hiệu ứng ánh sáng nhẹ khi focus */
+.input-group input {
+    position: relative;
+    overflow: hidden;
 }
 
+.input-group input::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0.1),
+        rgba(255, 255, 255, 0.3),
+        rgba(255, 255, 255, 0.1)
+    );
+    transform: translateX(-100%);
+    transition: 0.8s;
+}
+
+.input-group input:focus::before {
+    transform: translateX(0);
+}
+
+/* Khi focus vào input */
 .input-group input:focus {
-    border-color: #0984e3;
+    border-color: #f8ce86;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    background: rgba(255, 255, 255, 0.25);
+}
+/* Placeholder (chữ gợi ý trong ô nhập) */
+.input-group input::placeholder {
+    color: rgba(255, 215, 0, 0.8);
 }
 
 /* Nút */
 button {
     width: 100%;
     padding: 10px;
-    background-color: #0984e3;
-    color: white;
+    background-color: #8e4b00;
+    color: #f8ce86;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -66,7 +104,8 @@ button {
 }
 
 button:hover {
-    background-color: #74b9ff;
+    color: #8e4b00;
+    background-color: #f8ce86;
 }
 
 /* Liên kết */
