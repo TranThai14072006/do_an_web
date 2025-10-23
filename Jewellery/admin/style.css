@@ -1,0 +1,113 @@
+/* ===== Phong cách sang trọng - Tiệm Trang Sức Nam ===== */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #faf9f6;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #f7e8c4;
+  padding: 15px 40px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #6b4e2e;
+  border-bottom: 2px solid #d4b483;
+}
+
+nav {
+  background-color: #fff7e6;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 10px;
+  border-bottom: 1px solid #e2d4b7;
+}
+
+nav a {
+  text-decoration: none;
+  color: #6b4e2e;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+nav a:hover {
+  color: #c19a6b;
+}
+
+main {
+  max-width: 1100px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+h2 {
+  color: #6b4e2e;
+  border-bottom: 2px solid #f7e8c4;
+  padding-bottom: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+table, th, td {
+  border: 1px solid #e2d4b7;
+}
+
+th, td {
+  padding: 10px 15px;
+  text-align: left;
+}
+
+th {
+  background-color: #fdf5e6;
+  color: #6b4e2e;
+}
+
+input, select, textarea, button {
+  padding: 8px 10px;
+  border: 1px solid #d4b483;
+  border-radius: 6px;
+  margin-top: 5px;
+  width: 100%;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #c19a6b;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+  width: auto;
+  padding: 10px 20px;
+}
+
+button:hover {
+  background-color: #a67b5b;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+footer {
+  text-align: center;
+  font-size: 14px;
+  color: #8b7d6b;
+  padding: 15px 0;
+  border-top: 1px solid #e2d4b7;
+  background-color: #fff7e6;
+  margin-top: 40px;
+}
