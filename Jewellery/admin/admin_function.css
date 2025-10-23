@@ -1,101 +1,213 @@
-/* Reset */
+/* ===========================
+   RESET CƠ BẢN
+=========================== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Aston Script, sans-serif;
+  font-family: "Segoe UI", sans-serif;
 }
 
-/* Bố cục chính */
-.container {
+/* ===========================
+   BỐ CỤC CHÍNH
+=========================== */
+body {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
+  background-color: #f3f3f3;
 }
 
-/* Sidebar (menu trái) */
+/* ===========================
+   THANH BÊN TRÁI (SIDEBAR)
+=========================== */
 .sidebar {
-  background: #2c3e50;
-  color: white;
-  width: 230px;
-  padding: 20px;
+  width: 220px;
+  background-color: #8e4b00; /* vàng đồng đậm */
+  color: #f8ce86;
   display: flex;
   flex-direction: column;
+  padding: 20px;
 }
 
-.sidebar h2 {
+.logo {
   text-align: center;
   margin-bottom: 30px;
 }
 
-.sidebar ul {
-  list-style: none;
+.logo img {
+  width: 80px;
+  border-radius: 50%;
 }
 
-.sidebar li {
-  margin: 15px 0;
+.logo h2 {
+  font-size: 18px;
+  margin-top: 10px;
 }
 
-.sidebar a {
-  color: white;
-  text-decoration: none;
+/* ===========================
+   MENU BÊN TRÁI
+=========================== */
+.menu a {
   display: block;
-  padding: 10px;
+  padding: 12px;
+  color: #f8ce86;
+  text-decoration: none;
   border-radius: 8px;
-  transition: background 0.3s;
+  margin-bottom: 10px;
+  font-weight: bold;
+  transition: background 0.3s, color 0.3s;
 }
 
-.sidebar a:hover {
-  background: #34495e;
+/* Hover & Active */
+.menu a:hover,
+.menu a:focus,
+.menu a.active,
+.menu a:target {
+  background-color: #f8ce86;
+  color: #8e4b00;
 }
 
-.logout {
-  margin-top: auto;
-  background: #e74c3c;
-  text-align: center;
-}
-
-.logout:hover {
-  background: #c0392b;
-}
-
-/* Main content */
-.main-content {
+/* ===========================
+   NỘI DUNG CHÍNH
+=========================== */
+.content {
   flex: 1;
-  background: #ecf0f1;
-  padding: 20px;
-  overflow-y: auto;
+  padding: 30px;
 }
 
-header {
+/* Ẩn/hiện từng section */
+.section {
+  display: none;
+}
+
+.section:target {
+  display: block;
+}
+
+/* Hiển thị mặc định phần đầu tiên */
+.section:first-of-type {
+  display: block;
+}
+
+/* ===========================
+   HEADER
+=========================== */
+header h1 {
+  color: #8e4b00;
   margin-bottom: 20px;
 }
 
-header h1 {
-  color: #2c3e50;
-}
-
+/* ===========================
+   THỐNG KÊ DASHBOARD
+=========================== */
 .dashboard {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: flex;
   gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
 }
 
-/* Card thống kê */
 .card {
   background: white;
   border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  flex: 1;
+  min-width: 200px;
   padding: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   text-align: center;
 }
 
 .card h3 {
-  color: #34495e;
+  color: #8e4b00;
   margin-bottom: 10px;
 }
 
 .card p {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
-  color: #2980b9;
+}
+
+/* ===========================
+   DANH SÁCH SẢN PHẨM
+=========================== */
+.product-list table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.product-list th, .product-list td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.product-list th {
+  background-color: #8e4b00;
+  color: #f8ce86;
+}
+
+.product-list tr:hover {
+  background-color: #f9f2e7;
+}
+
+/* ===========================
+   QUẢN LÝ NGƯỜI DÙNG / KHÁCH HÀNG
+=========================== */
+.user-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+/* Nút chung (áp dụng cả cho sản phẩm & user) */
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  background-color: #8e4b00;
+  color: #f8ce86;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: #f8ce86;
+  color: #8e4b00;
+}
+
+.btn.small {
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+/* Bảng người dùng */
+.user-list table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  margin-top: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.user-list th, .user-list td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.user-list th {
+  background-color: #8e4b00;
+  color: #f8ce86;
+}
+
+.user-list tr:hover {
+  background-color: #f9f2e7;
 }

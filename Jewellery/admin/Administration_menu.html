@@ -3,47 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trang quản trị</title>
+  <title>Bảng Quản Trị</title>
   <link rel="stylesheet" href="admin_function.css">
 </head>
 <body>
-  <div class="container">
+  <div class="sidebar">
+    <div class="logo">
+      <img src="../images/Admin_login.jpg" alt="Logo Admin">
+      <h2>Admin Panel</h2>
+    </div>
 
-    <!-- Thanh menu bên trái -->
-    <aside class="sidebar">
-      <h2>Administrative functions</h2>
-      <ul>
-        <li><a href="#">🏠 Home page</a></li>
-        <li><a href="#">📚 Product management</a></li>
-        <li><a href="#">👥 Users management</a></li>
-        <li><a href="#">📈 Thống kê</a></li>
-        <li><a href="#">⚙️ Cài đặt</a></li>
-        <li><a href="login.html" class="logout">🚪 Đăng xuất</a></li>
-      </ul>
-    </aside>
+    <div class="menu">
+      <a href="#dashboard">Thống kê</a>
+      <a href="#products">Sản phẩm</a>
+      <a href="#users">Người dùng</a>
+      <a href="#settings">Cài đặt</a>
+    </div>
+  </div>
 
-    <!-- Phần nội dung chính -->
-    <main class="main-content">
-      <header>
-        <h1>Bảng điều khiển</h1>
-        <p>Chào mừng bạn đến với trang quản trị!</p>
-      </header>
+  <div class="content">
+    <!-- Thống kê -->
+    <section id="dashboard" class="section">
+      <header><h1>Thống kê tổng quan</h1></header>
+      <div class="dashboard">
+        <div class="card"><h3>Tổng sản phẩm</h3><p>120</p></div>
+        <div class="card"><h3>Người dùng</h3><p>45</p></div>
+        <div class="card"><h3>Đơn hàng</h3><p>32</p></div>
+      </div>
+    </section>
 
-      <section class="dashboard">
-        <div class="card">
-          <h3>Tổng số người dùng</h3>
-          <p>125</p>
-        </div>
-        <div class="card">
-          <h3>Tổng số sách</h3>
-          <p>350</p>
-        </div>
-        <div class="card">
-          <h3>Lượt mượn hôm nay</h3>
-          <p>42</p>
-        </div>
-      </section>
-    </main>
+    <!-- Sản phẩm -->
+    <section id="products" class="section">
+      <header><h1>Danh sách sản phẩm</h1></header>
+      <div class="product-list">
+        <table>
+          <tr><th>ID</th><th>Tên sản phẩm</th><th>Giá</th></tr>
+          <tr><td>1</td><td>Áo sơ mi</td><td>250.000đ</td></tr>
+          <tr><td>2</td><td>Quần jeans</td><td>400.000đ</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- Người dùng -->
+    <section id="users" class="section">
+      <header><h1>Quản lý khách hàng</h1></header>
+
+      <div class="user-actions">
+        <a href="#" class="btn">Hiển thị danh sách</a>
+        <a href="#" class="btn">Reset mật khẩu</a>
+        <a href="#" class="btn">Khóa / mở khóa</a>
+      </div>
+
+      <div class="user-list">
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>Tên người dùng</th>
+            <th>Email</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Nguyễn Văn A</td>
+            <td>a@gmail.com</td>
+            <td>Hoạt động</td>
+            <td>
+              <a href="#" class="btn small">Reset</a>
+              <a href="#" class="btn small">Khóa</a>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Trần Thị B</td>
+            <td>b@gmail.com</td>
+            <td>Đã khóa</td>
+            <td>
+              <a href="#" class="btn small">Reset</a>
+              <a href="#" class="btn small">Mở khóa</a>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- Cài đặt -->
+    <section id="settings" class="section">
+      <header><h1>Cài đặt hệ thống</h1></header>
+      <p>Tùy chỉnh thông tin hệ thống tại đây...</p>
+    </section>
   </div>
 </body>
 </html>
