@@ -1,0 +1,177 @@
+/* Căn giữa nội dung */
+body {
+    background: url('../images/User_login2.jpg') no-repeat center center/cover;
+    font-family: 'Aston Script', sans-serif;
+    
+    /* background: linear-gradient(135deg, #74b9ff, #a29bfe); */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Load local Aston Script font */
+@font-face {
+    font-family: 'Aston Script';
+    src: url('../fonts/fonts/Aston Script.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Hijrnotes';
+    src: url('../fonts/fonts/hijrnotes/Hijrnotes_PERSONAL_USE_ONLY.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+/* Hộp login */
+.login-container {
+    background: rgba(255, 255, 255, 0.07);
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    width: 320px;
+    text-align: center;
+}
+
+/* Tiêu đề */
+.login-container h2 {
+    margin-bottom: 25px;
+    color: #f8ce86;
+}
+
+/* Ô nhập */
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #f8ce86;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(142, 75, 0, 0.6); /* viền vàng đồng */
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15); /* nền trong suốt */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    outline: none;
+    transition: 0.3s;
+    box-shadow: 0 0 10px rgba(142, 75, 0, 0.3); /* ánh vàng đồng nhẹ */
+}
+/* Hiệu ứng ánh sáng nhẹ khi focus */
+.input-group input {
+    position: relative;
+    overflow: hidden;
+}
+
+.input-group input::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -50%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0.1),
+        rgba(255, 255, 255, 0.3),
+        rgba(255, 255, 255, 0.1)
+    );
+    transform: translateX(-100%);
+    transition: 0.8s;
+}
+
+.input-group input:focus::before {
+    transform: translateX(0);
+}
+
+/* Khi focus vào input */
+.input-group input:focus {
+    border-color: #f8ce86;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    background: rgba(255, 255, 255, 0.25);
+}
+/* Placeholder (chữ gợi ý trong ô nhập) */
+.input-group input::placeholder {
+    color: rgba(255, 215, 0, 0.8);
+}
+
+/* Nút */
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #8e4b00;
+    color: #f8ce86;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+    margin-left: 10px;
+}
+
+button:hover {
+    color: #8e4b00;
+    background-color: #f8ce86;
+}
+
+/* Liên kết */
+.links {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.links a {
+    color: #0984e3;
+    text-decoration: none;
+}
+
+.links a:hover {
+    text-decoration: underline;
+}
+/* Nút kiểu thẻ <a> */
+.btn {
+    display: inline-block;
+    width: 300px;                   /* độ rộng nút */
+    height: 45px;                   /* độ cao nút */
+    line-height: 45px;              /* căn giữa chữ */
+    background-color: #8e4b00;
+    color: #f8ce86;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+    box-shadow: 0 4px 10px rgba(142, 75, 0, 0.3);
+}
+
+.btn:hover {
+    background-color: #f8ce86;
+    color: #8e4b00;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    transform: scale(1.03);
+}
+
+
+.btn:hover {
+    background-color: #f8ce86;         /* nền sáng lên */
+    color: #8e4b00;                    /* chữ chuyển sang vàng đồng đậm */
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    transform: scale(1.03);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
