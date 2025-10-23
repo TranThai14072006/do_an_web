@@ -1,96 +1,193 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bảng Quản Trị</title>
+  <title>Luxury Jewelry Admin Panel</title>
   <link rel="stylesheet" href="admin_function.css">
 </head>
 <body>
   <div class="sidebar">
     <div class="logo">
-      <img src="../images/Admin_login.jpg" alt="Logo Admin">
-      <h2>Admin Panel</h2>
+      <img src="../images/Admin_login.jpg" alt="Admin Logo">
+      <h2>Luxury Jewelry Admin</h2>
     </div>
 
     <div class="menu">
-      <a href="#dashboard">Thống kê</a>
-      <a href="#products">Sản phẩm</a>
-      <a href="#users">Người dùng</a>
-      <a href="#settings">Cài đặt</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#products">Jewelry List</a>
+      <a href="#categories">Jewelry Types</a>
+      <a href="#product-manage">Product Management</a>
+      <a href="#users">Customers</a>
+      <a href="#settings">Settings</a>
     </div>
   </div>
 
   <div class="content">
-    <!-- Thống kê -->
+    <!-- Dashboard -->
     <section id="dashboard" class="section">
-      <header><h1>Thống kê tổng quan</h1></header>
+      <header><h1>Overall Statistics</h1></header>
       <div class="dashboard">
-        <div class="card"><h3>Tổng sản phẩm</h3><p>120</p></div>
-        <div class="card"><h3>Người dùng</h3><p>45</p></div>
-        <div class="card"><h3>Đơn hàng</h3><p>32</p></div>
+        <div class="card"><h3>Total Jewelry Items</h3><p>120</p></div>
+        <div class="card"><h3>Total Customers</h3><p>45</p></div>
+        <div class="card"><h3>Orders</h3><p>32</p></div>
       </div>
     </section>
 
-    <!-- Sản phẩm -->
+    <!-- Jewelry List -->
     <section id="products" class="section">
-      <header><h1>Danh sách sản phẩm</h1></header>
+      <header><h1>Jewelry Inventory</h1></header>
       <div class="product-list">
         <table>
-          <tr><th>ID</th><th>Tên sản phẩm</th><th>Giá</th></tr>
-          <tr><td>1</td><td>Áo sơ mi</td><td>250.000đ</td></tr>
-          <tr><td>2</td><td>Quần jeans</td><td>400.000đ</td></tr>
+          <tr><th>ID</th><th>Jewelry Name</th><th>Price</th></tr>
+          <tr><td>1</td><td>Diamond Necklace</td><td>$2,500</td></tr>
+          <tr><td>2</td><td>Gold Earrings</td><td>$1,200</td></tr>
         </table>
       </div>
     </section>
 
-    <!-- Người dùng -->
-    <section id="users" class="section">
-      <header><h1>Quản lý khách hàng</h1></header>
+    <!-- Jewelry Types -->
+    <section id="categories" class="section">
+      <header><h1>Jewelry Type Management</h1></header>
 
       <div class="user-actions">
-        <a href="#" class="btn">Hiển thị danh sách</a>
-        <a href="#" class="btn">Reset mật khẩu</a>
-        <a href="#" class="btn">Khóa / mở khóa</a>
+        <a href="#" class="btn">Add Type</a>
+        <a href="#" class="btn">Edit Type</a>
+        <a href="#" class="btn">Delete / Hide Type</a>
       </div>
 
       <div class="user-list">
         <table>
           <tr>
             <th>ID</th>
-            <th>Tên người dùng</th>
-            <th>Email</th>
-            <th>Trạng thái</th>
-            <th>Hành động</th>
+            <th>Type Name</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Action</th>
           </tr>
           <tr>
             <td>1</td>
-            <td>Nguyễn Văn A</td>
-            <td>a@gmail.com</td>
-            <td>Hoạt động</td>
+            <td>Necklaces</td>
+            <td>Luxury gold and diamond necklaces</td>
+            <td>Visible</td>
             <td>
-              <a href="#" class="btn small">Reset</a>
-              <a href="#" class="btn small">Khóa</a>
+              <a href="#" class="btn small">Edit</a>
+              <a href="#" class="btn small">Hide</a>
             </td>
           </tr>
           <tr>
             <td>2</td>
-            <td>Trần Thị B</td>
-            <td>b@gmail.com</td>
-            <td>Đã khóa</td>
+            <td>Rings</td>
+            <td>Elegant diamond and platinum rings</td>
+            <td>Hidden</td>
             <td>
-              <a href="#" class="btn small">Reset</a>
-              <a href="#" class="btn small">Mở khóa</a>
+              <a href="#" class="btn small">Edit</a>
+              <a href="#" class="btn small">Show</a>
             </td>
           </tr>
         </table>
       </div>
     </section>
 
-    <!-- Cài đặt -->
+    <!-- Product Management -->
+    <section id="product-manage" class="section">
+      <header><h1>Jewelry Product Management</h1></header>
+
+      <div class="user-actions">
+        <a href="#" class="btn">Add Product</a>
+        <a href="#" class="btn">Edit Product</a>
+        <a href="#" class="btn">Delete / Hide Product</a>
+      </div>
+
+      <div class="user-list">
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Product Code</th>
+            <th>Product Name</th>
+            <th>Image</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Necklace</td>
+            <td>JW001</td>
+            <td>Diamond Heart Necklace</td>
+            <td><img src="../images/necklace.jpg" alt="Diamond Necklace" width="60"></td>
+            <td>Made from 18K gold with a diamond heart pendant.</td>
+            <td>Visible</td>
+            <td>
+              <a href="#" class="btn small">Edit</a>
+              <a href="#" class="btn small">Hide</a>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Ring</td>
+            <td>JW002</td>
+            <td>Platinum Engagement Ring</td>
+            <td><img src="../images/ring.jpg" alt="Engagement Ring" width="60"></td>
+            <td>Elegant platinum ring with a center diamond.</td>
+            <td>Hidden</td>
+            <td>
+              <a href="#" class="btn small">Edit</a>
+              <a href="#" class="btn small">Show</a>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- Customers -->
+    <section id="users" class="section">
+      <header><h1>Customer Management</h1></header>
+
+      <div class="user-actions">
+        <a href="#" class="btn">Show List</a>
+        <a href="#" class="btn">Reset Password</a>
+        <a href="#" class="btn">Lock / Unlock Account</a>
+      </div>
+
+      <div class="user-list">
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>Customer Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Alice Nguyen</td>
+            <td>alice@example.com</td>
+            <td>Active</td>
+            <td>
+              <a href="#" class="btn small">Reset</a>
+              <a href="#" class="btn small">Lock</a>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Emma Tran</td>
+            <td>emma@example.com</td>
+            <td>Locked</td>
+            <td>
+              <a href="#" class="btn small">Reset</a>
+              <a href="#" class="btn small">Unlock</a>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- Settings -->
     <section id="settings" class="section">
-      <header><h1>Cài đặt hệ thống</h1></header>
-      <p>Tùy chỉnh thông tin hệ thống tại đây...</p>
+      <header><h1>System Settings</h1></header>
+      <p>Adjust system configurations and store information here...</p>
     </section>
   </div>
 </body>

@@ -1,6 +1,4 @@
-/* ===========================
-   RESET CƠ BẢN
-=========================== */
+/* -------------------- RESET CƠ BẢN -------------------- */
 * {
   margin: 0;
   padding: 0;
@@ -8,21 +6,17 @@
   font-family: "Segoe UI", sans-serif;
 }
 
-/* ===========================
-   BỐ CỤC CHÍNH
-=========================== */
+/* -------------------- BỐ CỤC CHÍNH -------------------- */
 body {
   display: flex;
   min-height: 100vh;
   background-color: #f3f3f3;
 }
 
-/* ===========================
-   THANH BÊN TRÁI (SIDEBAR)
-=========================== */
+/* -------------------- THANH BÊN TRÁI -------------------- */
 .sidebar {
   width: 220px;
-  background-color: #8e4b00; /* vàng đồng đậm */
+  background-color: #8e4b00; /* Nâu đồng đậm */
   color: #f8ce86;
   display: flex;
   flex-direction: column;
@@ -44,9 +38,7 @@ body {
   margin-top: 10px;
 }
 
-/* ===========================
-   MENU BÊN TRÁI
-=========================== */
+/* -------------------- MENU -------------------- */
 .menu a {
   display: block;
   padding: 12px;
@@ -58,24 +50,21 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-/* Hover & Active */
+/* Hover và Active */
 .menu a:hover,
-.menu a:focus,
 .menu a.active,
 .menu a:target {
   background-color: #f8ce86;
   color: #8e4b00;
 }
 
-/* ===========================
-   NỘI DUNG CHÍNH
-=========================== */
+/* -------------------- NỘI DUNG CHÍNH -------------------- */
 .content {
   flex: 1;
   padding: 30px;
 }
 
-/* Ẩn/hiện từng section */
+/* Mỗi phần nội dung (section) */
 .section {
   display: none;
 }
@@ -89,17 +78,13 @@ body {
   display: block;
 }
 
-/* ===========================
-   HEADER
-=========================== */
+/* -------------------- HEADER -------------------- */
 header h1 {
   color: #8e4b00;
   margin-bottom: 20px;
 }
 
-/* ===========================
-   THỐNG KÊ DASHBOARD
-=========================== */
+/* -------------------- DASHBOARD THỐNG KÊ -------------------- */
 .dashboard {
   display: flex;
   gap: 20px;
@@ -110,11 +95,16 @@ header h1 {
 .card {
   background: white;
   border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   flex: 1;
   min-width: 200px;
   padding: 20px;
   text-align: center;
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
 }
 
 .card h3 {
@@ -125,44 +115,42 @@ header h1 {
 .card p {
   font-size: 20px;
   font-weight: bold;
+  color: #333;
 }
 
-/* ===========================
-   DANH SÁCH SẢN PHẨM
-=========================== */
-.product-list table {
+/* -------------------- BẢNG DỮ LIỆU -------------------- */
+table {
   width: 100%;
   border-collapse: collapse;
   background: white;
   border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.product-list th, .product-list td {
+th, td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
 
-.product-list th {
+th {
   background-color: #8e4b00;
   color: #f8ce86;
 }
 
-.product-list tr:hover {
+tr:hover {
   background-color: #f9f2e7;
 }
 
-/* ===========================
-   QUẢN LÝ NGƯỜI DÙNG / KHÁCH HÀNG
-=========================== */
+/* -------------------- NÚT CHỨC NĂNG -------------------- */
 .user-actions {
   margin-top: 20px;
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
-/* Nút chung (áp dụng cả cho sản phẩm & user) */
 .btn {
   display: inline-block;
   padding: 10px 16px;
@@ -173,7 +161,6 @@ header h1 {
   font-weight: bold;
   text-align: center;
   transition: all 0.3s;
-  cursor: pointer;
 }
 
 .btn:hover {
@@ -186,28 +173,17 @@ header h1 {
   font-size: 14px;
 }
 
-/* Bảng người dùng */
-.user-list table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
+/* -------------------- BẢNG NGƯỜI DÙNG & LOẠI SP -------------------- */
+.user-list {
   margin-top: 20px;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.user-list th, .user-list td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+/* -------------------- HIỆU ỨNG CHUNG -------------------- */
+.section {
+  animation: fadeIn 0.4s ease;
 }
 
-.user-list th {
-  background-color: #8e4b00;
-  color: #f8ce86;
-}
-
-.user-list tr:hover {
-  background-color: #f9f2e7;
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(10px);}
+  to {opacity: 1; transform: translateY(0);}
 }
