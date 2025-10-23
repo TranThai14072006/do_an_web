@@ -1,39 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login</title>
     <link rel="stylesheet" href="login.css">
 </head>
 <body>
-    <header>
-        <h1>User Login</h1>
-        <nav>
-            <a href="login.html">Login</a>
-            <a href="signup.html">Sign Up</a>
-            <a href="profile.html">Profile</a>
-        </nav>
-    </header>
+    <div class="login-container">
+        <h2>User Login</h2>
+        <form action="#" method="post">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
 
-    <main>
-        <div class="form-container">
-            <h2>Login</h2>
-            <form>
-                <label for="username">Username:</label>
-                <input type="text" id="username" required>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
 
-                <label for="password">Password:</label>
-                <input type="password" id="password" required>
+            <button type="submit" class="btn">Login</button>
+        </form>
 
-                <button type="submit">Login</button>
-            </form>
+        <div class="extra-links">
+            <a href="user_signup.html">Sign Up</a> | 
+            <a href="forgot_password.html">Forgot Password?</a>
         </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2025 User System</p>
-    </footer>
+    </div>
 </body>
 </html>
-
-
