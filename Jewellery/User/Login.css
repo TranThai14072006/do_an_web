@@ -1,7 +1,7 @@
 /* Căn giữa nội dung */
 body {
     background: url('../images/User_login2.jpg') no-repeat center center/cover;
-    font-family: 'Aston Script', sans-serif;
+    font-family: 'Arial', sans-serif;
     
     /* background: linear-gradient(135deg, #74b9ff, #a29bfe); */
     display: flex;
