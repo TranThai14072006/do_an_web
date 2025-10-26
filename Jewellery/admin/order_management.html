@@ -84,12 +84,17 @@
     }
 
     .order-detail {
-      background: #f9f9f9;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 25px;
-      display: none; /* chỉ để minh họa */
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 25px;
+        display: none; /* Ẩn mặc định */
     }
+
+    .order-detail:target {
+        display: block; 
+    }
+
   </style>
 </head>
 <body>
@@ -139,7 +144,7 @@
           <td>2025-10-24</td>
           <td>New</td>
           <td>$1200</td>
-          <td><a href="#" class="btn">View</a></td>
+          <td><a href="#order-detail" class="btn">View</a></td>
         </tr>
         <tr>
           <td>ORD002</td>
@@ -161,7 +166,7 @@
     </table>
 
     <!-- Khu vực xem chi tiết đơn hàng (chỉ trình bày) -->
-    <div class="order-detail">
+    <div id="order-detail" class="order-detail">
       <h3>Order Details</h3>
       <p><b>Order ID:</b> ORD001</p>
       <p><b>Customer:</b> Alice</p>
@@ -175,8 +180,8 @@
       </ul>
 
       <div style="text-align:center; margin-top:15px;">
-        <a href="Administration_menu.html#orders" class="btn">Save Changes</a>
-        <a href="Administration_menu.html#orders" class="btn">Cancel</a>
+        <a href="Administration_menu.html#users" class="btn">Back Menu</a>
+        <a href="order_management.html" class="btn">Back</a>
       </div>
     </div>
 
