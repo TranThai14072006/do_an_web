@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Add New Product</title>
+  <link rel="stylesheet" href="admin_function.css">
+  <style>
+    body { font-family: "Segoe UI", sans-serif; background: #fafafa; margin: 0; }
+    .container {
+      width: 80%;
+      max-width: 700px;
+      background: #fff;
+      margin: 50px auto;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+    h2 { text-align: center; color: #b8942d; margin-bottom: 25px; }
+    .form-group { margin-bottom: 15px; }
+    label { font-weight: bold; display: block; margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid #ccc;
+      border-radius: 5px; font-size: 15px;
+    }
+    textarea { resize: vertical; }
+    .form-actions { text-align: center; margin-top: 20px; }
+    .btn {
+      text-decoration: none; background: #d4af37; color: white;
+      padding: 10px 20px; border-radius: 5px; margin: 0 5px;
+      transition: 0.3s;
+    }
+    .btn:hover { background: #b8962f; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Add Entry Form</h2>
+    <form>
+      <div class="form-group">
+        <label>Jewelry Type:</label>
+        <select>
+          <option>Ring</option>
+          <option>Necklace</option>
+          <option>Earring</option>
+          <option>Bracelet</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Stock Receipt Code:</label>
+        <input type="text">
+      </div>
+
+      <div class="form-group">
+        <label>Product Code:</label>
+        <input type="text">
+      </div>
+
+        <label for="import-date">Import Date:</label>
+        <input type="date" id="import-date" name="import-date">
+
+      <div class="form-group">
+        <label>Product Name:</label>
+        <input type="text" >
+      </div>
+
+      <div class="form-group">
+        <label>COGS (USD):</label>
+        <input type="number" id="cogs"  oninput="updatePrice()">
+      </div>
+
+      <div class="form-group">
+        <label>Import Quantity:</label>
+        <input type="number" >
+      </div>
+
+      <div class="form-group">
+        <label>Image File Name:</label>
+        <input type="text">
+      </div>
+
+      <div class="form-group">
+        <label>Description:</label>
+        <textarea rows="4" placeholder="Product Description..."></textarea>
+      </div>
+      <div class="form-actions">
+        <a href="Administration_menu.html#stock" class="btn">Save</a>
+        <a href="Administration_menu.html#stock" class="btn">Draft</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
