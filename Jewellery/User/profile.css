@@ -119,3 +119,19 @@ body {
 .logout:hover {
   background-color: #333;
 }
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 32px;
+  text-decoration: none;
+  color: white; 
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.back-button:hover {
+  color: gold;
+}
+
