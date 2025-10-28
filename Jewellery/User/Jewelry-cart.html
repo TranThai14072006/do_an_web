@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jewelry Shop - Shopping Cart</title>
+  <link rel="stylesheet" href="jewelry-cart.css">
+</head>
+<body>
+
+  <header class="header">
+    <h1>Jewelry Shop</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="cart.html" class="active">Cart</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main class="main-content">
+
+    <section class="cart-section">
+      <h2>Your Shopping Cart</h2>
+
+      <!-- Shopping Cart Table -->
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>18K Gold Ring</td>
+            <td>$125</td>
+            <td><input type="number" name="quantity_ring" value="1" min="1"></td>
+            <td>$125</td>
+          </tr>
+          <tr>
+            <td>Silver Necklace</td>
+            <td>$60</td>
+            <td><input type="number" name="quantity_necklace" value="2" min="1"></td>
+            <td>$120</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="total">Total: <strong>$245</strong></p>
+    </section>
+
+    <section class="shipping-section">
+      <h2>Shipping Information</h2>
+      <form action="/submit-order" method="post">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Shipping Address</label>
+          <textarea id="address" name="address" rows="3" placeholder="Enter your shipping address" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="payment">Payment Method</label>
+          <select id="payment" name="payment">
+            <option value="cod" selected>Cash on Delivery</option>
+            <option value="bank">Bank Transfer</option>
+            <option value="online">Online Payment</option>
+          </select>
+        </div>
+
+        <input type="submit" value="Review & Confirm Order" class="btn-submit">
+      </form>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 Jewelry Shop. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

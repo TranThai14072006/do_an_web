@@ -1,0 +1,142 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* BODY */
+/* BODY */
+body {
+  background: 
+    linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
+    url("../images/cart\ backg.jpg") no-repeat center center/cover;
+  background-attachment: fixed;
+  color: #fff; /* chữ sáng trên nền tối */
+  line-height: 1.5;
+  min-height: 100vh;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* HEADER */
+.header {
+  background-color: #fff;
+  padding: 15px 40px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 24px;
+  color: #d4af37;
+}
+
+.header nav a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+
+.header nav a.active {
+  color: #d4af37;
+}
+
+/* MAIN CONTENT */
+.main-content {
+  max-width: 960px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+/* CART TABLE */
+.cart-section h2 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  color: #d4af37;
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.cart-table th, .cart-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.cart-table input[type="number"] {
+  width: 60px;
+  padding: 5px;
+}
+
+/* TOTAL */
+.total {
+  text-align: right;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 25px;
+}
+
+/* SHIPPING FORM */
+.shipping-section h2 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  color: #d4af37;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* BUTTON */
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #d4af37, #b7950b);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+.btn-submit:hover {
+  background: linear-gradient(135deg, #b7950b, #d4af37);
+}
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  padding: 15px;
+  margin-top: 30px;
+  font-size: 13px;
+  color: #777;
+  border-top: 1px solid #ddd;
+}
