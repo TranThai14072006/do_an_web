@@ -1681,8 +1681,34 @@ header#header .header-wrap {
 
 /* - Main Logo
 --------------------------------------------------------------*/
+/* Căn giữa logo ở giữa header */
+.header-wrap .row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Giữ phần phải */
+}
+
 .header-wrap .main-logo {
-  margin: 0 auto;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.header-wrap .main-logo img {
+  width: 120px; /* tùy kích thước bạn muốn */
+  height: auto;
+}
+
+.header-wrap .right-block {
+  margin-left: auto;
+}
+
+
+/* Đảm bảo phần login/search/cart nằm bên phải */
+.header-wrap .right-block {
+  margin-left: auto;
 }
 
 /* - Navigation
