@@ -95,8 +95,19 @@
         display: block; 
     }
 
+    .bottom-action {
+        display: flex;
+        justify-content: flex-end; 
+        margin-top: 20px;         
+    }
+
+    #order-detail:target ~ .bottom-action {
+        display: none;
+    }
+
   </style>
 </head>
+
 <body>
 
   <div class="container">
@@ -164,6 +175,7 @@
         </tr>
       </tbody>
     </table>
+    
 
     <!-- Khu vực xem chi tiết đơn hàng (chỉ trình bày) -->
     <div id="order-detail" class="order-detail">
@@ -184,6 +196,11 @@
         <a href="order_management.html" class="btn">Back</a>
       </div>
     </div>
+
+    <div class="bottom-action">
+        <a href="Administration_menu.html#users" class="btn">Back Menu</a>
+    </div>
+
 
   </div>
 
