@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Order Management</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #fafafa;
+      margin: 0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 900px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #b8942d;
+    }
+
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filters div {
+      margin: 5px;
+    }
+
+    input, select {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      background: #d4af37;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #b8962f;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      text-align: center;
+    }
+
+    .btn {
+      background: #d4af37;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: #b8962f;
+    }
+
+    .order-detail {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 25px;
+        display: none; /* Ẩn mặc định */
+    }
+
+    .order-detail:target {
+        display: block; 
+    }
+
+    .bottom-action {
+        display: flex;
+        justify-content: flex-end; 
+        margin-top: 20px;         
+    }
+
+    #order-detail:target ~ .bottom-action {
+        display: none;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Customer Order Management</h2>
+
+    <!-- Bộ lọc -->
+    <div class="filters">
+      <div>
+        <label>From: </label>
+        <input type="date">
+        <label>To: </label>
+        <input type="date">
+      </div>
+
+      <div>
+        <label>Status: </label>
+        <select>
+          <option>All</option>
+          <option>New</option>
+          <option>Processing</option>
+          <option>Shipped</option>
+          <option>Canceled</option>
+        </select>
+      </div>
+
+      <button>Filter</button>
+    </div>
+
+    <!-- Bảng danh sách đơn hàng -->
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Total</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ORD001</td>
+          <td>Alice</td>
+          <td>2025-10-24</td>
+          <td>New</td>
+          <td>$1200</td>
+          <td><a href="#order-detail" class="btn">View</a></td>
+        </tr>
+        <tr>
+          <td>ORD002</td>
+          <td>Bob</td>
+          <td>2025-10-25</td>
+          <td>Processing</td>
+          <td>$850</td>
+          <td><a href="#" class="btn">View</a></td>
+        </tr>
+        <tr>
+          <td>ORD003</td>
+          <td>Clara</td>
+          <td>2025-10-26</td>
+          <td>Shipped</td>
+          <td>$1500</td>
+          <td><a href="#" class="btn">View</a></td>
+        </tr>
+      </tbody>
+    </table>
+    
+
+    <!-- Khu vực xem chi tiết đơn hàng (chỉ trình bày) -->
+    <div id="order-detail" class="order-detail">
+      <h3>Order Details</h3>
+      <p><b>Order ID:</b> ORD001</p>
+      <p><b>Customer:</b> Alice</p>
+      <p><b>Date:</b> 2025-10-24</p>
+      <p><b>Status:</b> New</p>
+      <p><b>Total:</b> $1200</p>
+      <p><b>Items:</b></p>
+      <ul>
+        <li>Gold Ring x2</li>
+        <li>Necklace x1</li>
+      </ul>
+
+      <div style="text-align:center; margin-top:15px;">
+        <a href="Administration_menu.html#users" class="btn">Back Menu</a>
+        <a href="order_management.html" class="btn">Back</a>
+      </div>
+    </div>
+
+    <div class="bottom-action">
+        <a href="Administration_menu.html#users" class="btn">Back Menu</a>
+    </div>
+
+
+  </div>
+
+</body>
+</html>

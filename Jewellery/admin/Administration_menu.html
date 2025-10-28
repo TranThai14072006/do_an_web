@@ -14,11 +14,12 @@
     </div>
 
     <div class="menu">
-      <a href="#dashboard">Dashboard</a>
+      <!--<a href="#dashboard">Dashboard</a> -->
       <a href="#products">Jewelry List</a>
       <!-- <a href="#categories">Jewelry Types</a> -->
       <a href="#product-manage">Product Management</a>
       <a href="#users">Customers</a>
+      <a href="#stock">Stocking</a>
       <a href="#settings">Settings</a>
     </div>
   </div>
@@ -39,9 +40,9 @@
       <header><h1>Jewelry Inventory</h1></header>
       <div class="product-list">
         <table>
-          <tr><th>ID</th><th>Jewelry Name</th><th>Price</th></tr>
-          <tr><td>1</td><td>Diamond Necklace</td><td>$2,500</td></tr>
-          <tr><td>2</td><td>Gold Earrings</td><td>$1,200</td></tr>
+          <tr><th>ID</th><th>Jewelry Name</th><th>COGS(USD)</th><th>Profit(%)</th><th>Price</th></tr>
+          <tr><td>1</td><td>Diamond Necklace</td><td>$2,000</td><td>25%</td><td>$2,500</td></tr>
+          <tr><td>2</td><td>Gold Earrings</td><td>$1,000</td><td>20%</td><td>$1,200</td></tr>
         </table>
       </div>
     </section>
@@ -95,8 +96,7 @@
 
       <div class="user-actions">
         <a href="add_product.html" class="btn">Add Product</a>
-        <a href="#" class="btn">Edit Product</a>
-        <a href="#" class="btn">Delete / Hide Product</a>
+        <a href="edit_product.html" class="btn">Edit Product</a>
       </div>
 
       <div class="user-list">
@@ -120,7 +120,6 @@
             <td>Made from 18K gold with a diamond heart pendant.</td>
             <td>Visible</td>
             <td>
-              <a href="#" class="btn small">Edit</a>
               <a href="#" class="btn small">Hide</a>
             </td>
           </tr>
@@ -133,7 +132,6 @@
             <td>Elegant platinum ring with a center diamond.</td>
             <td>Hidden</td>
             <td>
-              <a href="#" class="btn small">Edit</a>
               <a href="#" class="btn small">Show</a>
             </td>
           </tr>
@@ -144,12 +142,14 @@
     <!-- Customers -->
     <section id="users" class="section">
       <header><h1>Customer Management</h1></header>
-
-      <div class="user-actions">
-        <a href="#" class="btn">Show List</a>
-        <a href="#" class="btn">Reset Password</a>
-        <a href="#" class="btn">Lock / Unlock Account</a>
-      </div>
+    
+      <input type="checkbox" id="toggleCustomerList" hidden>
+    
+    <div class="user-actions">
+      <label for="toggleCustomerList" class="btn">Show List</label>
+      <a href="#" class="btn">Reset Password</a>
+      <a href="order_management.html" class="btn">Orders</a>
+    </div>
 
       <div class="user-list">
         <table>
@@ -188,6 +188,35 @@
       <header><h1>System Settings</h1></header>
       <p>Adjust system configurations and store information here...</p>
     </section>
+
+     <!-- Inventory / Stock (merged from stock.html) -->
+    <section id="stock" class="section">
+      <header><h1>Inventory Management</h1></header>
+      <div class="user-actions">
+        <a href="add_entry_form.html" class="btn">Add Stock Receipt </a>
+        <a href="edit_entry_form.html" class="btn">Edit Stock Receipt </a>
+        <a href="stocking_management.html" class="btn">Stocking Management </a>
+      </div>
+      <table>
+        <tr>
+          <th>Stock Receipt Code</th>
+          <th>Products Name</th>
+          <th>Import quantity</th>
+          <th>Number of sales</th>
+          <th>Quantity in stock</th>
+          <th>Status</th>
+        </tr>
+        <tr>
+          <td>IMP001</td>
+          <td>Dây chuyền vàng 24K</td>
+          <td>20</td>
+          <td>18</td>
+          <td>2</td>
+          <td style="color: red;">Almost out of stock</td>
+        </tr>
+      </table>
+    </section>
+
   </div>
     <!-- SPA script removed to keep this page static. -->
   </body>

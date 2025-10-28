@@ -145,10 +145,12 @@ tr:hover {
 
 /* -------------------- NÚT CHỨC NĂNG -------------------- */
 .user-actions {
-  margin-top: 20px;
+  /* Add clear spacing above and below action buttons so they don't sit flush against the table */
+  margin: 20px 0 18px 0;
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .btn {
@@ -182,6 +184,19 @@ tr:hover {
 .section {
   animation: fadeIn 0.4s ease;
 }
+
+#toggleCustomerList ~ .user-list {
+  display: none;
+}
+
+#toggleCustomerList:checked ~ .user-list {
+  display: block
+}
+
+label.btn {
+  cursor: pointer;
+}
+
 
 @keyframes fadeIn {
   from {opacity: 0; transform: translateY(10px);}

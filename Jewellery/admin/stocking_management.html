@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory Management</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #fafafa;
+      margin: 0;
+      color: #333;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 950px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #b8942d;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .filters div {
+      margin: 5px 0;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input, select {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-left: 5px;
+    }
+
+    button {
+      background: #d4af37;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #b8962f;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      text-align: center;
+    }
+
+    .low-stock {
+      color: red;
+      font-weight: bold;
+    }
+
+    .section-title {
+      color: #b8942d;
+      margin-top: 30px;
+      border-bottom: 2px solid #d4af37;
+      padding-bottom: 5px;
+    }
+
+    .note {
+      background: #fffbe6;
+      border-left: 4px solid #d4af37;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+     
+    .detail {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 25px;
+        display: none; /* Ẩn mặc định */
+    }
+
+    .detail:target {
+        display: block; 
+    }
+
+    .btn {
+        background: #d4af37;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none; /* bỏ gạch chân */
+        transition: 0.3s;
+    }
+
+    .btn:hover {
+        background: #b8962f;
+    }
+
+
+    .bottom-action {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    #report-detail:target ~ .bottom-action {
+        display: none;
+    }
+
+    #stock_lookup:target ~ .bottom-action {
+        display: none;
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Inventory Management</h2>
+
+    <!-- Tra cứu sản phẩm -->
+    <h3 class="section-title">Stock Lookup</h3>
+    <div class="filters">
+      <div>
+        <label>Product Name:</label>
+        <input type="text" placeholder="e.g. Gold Ring">
+      </div>
+      <div>
+        <label>Category:</label>
+        <select>
+          <option>All</option>
+          <option>Ring</option>
+          <option>Necklace</option>
+          <option>Bracelet</option>
+          <option>Earring</option>
+        </select>
+      </div>
+      <div>
+        <label>As of Date:</label>
+        <input type="date">
+      </div>
+      <a href="#stock_lookup" class="btn">Search</a>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Product Code</th>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Stock Quantity</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>JW001</td>
+          <td>Diamond Ring</td>
+          <td>Ring</td>
+          <td>25</td>
+          <td>In Stock</td>
+        </tr>
+        <tr>
+          <td>JW002</td>
+          <td>Gold Necklace</td>
+          <td>Necklace</td>
+          <td>5</td>
+          <td class="low-stock">Low Stock </td>
+        </tr>
+        <tr>
+          <td>JW003</td>
+          <td>Silver Bracelet</td>
+          <td>Bracelet</td>
+          <td>0</td>
+          <td class="low-stock">Out of Stock </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+       <b>Note:</b> Products with less than 10 items are considered <b>Low Stock</b>.
+    </div>
+
+    <!-- Thống kê nhập - xuất - tồn -->
+    <h3 class="section-title">Import - Export - Balance Report</h3>
+    <div class="filters">
+      <div>
+        <label>From:</label>
+        <input type="date">
+        <label>To:</label>
+        <input type="date">
+      </div>
+      <div>
+        <label>Product:</label>
+        <input type="text" placeholder="e.g. Gold Ring">
+      </div>
+      <a href="#report-detail" class="btn">Search</a>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Import Qty</th>
+          <th>Export Qty</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2025-10-20</td>
+          <td>10</td>
+          <td>2</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>2025-10-22</td>
+          <td>15</td>
+          <td>5</td>
+          <td>18</td>
+        </tr>
+        <tr>
+          <td>2025-10-25</td>
+          <td>0</td>
+          <td>8</td>
+          <td>10</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note">
+      This section helps track the number of items imported, exported, and remaining over time.
+    </div>
+
+    <div id="stock_lookup" class="detail">
+      <h3>Stock Details</h3>
+      <p><b>Product Code:</b>JW002</p>
+      <p><b>Product Name:</b>Gold Necklace</p>
+      <p><b>Category:</b>Necklace</p>
+      <p><b>Stock Quantity:</b>5</p>
+      <p><b>Status:</b> Low Stock</p>
+
+      <div style="text-align:center; margin-top:15px;">
+        <a href="Administration_menu.html#stock" class="btn">Back Menu</a>
+        <a href="stocking_management.html" class="btn">Back</a>
+      </div>
+    </div>
+
+    <div id="report-detail" class="detail">
+      <h3>Report Details</h3>
+          <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Import Qty</th>
+          <th>Export Qty</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>18-10-2025</td>
+          <td>12</td>
+          <td>17</td>
+          <td>14</td>
+        </tr>
+        <tr>
+          <td>16-10-2025</td>
+          <td>15</td>
+          <td>5</td>
+          <td>19</td>
+        </tr>
+        <tr>
+          <td>15-10-2025</td>
+          <td>7</td>
+          <td>8</td>
+          <td>9</td>
+        </tr>
+        <tr>
+          <td>12-10-2025</td>
+          <td>0</td>
+          <td>8</td>
+          <td>10</td>
+        </tr>
+      </tbody>
+    </table>
+
+      <div style="text-align:center; margin-top:15px;">
+        <a href="Administration_menu.html#stock" class="btn">Back Menu</a>
+        <a href="stocking_management.html" class="btn">Back</a>
+      </div>
+    </div>
+
+    <div class="bottom-action">
+        <a href="Administration_menu.html#stock" class="btn">Back Menu</a>
+    </div> 
+
+  </div>
+
+</body>
+</html>

@@ -34,7 +34,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>Add New Jewelry Product</h2>
+    <h2>Add Entry Form</h2>
     <form>
       <div class="form-group">
         <label>Jewelry Type:</label>
@@ -47,56 +47,45 @@
       </div>
 
       <div class="form-group">
-        <label>Product Code:</label>
-        <input type="text" placeholder="VD: JW003">
+        <label>Stock Receipt Code:</label>
+        <input type="text">
       </div>
+
+      <div class="form-group">
+        <label>Product Code:</label>
+        <input type="text">
+      </div>
+
+        <label for="import-date">Import Date:</label>
+        <input type="date" id="import-date" name="import-date">
 
       <div class="form-group">
         <label>Product Name:</label>
-        <input type="text" placeholder="VD: Dây chuyền bạc Ý">
+        <input type="text" >
       </div>
 
       <div class="form-group">
-        <label>COGS (VNĐ):</label>
-        <input type="number" id="cogs" placeholder="VD: 800000" oninput="updatePrice()">
-      </div>
-
-      <div class="form-group">
-        <label>% Profit:</label>
-        <input type="number" id="profit" placeholder="VD: 25" oninput="updatePrice()">
-      </div>
-
-      <div class="form-group">
-        <label>Price (VNĐ):</label>
-        <input type="number" id="price">
+        <label>COGS (USD):</label>
+        <input type="number" id="cogs"  oninput="updatePrice()">
       </div>
 
       <div class="form-group">
         <label>Import Quantity:</label>
-        <input type="number" placeholder="VD: 10">
+        <input type="number" >
       </div>
 
       <div class="form-group">
         <label>Image File Name:</label>
-        <input type="text" placeholder="VD: necklace.jpg">
+        <input type="text">
       </div>
 
       <div class="form-group">
         <label>Description:</label>
         <textarea rows="4" placeholder="Product Description..."></textarea>
       </div>
-
-      <div class="form-group">
-        <label>Status:</label>
-        <select>
-          <option>Visible</option>
-          <option>Hidden</option>
-        </select>
-      </div>
-
       <div class="form-actions">
-        <a href="Administration_menu.html#product-manage" class="btn">Save</a>
-        <a href="Administration_menu.html#product-manage" class="btn">Cancel</a>
+        <a href="Administration_menu.html#stock" class="btn">Save</a>
+        <a href="Administration_menu.html#stock" class="btn">Draft</a>
       </div>
     </form>
   </div>

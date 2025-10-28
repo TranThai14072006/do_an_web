@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Product - Luxury Jewelry Admin</title>
+  <link rel="stylesheet" href="admin_function.css">
+
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #fafafa;
+      margin: 0;
+    }
+
+    .container {
+      width: 80%;
+      max-width: 700px;
+      background: #fff;
+      margin: 50px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #b8942d;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+    }
+
+    textarea { resize: vertical; }
+
+    .form-actions {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .btn {
+      text-decoration: none;
+      background: #d4af37;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin: 0 5px;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      background: #b8962f;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Edit Jewelry Product</h2>
+
+    <form>
+      <div class="form-group">
+        <label>Jewelry Type:</label>
+        <select id="type">
+          <option value="Necklace">Necklace</option>
+          <option value="Ring">Ring</option>
+          <option value="Earring">Earring</option>
+          <option value="Bracelet">Bracelet</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Product Code:</label>
+        <input type="text" id="code" value="JW001">
+      </div>
+
+      <div class="form-group">
+        <label>Product Name:</label>
+        <input type="text" id="name" value="Diamond Heart Necklace">
+      </div>
+
+      <div class="form-group">
+        <label>Image File Name:</label>
+        <input type="text" id="image" value="necklace.jpg">
+      </div>
+
+      <div class="form-group">
+        <label>Description:</label>
+        <textarea id="description" rows="4">Made from 18K gold with a diamond heart pendant.</textarea>
+      </div>
+
+      <div class="form-group">
+        <label>COGS (VNĐ):</label>
+        <input type="number" id="cogs" value="3000000" oninput="updatePrice()">
+      </div>
+
+      <div class="form-group">
+        <label>% Profit:</label>
+        <input type="number" id="profit" value="20" oninput="updatePrice()">
+      </div>
+
+      <div class="form-group">
+        <label>Price (VNĐ):</label>
+        <input type="number" id="price" value="3600000">
+      </div>
+
+      <div class="form-group">
+        <label>Quantity in stock:</label>
+        <input type="number" id="quantity" value="10">
+      </div>
+
+      <div class="form-group">
+        <label>Status:</label>
+        <select id="status">
+          <option value="Visible" selected>Visible</option>
+          <option value="Hidden">Hidden</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <a href="Administration_menu.html#product-manage" class="btn">Save Changes</a>
+        <a href="Administration_menu.html#product-manage" class="btn">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  
+</body>
+</html>

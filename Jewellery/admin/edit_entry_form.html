@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Goods Receipt</title>
+  <link rel="stylesheet" href="admin_function.css">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #fafafa;
+      margin: 0;
+    }
+
+    .container {
+      width: 80%;
+      max-width: 700px;
+      background: #fff;
+      margin: 50px auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #b8942d;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+    }
+
+    textarea { resize: vertical; }
+
+    .form-actions {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .btn {
+      text-decoration: none;
+      background: #d4af37;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin: 0 5px;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      background: #b8962f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Edit Goods Receipt</h2>
+
+    <form>
+      <!-- Jewelry Type -->
+      <div class="form-group">
+        <label>Jewelry Type:</label>
+        <select id="type">
+          <option value="Ring">Ring</option>
+          <option value="Necklace" selected>Necklace</option>
+          <option value="Earring">Earring</option>
+          <option value="Bracelet">Bracelet</option>
+        </select>
+      </div>
+
+      <!-- Stock Receipt Code -->
+      <div class="form-group">
+        <label>Stock Receipt Code:</label>
+        <input type="text" id="receipt-code" value="PN001">
+      </div>
+
+      <!-- Product Code -->
+      <div class="form-group">
+        <label>Product Code:</label>
+        <input type="text" id="product-code" value="JW001">
+      </div>
+
+      <!-- Import Date -->
+      <div class="form-group">
+        <label for="import-date">Import Date:</label>
+        <input type="date" id="import-date" value="2025-10-26">
+      </div>
+
+      <!-- Product Name -->
+      <div class="form-group">
+        <label>Product Name:</label>
+        <input type="text" id="product-name" value="Diamond Heart Necklace">
+      </div>
+
+      <!-- COGS -->
+      <div class="form-group">
+        <label>COGS (USD):</label>
+        <input type="number" id="cogs" value="1500" oninput="updatePrice()">
+      </div>
+
+      <!-- Import Quantity -->
+      <div class="form-group">
+        <label>Import Quantity:</label>
+        <input type="number" id="quantity" value="10">
+      </div>
+
+      <!-- Image File -->
+      <div class="form-group">
+        <label>Image File Name:</label>
+        <input type="text" id="image" value="necklace.jpg">
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label>Description:</label>
+        <textarea id="description" rows="4">Imported from Golden Jewelry Co., 18K gold diamond necklace batch.</textarea>
+      </div>
+
+      <!-- Status -->
+      <div class="form-group">
+        <label>Status:</label>
+        <select id="status">
+          <option value="Draft">Draft</option>
+          <option value="Completed" selected>Completed</option>
+        </select>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <a href="Administration_menu.html#stock" class="btn">Save Changes</a>
+        <a href="Administration_menu.html#stock" class="btn">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
