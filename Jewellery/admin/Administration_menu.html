@@ -142,13 +142,14 @@
     <!-- Customers -->
     <section id="users" class="section">
       <header><h1>Customer Management</h1></header>
-
-      <div class="user-actions">
-        <a href="#" class="btn">Show List</a>
-        <a href="#" class="btn">Reset Password</a>
-      <!--  <a href="#" class="btn">Lock / Unlock Account</a>-->
-        <a href="order_management.html" class="btn">Orders</a>
-      </div>
+    
+      <input type="checkbox" id="toggleCustomerList" hidden>
+    
+    <div class="user-actions">
+      <label for="toggleCustomerList" class="btn">Show List</label>
+      <a href="#" class="btn">Reset Password</a>
+      <a href="order_management.html" class="btn">Orders</a>
+    </div>
 
       <div class="user-list">
         <table>
