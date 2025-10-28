@@ -132,13 +132,32 @@ button:hover {
 }
 
 .links a {
-    color: #0984e3;
+    color: #f8ce86;
     text-decoration: none;
 }
 
 .links a:hover {
     text-decoration: underline;
 }
+
+.extra-links {
+  margin-top: 15px; /* đẩy khối này xuống dưới một chút */
+  text-align: center; /* căn giữa hai link */
+}
+
+.extra-links a {
+  display: inline-block;
+  margin: 6px 10px; /* tạo khoảng cách giữa hai link và thêm khoảng cách dọc */
+  text-decoration: none;
+  color: #f8ce86;
+  font-size: 15px;
+}
+
+.extra-links a:hover {
+  text-decoration: underline;
+}
+
+
 /* Nút kiểu thẻ <a> */
 /* .btn {
     display: inline-block;
