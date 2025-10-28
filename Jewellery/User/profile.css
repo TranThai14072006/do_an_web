@@ -1,0 +1,137 @@
+/* Reset & base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins' sans-serif;
+}
+
+body {
+  height: 100vh;
+  background: 
+    linear-gradient(rgba(218, 165, 32, 0.15), rgba(0, 0, 0, 0.5)),
+    url("../images/chocolat/background2.jpg") no-repeat center center/cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Container */
+.profile-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Card */
+.profile-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  width: 400px;
+  padding: 30px;
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  text-align: center;
+}
+
+/* Header */
+.profile-header .avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 215, 0, 0.7);
+  margin-bottom: 15px;
+  object-fit: cover;
+}
+
+.profile-header h2 {
+  font-size: 22px;
+  color: #fff9e6;
+}
+
+.role {
+  font-size: 14px;
+  color: #f5e6b3;
+  margin-bottom: 25px;
+}
+
+/* Body */
+.profile-body {
+  text-align: left;
+  color: #fff9e6;
+}
+
+.profile-body h3 {
+  color: #ffd700;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.info p, .orders ul li {
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.orders ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.orders li span {
+  color: #d4af37;
+}
+
+/* Footer Buttons */
+.profile-footer {
+  display: flex;
+  justify-content: center; /* căn giữa 2 nút */
+  gap: 15px; /* khoảng cách giữa 2 nút */
+  margin-top: 25px;
+}
+
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.edit {
+  background-color: #d4af37;
+  color: #fff;
+}
+
+.edit:hover {
+  background-color: #b7950b;
+}
+
+.logout {
+  background-color: #555;
+  color: #fff;
+}
+
+.logout:hover {
+  background-color: #333;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 32px;
+  text-decoration: none;
+  color: white; 
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.back-button:hover {
+  color: gold;
+}
+
