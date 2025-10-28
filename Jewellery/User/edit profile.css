@@ -1,0 +1,123 @@
+/* RESET */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Cormorant_Garamond', sans-serif;
+}
+
+/* BACKGROUND */
+body {
+  height: 100vh;
+  background: url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
+  background-attachment: fixed; /* giữ ảnh cố định khi cuộn */
+  background-size: cover;       /* ảnh full màn hình */
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* CONTAINER */
+.edit-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* BOX TRONG SUỐT */
+.edit-box {
+  background: rgba(255, 255, 255, 0.15); /* trong suốt nhẹ */
+  backdrop-filter: blur(15px); /* làm mờ nền sau */
+  padding: 35px 40px;
+  border-radius: 18px;
+  width: 360px;
+  text-align: center;
+  border: 2px solid rgba(212, 175, 55, 0.7); /* viền vàng ánh kim */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  animation: fadeIn 0.8s ease;
+}
+
+/* LOGO */
+.logo img {
+  width: 70px;
+  display: block;
+  margin: 0 auto 10px auto;
+}
+
+/* TIÊU ĐỀ */
+.edit-box h2 {
+  font-size: 22px;
+  color: #fff;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+/* INPUT GROUP */
+.input-group {
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 13px;
+  color: #f1f1f1;
+  margin-bottom: 5px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+  font-size: 14px;
+  color: #fff;
+  transition: 0.3s;
+}
+
+.input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.input-group input:focus {
+  border-color: #d4af37;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* NÚT LƯU */
+.save-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #d4af37, #b7950b);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
