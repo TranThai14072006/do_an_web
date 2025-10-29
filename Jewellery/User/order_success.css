@@ -1,0 +1,84 @@
+/* Elegant, luxurious style */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Cormorant', serif;
+  background: url('../images/chocolat/orderbackground.jpg') no-repeat center center/cover;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Transparent blur background */
+.success-container {
+  background: rgba(210, 183, 183, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px 60px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  max-width: 500px;
+}
+
+/* Checkmark icon */
+.icon-check {
+  font-size: 60px;
+  color: #2ecc71;
+  border: 2px solid #2ecc71;
+  border-radius: 50%;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Title */
+h1 {
+  color: #1fc81f;
+  font-size: 36px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(255,255,255,0.6);
+}
+
+/* Message */
+p {
+  color: #f9f9f9;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/* Buttons */
+.buttons {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn {
+  text-decoration: none;
+  padding: 10px 22px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-family: 'Roboto', sans-serif;
+  transition: 0.3s ease;
+}
+
+.btn.home {
+  background: #f9f9f9;
+  color: #111;
+}
+
+.btn.order {
+  background: #d4af37;
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
