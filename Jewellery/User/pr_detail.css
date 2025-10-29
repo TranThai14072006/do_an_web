@@ -1,0 +1,144 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #faf8f5;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  padding: 50px;
+  position: relative;
+}
+
+/* ICON GIỎ HÀNG */
+.cart-icon {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.cart {
+  color: #333;
+  font-size: 28px;
+  text-decoration: none;
+  position: relative;
+  display: inline-block;
+}
+
+.cart .count {
+  display: none; /* mặc định ẩn */
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #d4af37;
+  color: #000;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Khi checkbox được chọn -> hiện số lượng */
+#add-cart-checkbox:checked ~ .cart-icon .count {
+  display: block;
+}
+
+.product-detail {
+  display: flex;
+  gap: 40px;
+  max-width: 900px;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* KHUNG ẢNH MÀU VÀNG PNJ */
+.product-detail .product-image img {
+  width: 350px;
+  height: 350px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #d4af37; /* khung vàng PNJ */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* đổ bóng nhẹ */
+}
+
+.product-info h1 {
+  margin: 0 0 15px 0;
+  font-size: 24px;
+}
+
+.product-info .price {
+  color: #d4af37;
+  font-weight: 600;
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+.product-info .description {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.product-specs {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.product-specs li {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.add-to-cart,
+.buy-now,
+.back-button {
+  padding: 12px 20px;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  text-decoration: none;
+  display: inline-block;
+  transition: 0.2s;
+}
+
+.add-to-cart {
+  background-color: #d4af37;
+  text-align: center;
+}
+
+.add-to-cart:hover {
+  background-color: #b9972e;
+}
+
+.buy-now {
+  background-color: #e74c3c;
+}
+
+.buy-now:hover {
+  background-color: #c0392b;
+}
+
+/* NÚT QUAY LẠI NHỎ GỌN */
+.back-button {
+  background-color: #777;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  display: inline-block;
+  text-align: center;
+  transition: 0.2s;
+}
+
+.back-button:hover {
+  background-color: #555;
+}
