@@ -113,23 +113,28 @@ body {
 }
 
 /* BUTTON */
+
+
 .btn-submit {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #d4af37, #b7950b);
+  display: block;
+  background-color: #d4af37;
   color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 10px;
+  padding: 12px 24px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 500;
+  text-align: center;
   transition: 0.3s;
+  width: fit-content; /* để nút không quá to */
+  margin: 10px 0 0 0; /* bỏ mọi căn giữa */
 }
 
 .btn-submit:hover {
-  background: linear-gradient(135deg, #b7950b, #d4af37);
+  background-color: #b9972f;
+  transform: translateY(-2px);
 }
+
+
 
 /* FOOTER */
 .footer {
