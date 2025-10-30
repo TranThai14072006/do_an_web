@@ -3,7 +3,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins' sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 
 body {
@@ -14,6 +14,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 }
 
 /* Container */
@@ -22,6 +23,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  animation: fadeIn 1.2s ease-in-out;
 }
 
 /* Card */
@@ -35,6 +37,10 @@ body {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.25);
   text-align: center;
+  position: relative;
+  transform: translateY(20px);
+  opacity: 0;
+  animation: slideUp 1s ease forwards;
 }
 
 /* Header */
@@ -45,6 +51,7 @@ body {
   border: 3px solid rgba(255, 215, 0, 0.7);
   margin-bottom: 15px;
   object-fit: cover;
+  animation: popIn 1.2s ease-in-out;
 }
 
 .profile-header h2 {
@@ -62,6 +69,7 @@ body {
 .profile-body {
   text-align: left;
   color: #fff9e6;
+  animation: fadeIn 1.2s ease-in-out 0.5s both;
 }
 
 .profile-body h3 {
@@ -87,21 +95,30 @@ body {
 /* Footer Buttons */
 .profile-footer {
   display: flex;
-  justify-content: center; /* căn giữa 2 nút */
-  gap: 15px; /* khoảng cách giữa 2 nút */
+  flex-direction: column;
+  align-items: center;
   margin-top: 25px;
+  gap: 15px;
+  animation: fadeIn 1s ease-in-out 0.8s both;
 }
 
+.top-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
 
+/* Buttons */
 .btn {
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  transition: 0.3s;
+  transition: all 0.3s ease;
 }
 
+/* Edit */
 .edit {
   background-color: #d4af37;
   color: #fff;
@@ -109,8 +126,10 @@ body {
 
 .edit:hover {
   background-color: #b7950b;
+  transform: scale(1.05);
 }
 
+/* Logout */
 .logout {
   background-color: #555;
   color: #fff;
@@ -118,20 +137,62 @@ body {
 
 .logout:hover {
   background-color: #333;
+  transform: scale(1.05);
 }
 
+/* View Orders */
+.view {
+  background-color: #6c63ff;
+  color: #fff;
+  width: 60%;
+}
+
+.view:hover {
+  background-color: #5848d7;
+  transform: scale(1.05);
+}
+
+/* Back Button */
 .back-button {
   position: absolute;
   top: 20px;
   left: 20px;
   font-size: 32px;
   text-decoration: none;
-  color: white; 
+  color: white;
   font-weight: bold;
-  transition: color 0.3s;
+  transition: color 0.3s, transform 0.3s;
 }
 
 .back-button:hover {
   color: gold;
+  transform: scale(1.1);
 }
 
+/* === Animation keyframes === */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
