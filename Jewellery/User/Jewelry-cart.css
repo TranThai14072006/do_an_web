@@ -113,8 +113,6 @@ body {
 }
 
 /* BUTTON */
-
-
 .btn-submit {
   display: block;
   background-color: #d4af37;
@@ -133,8 +131,6 @@ body {
   background-color: #b9972f;
   transform: translateY(-2px);
 }
-
-
 
 /* FOOTER */
 .footer {
