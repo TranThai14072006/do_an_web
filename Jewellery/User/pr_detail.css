@@ -39,7 +39,6 @@ body {
 }
 
 .cart {
-  position: relative;
   font-size: 24px;
   color: var(--dark-color);
   text-decoration: none;
@@ -50,21 +49,11 @@ body {
   color: var(--primary-color);
 }
 
+/* Ẩn hoặc bỏ phần hiển thị số trên giỏ hàng */
 .cart .count {
-  position: absolute;
-  top: -8px;
-  right: -10px;
-  background: var(--primary-color);
-  color: var(--light-color);
-  border-radius: 50%;
-  font-size: 12px;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 600;
+  display: none;
 }
+
 
 /* ====== PRODUCT DETAIL ====== */
 .product-detail {
