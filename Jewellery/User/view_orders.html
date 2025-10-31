@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart | 36 Jewelry</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Cormorant Garamond", serif;
+    }
+
+    body {
+      background: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)),
+        url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      color: #333;
+      opacity: 0;
+      animation: fadeInBody 1s ease forwards;
+    }
+
+    @keyframes fadeInBody {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+      padding: 15px 0;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      animation: slideDown 0.8s ease forwards;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .logo-link {
+      display: inline-block;
+      vertical-align: middle;
+      margin-bottom: 10px;
+    }
+
+    .logo {
+      height: 50px;
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.1);
+    }
+
+    .header nav {
+      margin-top: 10px;
+    }
+
+    .header nav a {
+      text-decoration: none;
+      color: #444;
+      font-weight: 600;
+      margin: 0 15px;
+      transition: color 0.3s, transform 0.3s;
+      display: inline-block;
+    }
+
+    .header nav a:hover,
+    .header nav a.active {
+      color: #b8860b;
+      transform: scale(1.1);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      width: 90%;
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 20px;
+      margin-top: 40px;
+      padding: 30px 40px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      animation: fadeInUp 1.2s ease forwards;
+      transform: translateY(20px);
+      opacity: 0;
+      animation-delay: 0.3s;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .cart-section h2 {
+      text-align: center;
+      color: #b8860b;
+      font-size: 24px;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+      animation: pulseTitle 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseTitle {
+      0%, 100% { text-shadow: 0 0 5px #fff, 0 0 15px #b8860b; }
+      50% { text-shadow: 0 0 10px #b8860b, 0 0 30px #ffdb58; }
+    }
+  
+
+
+    /* ===== TABLE ===== */
+    .cart-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .cart-table th, .cart-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+
+    .cart-table th {
+      background: rgba(218,165,32,0.15);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #333;
+    }
+
+    .product-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-start;
+    }
+
+    .product-thumb {
+      width: 70px;
+      height: 70px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid #ccc;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .product-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 10px #b8860b;
+    }
+
+    .cart-table input[type="number"] {
+      width: 60px;
+      padding: 5px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      text-align: center;
+      font-size: 15px;
+      transition: 0.3s;
+    }
+
+    .cart-table input[type="number"]:hover {
+      border-color: #b8860b;
+      box-shadow: 0 0 5px #b8860b;
+    }
+
+    .item-total {
+      font-weight: 600;
+      color: #b8860b;
+      transition: transform 0.3s;
+    }
+
+    .item-total:hover {
+      transform: scale(1.1);
+    }
+
+    .total {
+      text-align: right;
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .total strong {
+      color: #b8860b;
+    }
+   
+
+
+    /* ===== FOOTER ===== */
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+      padding: 20px 0;
+      animation: fadeIn 1s ease forwards;
+      opacity: 0;
+      animation-delay: 0.8s;
+    }
+   
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    .back-button {
+  position: absolute; /* luôn đứng riêng, không ảnh hưởng header */
+  top: 20px;
+  left: 20px;
+  font-size: 32px;
+  text-decoration: none;
+  color: rgb(14, 1, 1);
+  font-weight: bold;
+  transition: color 0.3s, transform 0.3s;
+  z-index: 200; /* luôn nổi trên các phần khác */
+}
+
+.back-button:hover {
+  color: gold;
+  transform: scale(1.1);
+}
+
+  </style>
+</head>
+<body>
+  <!-- Back Button -->
+      <a href="profile.html" class="back-button">←</a>
+    </div>
+
+  <header class="header">
+    <a href="../index.html" class="logo-link">
+      <img src="../images/36-logo.png" alt="36 Jewelry Logo" class="logo">
+    </a>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="Product.html">Product</a>
+      <a href="cart.html" class="active">Cart</a>
+      <a href="Jewelry-cart2.html">quynhnhu36</a>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <section class="cart-section">
+      <h2>Your Shopping Cart</h2>
+
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td class="product-info">
+              <img src="../images/R001.jpg" alt="18K Gold Ring" class="product-thumb">
+              <span>18K Gold Ring</span>
+            </td>
+            <td>$125.00</td>
+            <td><input type="number" name="quantity_ring" value="1" min="1"></td>
+            <td class="item-total">$125.00</td>
+          </tr>
+
+          <tr>
+            <td class="product-info">
+              <img src="../images/R002.jpg" alt="Silver Necklace" class="product-thumb">
+              <span>Silver Necklace</span>
+            </td>
+            <td>$60.00</td>
+            <td><input type="number" name="quantity_necklace" value="2" min="1"></td>
+            <td class="item-total">$120.00</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="total">Total: <strong>$245.00</strong></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
+  </footer>
+  
+
+</body>
+</html>
