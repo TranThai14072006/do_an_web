@@ -1,6 +1,6 @@
 
 :root {
-  --primary-color: #EC6C5A;
+  --primary-color: #8e4b00;
   --accent-color: #f1e4e1;
   --dark-color: #111;
   --grey-color: #6e6a68;
@@ -19,7 +19,7 @@
 /* ====== BODY ====== */
 body {
   font-family: var(--body-font);
-  background-color: var(--accent-color);
+  background: url("../images/detailbackground.jpg") no-repeat center center/ cover;
   color: var(--dark-color);
   margin: 0;
   padding: 60px 40px;
