@@ -1,177 +1,178 @@
-/* Căn giữa nội dung */
+/* ===== FONT & RESET ===== */
+@font-face {
+  font-family: 'Aston Script';
+  src: url('../fonts/fonts/Aston Script.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Hijrnotes';
+  src: url('../fonts/fonts/hijrnotes/Hijrnotes_PERSONAL_USE_ONLY.ttf') format('truetype');
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== BODY ===== */
 body {
-    background: url('../images/User_login2.jpg') no-repeat center center/cover;
-    font-family: 'Aston Script', sans-serif;
-    
-    /* background: linear-gradient(135deg, #74b9ff, #a29bfe); */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  background: linear-gradient(
+      rgba(0, 0, 0, 0.6),
+      rgba(0, 0, 0, 0.7)
+    ),
+    url('../images/User_login2.jpg') no-repeat center center/cover;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 1.2s ease-in-out;
+  overflow: hidden;
 }
 
-/* Load local Aston Script font */
-@font-face {
-    font-family: 'Aston Script';
-    src: url('../fonts/fonts/Aston Script.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'Hijrnotes';
-    src: url('../fonts/fonts/hijrnotes/Hijrnotes_PERSONAL_USE_ONLY.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-/* Hộp login */
+/* ===== LOGIN CONTAINER ===== */
 .login-container {
-    background: rgba(255, 255, 255, 0.07);
-    padding: 40px 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    width: 320px;
-    text-align: center;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  padding: 45px 40px;
+  border-radius: 20px;
+  width: 360px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  animation: slideUp 1s ease-out;
+  transition: all 0.4s ease;
 }
 
-/* Tiêu đề */
-.login-container h2 {
-    margin-bottom: 25px;
-    color: #f8ce86;
+.login-container:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.25);
 }
 
-/* Ô nhập */
+/* ===== TITLE ===== */
+.title {
+  color: #f8ce86;
+  font-family: 'Hijrnotes', cursive;
+  font-size: 38px;
+  margin-bottom: 25px;
+  letter-spacing: 1px;
+  animation: glowGold 2s infinite alternate;
+}
+
+/* ===== INPUT GROUP ===== */
 .input-group {
-    margin-bottom: 20px;
-    text-align: left;
+  margin-bottom: 22px;
+  text-align: left;
+  position: relative;
 }
 
 .input-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #f8ce86;
+  display: block;
+  color: #f8ce86;
+  font-size: 16px;
+  margin-bottom: 6px;
 }
 
 .input-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid rgba(142, 75, 0, 0.6); /* viền vàng đồng */
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.15); /* nền trong suốt */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    color: #fff;
-    outline: none;
-    transition: 0.3s;
-    box-shadow: 0 0 10px rgba(142, 75, 0, 0.3); /* ánh vàng đồng nhẹ */
-}
-/* Hiệu ứng ánh sáng nhẹ khi focus */
-.input-group input {
-    position: relative;
-    overflow: hidden;
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  color: #fff;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 10px;
+  background: rgba(235, 223, 218, 0.91);
+  backdrop-filter: blur(6px);
+  outline: none;
+  transition: all 0.4s ease;
+  position: relative;
 }
 
-.input-group input::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -50%;
-    width: 200%;
-    height: 100%;
-    background: linear-gradient(
-        120deg,
-        rgba(255, 255, 255, 0.1),
-        rgba(255, 255, 255, 0.3),
-        rgba(255, 255, 255, 0.1)
-    );
-    transform: translateX(-100%);
-    transition: 0.8s;
-}
-
-.input-group input:focus::before {
-    transform: translateX(0);
-}
-
-/* Khi focus vào input */
 .input-group input:focus {
-    border-color: #f8ce86;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-    background: rgba(255, 255, 255, 0.25);
-}
-/* Placeholder (chữ gợi ý trong ô nhập) */
-.input-group input::placeholder {
-    color: rgba(255, 215, 0, 0.8);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #f8ce86;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  transform: scale(1.02);
 }
 
-/* Nút */
-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #8e4b00;
-    color: #f8ce86;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.3s;
-    margin-left: 10px;
-}
-
-button:hover {
-    color: #8e4b00;
-    background-color: #f8ce86;
-}
-
-/* Liên kết */
-.links {
-    margin-top: 15px;
-    font-size: 14px;
-}
-
-.links a {
-    color: #0984e3;
-    text-decoration: none;
-}
-
-.links a:hover {
-    text-decoration: underline;
-}
-/* Nút kiểu thẻ <a> */
+/* ===== BUTTON ===== */
 .btn {
-    display: inline-block;
-    width: 300px;                   /* độ rộng nút */
-    height: 45px;                   /* độ cao nút */
-    line-height: 45px;              /* căn giữa chữ */
-    background-color: #8e4b00;
-    color: #f8ce86;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: bold;
-    text-align: center;
-    transition: all 0.3s ease;
-    margin-left: 10px;
-    box-shadow: 0 4px 10px rgba(142, 75, 0, 0.3);
+  width: 100%;
+  padding: 12px 0;
+  background: linear-gradient(45deg, #f8ce86, #8e4b00);
+  color: #c8c0c0;
+  border: none;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  animation: pulseGold 2s infinite;
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(236, 221, 221, 0.867), transparent);
+  transition: all 0.6s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
 }
 
 .btn:hover {
-    background-color: #f8ce86;
-    color: #8e4b00;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-    transform: scale(1.03);
-}
-
-
-.btn:hover {
-    background-color: #f8ce86;         /* nền sáng lên */
-    color: #8e4b00;                    /* chữ chuyển sang vàng đồng đậm */
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-    transform: scale(1.03);
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+  color: #8e4b00;
+  background: linear-gradient(45deg, #fff8dc, #f8ce86);
 }
 
 .btn:active {
-    transform: scale(0.98);
+  transform: scale(0.97);
+}
+
+/* ===== EXTRA LINKS ===== */
+.extra-links {
+  margin-top: 20px;
+}
+
+.extra-links a {
+  color: #f8ce86;
+  text-decoration: none;
+  margin: 0 10px;
+  font-size: 15px;
+  transition: color 0.3s;
+}
+
+.extra-links a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px #f8ce86;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes glowGold {
+  from { text-shadow: 0 0 10px #f8ce86, 0 0 20px #8e4b00; }
+  to { text-shadow: 0 0 20px #fff8dc, 0 0 35px #f8ce86; }
+}
+
+@keyframes pulseGold {
+  0%, 100% { box-shadow: 0 0 10px #f8ce86, 0 0 20px #8e4b00; }
+  50% { box-shadow: 0 0 25px #fff8dc, 0 0 40px #f8ce86; }
 }

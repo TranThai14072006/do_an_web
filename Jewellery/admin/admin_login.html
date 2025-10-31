@@ -1,32 +1,47 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin</title>
-    <link rel="stylesheet" href="admin_Login.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+  <link rel="stylesheet" href="admin_Login.css">
 </head>
 <body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <form action="#" method="post">
-            <div class="input-group">
-                <label for="username">Admin name</label>
-                <input type="text" id="username" name="username" required>
-            </div>
 
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <a href="Administration_menu.html" class="btn">Login</a>
-            <!-- <button type="submit">Login</button> -->
+  <div class="login-container">
+    <h2 class="title">Admin Login</h2>
+    
+    <form action="#" method="post" class="login-form">
 
-            <!-- <p class="links">
-                <a href="#"> passowrd</a> | 
-                <a href="#">Sign up</a>
-            </p> -->
-        </form>
+      <!-- Admin Name -->
+      <div class="input-group">
+        <label for="adminname">Admin Name</label>
+        <input type="text" id="adminname" name="adminname" placeholder="Enter admin name" required>
+      </div>
+
+      <!-- Username -->
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+      </div>
+
+      <!-- Password -->
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+      </div>
+
+      <!-- Login button -->
+      <button type="button" class="btn" onclick="window.location.href='../admin_dashboard.html'">
+        Login
+      </button>
+    </form>
+
+    <div class="extra-links">
+      <a href="admin-signup.html">Sign Up</a>
+      <a href="forgot-password.html">Forgot Password?</a>
     </div>
+  </div>
+
 </body>
 </html>
