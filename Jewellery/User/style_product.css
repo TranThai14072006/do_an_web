@@ -68,11 +68,12 @@
 
 /* Filter nav */
 .filter-nav {
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-bottom:20px;
-  align-items:center;
+  display: flex;
+  justify-content: center; 
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  align-items: center;
 }
 
 .filter-nav a {
