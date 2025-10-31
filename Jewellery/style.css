@@ -3171,3 +3171,12 @@ select.form-select {
   height: 100%;
   object-fit: cover;
 }
+
+.view-btn {
+  position: relative;
+  z-index: 999;
+  pointer-events: auto !important;
+}
+.cart-concern, .cart-button {
+  pointer-events: auto !important;
+}
