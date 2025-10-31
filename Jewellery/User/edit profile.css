@@ -10,7 +10,7 @@
 /* BACKGROUND */
 body {
   height: 100vh;
-  background: url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
+  background: url("../images/pfb11.jpg") no-repeat center center/cover;
   background-attachment: fixed; /* giữ ảnh cố định khi cuộn */
   background-size: cover;       /* ảnh full màn hình */
   background-position: center;
@@ -109,15 +109,42 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
 }
+/* 🌟 ANIMATIONS */
 
-/* ANIMATION */
-@keyframes fadeIn {
-  from {
+/* Form xuất hiện mượt, hơi phóng nhẹ */
+@keyframes fadeSlideIn {
+  0% {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(40px) scale(0.95);
+    filter: blur(4px);
   }
-  to {
+  60% {
     opacity: 1;
+    transform: translateY(-5px) scale(1.02);
+    filter: blur(0);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Logo chuyển động nhẹ kiểu “floating” */
+@keyframes floatLogo {
+  0%, 100% {
     transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* Hiệu ứng ánh sáng mờ nhấp nháy */
+@keyframes logoGlow {
+  0% {
+    filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.2));
+  }
+  100% {
+    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8));
   }
 }
