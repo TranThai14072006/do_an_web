@@ -3180,3 +3180,10 @@ select.form-select {
 .cart-concern, .cart-button {
   pointer-events: auto !important;
 }
+
+.swiper-button-next, .swiper-button-prev {
+  color: #000;
+  visibility: visible;
+  opacity: 1;
+  z-index: 10;
+}
