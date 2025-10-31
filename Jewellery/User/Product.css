@@ -207,3 +207,97 @@ footer {
     gap: 20px;
   }
 }
+
+/* Sửa lỗi chữ "Products" bị che */
+#page-banner {
+  padding-top: 120px; /* đẩy nội dung xuống dưới header */
+  position: relative;
+  z-index: 1;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+
+/* Đưa icon yêu thích và giỏ hàng lên góc phải */
+.user-items {
+  position: absolute;
+  top: 15px;
+  right: 30px;
+  z-index: 999;
+}
+
+.user-items ul {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-items i {
+  font-size: 1.3rem;
+  color: #fff;
+  transition: color 0.2s ease;
+}
+
+.user-items i:hover {
+  color: var(--primary-color);
+}
+#header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+/* --- FIX: Hiển thị chữ "Products" không bị che --- */
+#page-banner {
+  padding-top: 140px !important;  /* Đẩy phần nội dung xuống dưới header */
+  position: relative;
+  z-index: 1;
+}
+
+.section-title {
+  font-size: 2.6rem !important;
+  font-weight: 700 !important;
+  color: #111 !important;
+  text-align: center;
+  margin-bottom: 1rem !important;
+}
+
+/* --- FIX: Đưa icon yêu thích & giỏ hàng lên góc phải --- */
+header .user-items {
+  position: absolute !important;
+  top: 10px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+header .user-items i {
+  font-size: 1.5rem;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+header .user-items i:hover {
+  color: var(--primary-color);
+}
+
+/* --- Nếu header bị đè lên nội dung thì giữ cố định ở trên --- */
+#header {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  z-index: 999;
+}

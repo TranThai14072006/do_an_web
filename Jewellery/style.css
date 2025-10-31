@@ -3187,3 +3187,35 @@ select.form-select {
   opacity: 1;
   z-index: 10;
 }
+
+/* Làm nút chuyển mờ nhẹ */
+.product-store .swiper-button-next,
+.product-store .swiper-button-prev {
+  opacity: 0.4;                    /* Mờ đi một chút */
+  transition: opacity 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: #000;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Khi hover vào thì sáng rõ lại */
+.product-store .swiper-button-next:hover,
+.product-store .swiper-button-prev:hover {
+  opacity: 1;
+  background-color: #000;
+  color: #fff;
+}
+
+/* Giữ vị trí nút */
+.product-store .swiper-button-prev {
+  left: 20px;
+}
+.product-store .swiper-button-next {
+  right: 20px;
+}
