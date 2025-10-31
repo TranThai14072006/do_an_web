@@ -6,10 +6,11 @@
   <title>Royal Moissanite Rings</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="pr_detail.css">
+  
 </head>
 <body>
 
-  <!-- CART ICON -->
+  <!-- ICON GIỎ HÀNG -->
   <div class="cart-icon">
     <a href="Jewelry-cart.html" class="cart has-count" data-count="1" id="cart-icon">
       <i class="fa-solid fa-cart-shopping"></i>
@@ -17,7 +18,7 @@
     </a>
   </div>
 
-  <!-- HACK CSS: checkbox to enable quantity -->
+  <!-- HACK CSS: checkbox để bật số lượng -->
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
 
   <div class="product-detail">
@@ -27,27 +28,56 @@
     <div class="product-info">
       <h1>Royal Moissanite Rings</h1>
       <p class="price">$2.200</p>
-
       <p class="description">
-Luxurious sterling silver couple rings featuring sparkling Moissanite stones, designed as Prince and Princess to symbolize romance and elegance.
+        Luxurious sterling silver couple rings featuring sparkling Moissanite stones, designed as Prince and Princess to symbolize romance and elegance.
       </p>
 
+      <!-- PHẦN CHỌN SIZE (DÀNH CHO NHẪN CẶP) -->
+      <div class="size-selection">
+        <h3>Select Ring Size</h3>
+
+        <label for="men-size">Men’s Size:</label>
+        <select name="men-size" id="men-size">
+          <option value="8">Size 8 (21cm - 24cm)</option>
+          <option value="9">Size 9 (24cm - 27cm)</option>
+          <option value="10">Size 10 (27cm - 30cm)</option>
+        </select>
+
+        <label for="women-size">Women’s Size:</label>
+        <select name="women-size" id="women-size">
+          <option value="5">Size 5 (12cm - 15cm)</option>
+          <option value="6">Size 6 (15cm - 18cm)</option>
+          <option value="7">Size 7 (18cm - 21cm)</option>
+          <option value="8">Size 8 (21cm - 24cm)</option>
+        </select>
+      </div>
+
       <ul class="product-specs">
-        <li>Material: 925 Sterling Silver, Platinum-Plated</li>
-        <li>Design: Couple rings with Prince & Princess motif, romantic and elegant</li>
-        <li>Stone: Sparkling Moissanite</li>
-        <li>Color: Silver </li>
-        <li>Brand: ThirtySix Jewellery</li>
+        <li><span>Material:</span> <span>925 Sterling Silver, Platinum-Plated</span></li>
+        <li><span>Design:</span> <span>Couple rings with Prince & Princess motif, romantic and elegant</span></li>
+        <li><span>Stone:</span> <span>Sparkling Moissanite</span></li>
+        <li><span>Color:</span> <span>Silver</span></li>
+        <li><span>Brand:</span> <span>ThirtySix Jewellery</span></li>
       </ul>
 
       <div class="action-buttons">
-        <label for="add-cart-checkbox" class="add-to-cart">Add to cart</label>
-        <a href="#" class="buy-now">Buy now</a>
+        <label for="add-cart-checkbox" class="add-to-cart">
+          <i class="fas fa-shopping-cart"></i>
+          Add to cart
+        </label>
+        <a href="#" class="buy-now">
+          <i class="fas fa-bolt"></i>
+          Buy now
+        </a>
       </div>
 
-      <a href="Product.html" class="back-button">Back</a>
+      <a href="Product.html" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Back to Products
+      </a>
     </div>
   </div>
 
 </body>
 </html>
+

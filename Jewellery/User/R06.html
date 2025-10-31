@@ -6,6 +6,7 @@
   <title>Winston Anchor Ring</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="pr_detail.css">
+  
 </head>
 <body>
 
@@ -21,37 +22,53 @@
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
 
   <div class="product-detail">
-    <!-- Ảnh sản phẩm -->
     <div class="product-image">
       <img src="../images/R006.jpg" alt="Winston Anchor Ring">
     </div>
 
-    <!-- Thông tin sản phẩm -->
     <div class="product-info">
       <h1>Winston Anchor Ring</h1>
       <p class="price">$1.850</p>
-
-      <!-- Mô tả sản phẩm -->
       <p class="description">
-A stylish men's sterling silver ring featuring an anchor design, symbolizing strength and stability.
+        A stylish men's sterling silver ring featuring an anchor design, symbolizing strength and stability.
       </p>
 
-      <!-- Thông số kỹ thuật -->
-      <ul class="product-specs">
-        <li>Material: 925 Sterling Silver, Platinum-Plated</li>
-        <li>Design: Anchor motif, masculine and elegant</li>
-        <li>Color: Silver </li>
-        <li>Brand: ThirtySix Jewellery</li>
-      </ul>
-
-      <!-- Nút hành động -->
-      <div class="action-buttons">
-        <label for="add-cart-checkbox" class="add-to-cart">Add to cart</label>
-        <a href="#" class="buy-now">Buy now</a>
+      <!-- PHẦN CHỌN SIZE -->
+      <div class="size-selection">
+        <h3>Select Ring Size</h3>
+        <select name="ring-size" id="ring-size">
+          <option value="8">Size 8 (15cm - 17cm)</option>
+          <option value="9">Size 9 (17cm - 19cm)</option>
+          <option value="10">Size 10 (19cm - 21cm)</option>
+          <option value="11">Size 11 (21cm - 23cm)</option>
+        </select>
       </div>
 
-      <!-- Nút quay lại danh sách sản phẩm -->
-      <a href="Product.html" class="back-button">Back</a>
+      <!-- THÔNG TIN CHI TIẾT -->
+      <ul class="product-specs">
+        <li><span>Material:</span> <span>925 Sterling Silver, Platinum-Plated</span></li>
+        <li><span>Design:</span> <span>Anchor motif, masculine and elegant</span></li>
+        <li><span>Color:</span> <span>Silver</span></li>
+        <li><span>Brand:</span> <span>ThirtySix Jewellery</span></li>
+      </ul>
+
+      <!-- NÚT HÀNH ĐỘNG -->
+      <div class="action-buttons">
+        <label for="add-cart-checkbox" class="add-to-cart">
+          <i class="fas fa-shopping-cart"></i>
+          Add to cart
+        </label>
+        <a href="#" class="buy-now">
+          <i class="fas fa-bolt"></i>
+          Buy now
+        </a>
+      </div>
+
+      <!-- NÚT QUAY LẠI -->
+      <a href="Product.html" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Back to Products
+      </a>
     </div>
   </div>
 
