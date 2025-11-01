@@ -1,200 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>View Orders | 36 Jewelry</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Cormorant Garamond", serif;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Orders | 36 Jewelry</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:"Cormorant Garamond", serif; }
+  
+  body {
+    background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)),
+                url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    color:#333;
+    opacity:0;
+    animation: fadeInBody 1s forwards;
+  }
 
-    body {
-      background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)),
-                  url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #333;
-      opacity: 0;
-      animation: fadeInBody 1s forwards;
-    }
+  @keyframes fadeInBody { to { opacity:1; } }
+  @keyframes fadeOutBody { to { opacity:0; } }
 
-    @keyframes fadeInBody { to { opacity: 1; } }
+  .header {
+    width:100%;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(10px);
+    padding:15px 0;
+    text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top:0;
+    z-index:100;
+  }
 
-    .header {
-      width: 100%;
-      background: rgba(255,255,255,0.4);
-      backdrop-filter: blur(10px);
-      padding: 15px 0;
-      text-align: center;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+  .logo-link img { height:50px; transition: transform 0.3s; }
+  .logo-link img:hover { transform: scale(1.1); }
 
-    .logo-link img { height: 50px; transition: transform 0.3s; }
-    .logo-link img:hover { transform: scale(1.1); }
+  .header nav { margin-top:10px; }
+  .header nav a { text-decoration:none; color:#444; font-weight:600; margin:0 15px; transition: color 0.3s, transform 0.3s; }
+  .header nav a:hover, .header nav a.active { color:#b8860b; transform:scale(1.1); }
 
-    .header nav { margin-top: 10px; }
-    .header nav a {
-      text-decoration: none;
-      color: #444;
-      font-weight: 600;
-      margin: 0 15px;
-      transition: color 0.3s, transform 0.3s;
-    }
-    .header nav a:hover,
-    .header nav a.active { color: #b8860b; transform: scale(1.1); }
+  .back-button { position:absolute; top:20px; left:20px; font-size:32px; text-decoration:none; color:#0e0101; font-weight:bold; transition:color 0.3s, transform 0.3s; z-index:200; }
+  .back-button:hover { color:gold; transform:scale(1.1); }
 
-    .back-button {
-      position: absolute;
-      top: 20px; left: 20px;
-      font-size: 32px;
-      text-decoration: none;
-      color: #0e0101;
-      font-weight: bold;
-      transition: color 0.3s, transform 0.3s;
-      z-index: 200;
-    }
-    .back-button:hover { color: gold; transform: scale(1.1); }
+  .main-content {
+    width:90%; max-width:800px;
+    background: rgba(255,255,255,0.9);
+    border-radius:20px;
+    margin-top:60px;
+    padding:30px 40px;
+    box-shadow:0 8px 25px rgba(0,0,0,0.15);
+  }
 
-    .main-content {
-      width: 90%;
-      max-width: 800px;
-      background: rgba(255,255,255,0.9);
-      border-radius: 20px;
-      margin-top: 60px;
-      padding: 30px 40px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
+  .orders-section h2 { text-align:center; color:#b8860b; font-size:28px; margin-bottom:30px; }
 
-    .orders-section h2 {
-      text-align: center;
-      color: #b8860b;
-      font-size: 28px;
-      margin-bottom: 30px;
-    }
+  .orders-table { width:100%; border-collapse:collapse; font-size:16px; }
+  .orders-table th, .orders-table td { padding:12px; border-bottom:1px solid #ddd; text-align:center; }
+  .orders-table th { background: rgba(218,165,32,0.15); text-transform:uppercase; letter-spacing:0.5px; color:#333; }
 
-    .orders-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 16px;
-    }
-    .orders-table th, .orders-table td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: center;
-    }
-    .orders-table th {
-      background: rgba(218,165,32,0.15);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #333;
-    }
+  .status { font-weight:600; padding:5px 10px; border-radius:8px; color:#fff; }
+  .status.pending { background-color:#ff9800; }
+  .status.completed { background-color:#4caf50; }
+  .status.cancelled { background-color:#f44336; }
 
-    .status {
-      font-weight: 600;
-      padding: 5px 10px;
-      border-radius: 8px;
-      color: #fff;
-    }
-    .status.pending { background-color: #ff9800; }
-    .status.completed { background-color: #4caf50; }
-    .status.cancelled { background-color: #f44336; }
+  .view-details-btn {
+    padding:6px 12px;
+    background-color:#b8860b;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:600;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  .view-details-btn:hover { background-color:#ffdb58; color:#333; transform:scale(1.05); }
 
-    /* ===== Nút xem chi tiết ===== */
-    .view-details-btn {
-      padding: 6px 12px;
-      background-color: #b8860b;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background-color 0.3s, transform 0.2s;
-    }
-    .view-details-btn:hover {
-      background-color: #ffdb58;
-      color: #333;
-      transform: scale(1.05);
-    }
+  .footer { margin-top:40px; text-align:center; font-size:14px; color:#555; padding:20px 0; }
 
-    .footer {
-      margin-top: 40px;
-      text-align: center;
-      font-size: 14px;
-      color: #555;
-      padding: 20px 0;
-    }
-
-  </style>
+</style>
 </head>
 <body>
 
+<header class="header">
+  <a href="../index.html" class="logo-link"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
+  <nav>
+    <a href="../index_profile.html">Home</a>
+    <a href="Product.html">Product</a>
+    <a href="Jewelry-cart.html">Cart</a>
+    <a href="view-orders.html" class="active">Orders</a>
+  </nav>
+</header>
 
-  <header class="header">
-    <a href="../index.html" class="logo-link">
-      <img src="../images/36-logo.png" alt="36 Jewelry Logo">
-    </a>
-    <nav>
-      <a href="../index_profile.html">Home</a>
-      <a href="Product.html">Product</a>
-      <a href="Jewelry-cart.html">Cart</a>
-      <a href="view-orders.html" class="active">Orders</a>
-    </nav>
-  </header>
+<main class="main-content">
+  <section class="orders-section">
+    <h2>Your Orders</h2>
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>#1001</td>
+          <td>2025-10-01</td>
+          <td>$125.00</td>
+          <td><span class="status completed">Completed</span></td>
+          <td><button class="view-details-btn" data-url="view_details.html">View Details</button></td>
+        </tr>
+        <tr>
+          <td>#1002</td>
+          <td>2025-10-05</td>
+          <td>$120.00</td>
+          <td><span class="status pending">Pending</span></td>
+          <td><button class="view-details-btn" data-url="view_details.html">View Details</button></td>
+        </tr>
+        <tr>
+          <td>#1003</td>
+          <td>2025-10-10</td>
+          <td>$80.00</td>
+          <td><span class="status cancelled">Cancelled</span></td>
+          <td><button class="view-details-btn" data-url="view_details.html">View Details</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
 
-  <main class="main-content">
-    <section class="orders-section">
-      <h2>Your Orders</h2>
+<footer class="footer">
+  <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
+</footer>
 
-      <table class="orders-table">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Date</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>#1001</td>
-            <td>2025-10-01</td>
-            <td>$125.00</td>
-            <td><span class="status completed">Completed</span></td>
-            <td><button class="view-details-btn" onclick="location.href='order-details.html?order=1001'">View Details</button></td>
-          </tr>
-          <tr>
-            <td>#1002</td>
-            <td>2025-10-05</td>
-            <td>$120.00</td>
-            <td><span class="status pending">Pending</span></td>
-            <td><button class="view-details-btn" onclick="location.href='order-details.html?order=1002'">View Details</button></td>
-          </tr>
-          <tr>
-            <td>#1003</td>
-            <td>2025-10-10</td>
-            <td>$80.00</td>
-            <td><span class="status cancelled">Cancelled</span></td>
-            <td><button class="view-details-btn" onclick="location.href='order-details.html?order=1003'">View Details</button></td>
-          </tr>
-        </tbody>
-      </table>
-
-    </section>
-  </main>
-
-  <footer class="footer">
-    <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
-  </footer>
+<script>
+  const buttons = document.querySelectorAll(".view-details-btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const url = btn.dataset.url;
+      document.body.style.animation = "fadeOutBody 0.5s forwards";
+      setTimeout(() => { window.location.href = url; }, 500);
+    });
+  });
+</script>
 
 </body>
 </html>
