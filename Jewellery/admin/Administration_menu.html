@@ -96,47 +96,117 @@
 
       <div class="user-actions">
         <a href="add_product.html" class="btn">Add Product</a>
-        <a href="edit_product.html" class="btn">Edit Product</a>
       </div>
+      <div class="search-section">
+      <div class="search-group">
+        <label class="search-label" for="product-name">Search by Name</label>
+        <input type="text" id="product-name" class="search-input" placeholder="Product Name">
+      </div>
+      
+      <div class="search-group">
+        <label class="search-label" for="product-category">Search by category</label>
+        <select id="product-category" class="search-select">
+          <option value="">All</option>
+          <option value="1">Male</option>
+          <option value="2">Female</option>
+          <option value="3">Unisex</option>
+        </select>
+      </div>
+      
+      <button class="btn-search" id="search-btn">
+        <i class="material-icons-round">search</i> 
+      </button>
+    </div>
 
       <div class="user-list">
         <table>
           <tr>
-            <th>ID</th>
-            <th>Type</th>
             <th>Product Code</th>
             <th>Product Name</th>
             <th>Image</th>
-            <th>Description</th>
-            <th>Status</th>
+            <th>Price</th>
+            <th>Stock</th>
             <th>Action</th>
           </tr>
           <tr>
-            <td>1</td>
-            <td>Necklace</td>
-            <td>JW001</td>
+            <td>R001</td>
             <td>Diamond Heart Necklace</td>
-            <td><img src="../images/necklace.jpg" alt="Diamond Necklace" width="60"></td>
-            <td>Made from 18K gold with a diamond heart pendant.</td>
-            <td>Visible</td>
+            <td><img src="../images/R001.jpg" alt="Diamond Necklace" width="60"></td>
+            <td>100</td>
+            <td>13</td>
             <td>
-              <a href="#" class="btn small">Hide</a>
+              <a href="edit_product.html" class="btn small">Edit</a>
+              <a href="#" class="btn small">Delete</a>
             </td>
           </tr>
           <tr>
-            <td>2</td>
-            <td>Ring</td>
-            <td>JW002</td>
-            <td>Platinum Engagement Ring</td>
-            <td><img src="../images/ring.jpg" alt="Engagement Ring" width="60"></td>
-            <td>Elegant platinum ring with a center diamond.</td>
-            <td>Hidden</td>
+            <td>R002</td>
+            <td>Diamond Heart Necklace</td>
+            <td><img src="../images/R002.jpg" alt="Diamond Necklace" width="60"></td>
+            <td>99</td>
+            <td>7</td>
             <td>
-              <a href="#" class="btn small">Show</a>
+              <a href="edit_product.html" class="btn small">Edit</a>
+              <a href="#" class="btn small">Delete</a>
+            </td>
+          </tr>
+          <tr>
+            <td>R003</td>
+            <td>Diamond Heart Necklace</td>
+            <td><img src="../images/R003.jpg" alt="Diamond Necklace" width="60"></td>
+            <td>56</td>
+            <td>6</td>
+            <td>
+              <a href="edit_product.html" class="btn small">Edit</a>
+              <a href="#" class="btn small">Delete</a>
+            </td>
+          </tr>
+          <tr>
+            <td>R004</td>
+            <td>Diamond Heart Necklace</td>
+            <td><img src="../images/R004.jpg" alt="Diamond Necklace" width="60"></td>
+            <td>250</td>
+            <td>22</td>
+            <td>
+              <a href="edit_product.html" class="btn small">Edit</a>
+              <a href="#" class="btn small">Delete</a>
+            </td>
+          </tr>
+          <tr>
+            <td>R005</td>
+            <td>Diamond Heart Necklace</td>
+            <td><img src="../images/R005.jpg" alt="Diamond Necklace" width="60"></td>
+            <td>22</td>
+            <td>8</td>
+            <td>
+              <a href="edit_product.html" class="btn small">Edit</a>
+              <a href="#" class="btn small">Delete</a>
             </td>
           </tr>
         </table>
       </div>
+       
+   <div class="pagination">
+  <button class="pagination-btn">
+    <span class="arrow-icon">&#10094;</span>
+  </button>
+
+  <button class="pagination-btn active">1</button>
+  <button class="pagination-btn">2</button>
+  <button class="pagination-btn">3</button>
+  <button class="pagination-btn">4</button>
+  <button class="pagination-btn">5</button>
+
+  <button class="pagination-btn">
+    <span class="arrow-icon">&#10095;</span>
+  </button>
+</div>
+
+<div class="pagination-info">
+  Showing 1-5 of 25 products
+</div>
+
+
     </section>
 
     <!-- Customers -->

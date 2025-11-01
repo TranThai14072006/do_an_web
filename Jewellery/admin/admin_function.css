@@ -202,3 +202,141 @@ label.btn {
   from {opacity: 0; transform: translateY(10px);}
   to {opacity: 1; transform: translateY(0);}
 }
+
+/* -------------------- PHẦN TÌM KIẾM (giống ảnh 2, không nền trắng) -------------------- */
+.search-section {
+  display: flex;
+  align-items: flex-end; /* Đưa nút xuống thẳng hàng với ô nhập */
+  gap: 1rem;
+  margin: 20px 0;
+}
+
+.search-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.search-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.search-input,
+.search-select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  background-color: #fff;
+}
+
+.search-input:focus,
+.search-select:focus {
+  border-color: #8e4b00; /* Giữ tone nâu đồng của web */
+}
+
+.btn-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 42px; /* đảm bảo cao bằng input */
+  background-color: #8e4b00; /* xanh lá */
+  color: #fff;
+  border: none;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 0; /* không để bị lệch */
+}
+
+.btn-search:hover {
+  background-color: #8e4b00;
+}
+
+.btn-search i {
+  font-size: 18px;
+}
+
+ /* ==== Pagination ==== */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1.5rem;
+      gap: 8px;
+    }
+
+    .pagination-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background-color: white;
+      color: #344767;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pagination-btn:hover {
+      background-color: #f5f5f5;
+    }
+
+    .pagination-btn.active {
+      background: linear-gradient(195deg, #8e4b00, #8e4b00);
+      color: white;
+      border-color: #8e4b00;
+    }
+
+    .pagination-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination-btn.disabled:hover {
+      background-color: white;
+    }
+
+    .pagination-info {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+    }
+    
+  /* ===== ICON LOCAL MATERIAL ===== */
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/MaterialIcons-Regular.woff2') format('woff2'),
+       url('fonts/MaterialIcons-Regular.woff') format('woff'),
+       url('fonts/MaterialIcons-Regular.ttf') format('truetype');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 18px;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
