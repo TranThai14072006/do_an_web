@@ -10,7 +10,7 @@ body {
   height: 100vh;
   background: 
     linear-gradient(rgba(218, 165, 32, 0.15), rgba(0, 0, 0, 0.5)),
-    url("../images/chocolat/background2.jpg") no-repeat center center/cover;
+    url("../images/profile\ background.jpg") no-repeat center center/cover;
   display: flex;
   justify-content: center;
   align-items: center;
