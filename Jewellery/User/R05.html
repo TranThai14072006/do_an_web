@@ -6,10 +6,9 @@
   <title>Royal Moissanite Rings</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="pr_detail.css">
-  
 </head>
-<body>
 
+<body>
   <!-- ICON GIỎ HÀNG -->
   <div class="cart-icon">
     <a href="Jewelry-cart.html" class="cart has-count" data-count="1" id="cart-icon">
@@ -61,7 +60,7 @@
       </ul>
 
       <div class="action-buttons">
-        <label for="add-cart-checkbox" class="add-to-cart">
+        <label for="add-cart-checkbox" class="add-to-cart" onclick="showNotification()">
           <i class="fas fa-shopping-cart"></i>
           Add to cart
         </label>
@@ -78,6 +77,20 @@
     </div>
   </div>
 
+  <script>
+    function showNotification() {
+      const notification = document.getElementById('cart-notification');
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    function closeNotification() {
+      const notification = document.getElementById('cart-notification');
+      notification.classList.remove('show');
+    }
+  </script>
+
 </body>
 </html>
-

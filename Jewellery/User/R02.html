@@ -20,7 +20,25 @@
   <!-- HACK CSS: checkbox để bật số lượng -->
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
 
+  <!-- THÔNG BÁO THÊM VÀO GIỎ HÀNG -->
+  <div class="cart-notification" id="cart-notification">
+    <div class="notification-content">
+      <div class="notification-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="notification-text">
+        <h3>Added to cart!</h3>
+        <p>The product has been added to your shopping cart.</p>
+      </div>
+      <button class="close-notification" onclick="closeNotification()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- CHI TIẾT SẢN PHẨM -->
   <div class="product-detail">
+
     <div class="product-image">
       <img src="../images/R002.jpg" alt="Kane Moissanite Ring">
     </div>
@@ -32,7 +50,7 @@
         A luxurious men's sterling silver ring featuring a sparkling Moissanite stone, reflecting boldness and elegance.
       </p>
 
-      <!-- PHẦN CHỌN SIZE (giữ nguyên kiểu select cho đồng nhất giao diện) -->
+      <!-- PHẦN CHỌN SIZE -->
       <div class="size-selection">
         <h3>Select Ring Size</h3>
         <select name="ring-size" id="ring-size">
@@ -52,7 +70,7 @@
       </ul>
 
       <div class="action-buttons">
-        <label for="add-cart-checkbox" class="add-to-cart">
+        <label for="add-cart-checkbox" class="add-to-cart" onclick="showNotification()">
           <i class="fas fa-shopping-cart"></i>
           Add to cart
         </label>
@@ -68,6 +86,21 @@
       </a>
     </div>
   </div>
+
+  <script>
+    function showNotification() {
+      const notification = document.getElementById('cart-notification');
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    function closeNotification() {
+      const notification = document.getElementById('cart-notification');
+      notification.classList.remove('show');
+    }
+  </script>
 
 </body>
 </html>

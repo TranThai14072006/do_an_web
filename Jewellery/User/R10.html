@@ -17,44 +17,45 @@
     </a>
   </div>
 
-  <!-- HACK CSS: checkbox to enable quantity -->
+  <!-- HACK CSS: checkbox để bật số lượng -->
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
-
   <div class="product-detail">
-    <!-- Product Image -->
     <div class="product-image">
       <img src="../images/R010.jpg" alt="Niche Crown Stack Ring">
     </div>
 
-    <!-- Product Info -->
     <div class="product-info">
       <h1>Niche Crown Stack Ring</h1>
       <p class="price">$1.490</p>
-
-      <!-- Product Description -->
       <p class="description">
-A stylish stacked gold-plated sterling silver ring adorned with Garnet and CZ stones, featuring a delicate crown motif.
+        A stylish stacked gold-plated sterling silver ring adorned with Garnet and CZ stones, featuring a delicate crown motif.
       </p>
 
-      <!-- Product Specs -->
-      <ul class="product-specs">
-        <li>Material: 925 Sterling Silver, Gold-Plated</li>
-        <li>Design: Stacked rings with crown motif, elegant and feminine</li>
-        <li>Stone: Garnet & Cubic Zirconia (CZ)</li>
-        <li>Color: Gold </li>
-        <li>Brand: ThirtySix Jewellery</li>
-      </ul>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <label for="add-cart-checkbox" class="add-to-cart">Add to cart</label>
-        <a href="#" class="buy-now">Buy now</a>
+      <div class="size-selection">
+        <h3>Select Ring Size</h3>
+        <select name="ring-size" id="ring-size">
+          <option value="5">Size 5 (12cm - 15cm)</option>
+          <option value="6">Size 6 (15cm - 18cm)</option>
+          <option value="7">Size 7 (18cm - 21cm)</option>
+          <option value="8">Size 8 (21cm - 24cm)</option>
+        </select>
       </div>
 
       <!-- Back Button -->
       <a href="Product.html" class="back-button">Back</a>
     </div>
   </div>
+
+  <script>
+    function showNotification() {
+      const notification = document.getElementById('cart-notification');
+      notification.classList.add('show');
+      setTimeout(() => notification.classList.remove('show'), 3000);
+    }
+    function closeNotification() {
+      document.getElementById('cart-notification').classList.remove('show');
+    }
+  </script>
 
 </body>
 </html>
