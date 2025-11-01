@@ -11,7 +11,16 @@
     <div class="profile-card">
       <!-- Header -->
       <div class="profile-header">
-        <img src="../images/chocolat/ava.jpg" alt="User Avatar" class="avatar">
+        <div class="avatar-wrapper">
+          <img src="../images/chocolat/ava.jpg" alt="User Avatar" class="avatar">
+
+          <!-- Nút đổi ảnh -->
+          <form action="#" method="post" enctype="multipart/form-data" class="change-photo-form">
+            <label for="avatar-upload" class="change-photo-label">Change Photo</label>
+            <input type="file" id="avatar-upload" name="avatar" accept="image/*">
+          </form>
+        </div>
+
         <h2>Quỳnh Như</h2>
         <p class="role">Member of 36 Jewelry</p>
       </div>
@@ -41,14 +50,11 @@
           <button class="btn edit" onclick="window.location.href='edit profile.html'">Edit Profile</button>
           <button class="btn logout" onclick="window.location.href='../index.html'">Log Out</button>
         </div>
-
         <button class="btn view" onclick="window.location.href='view_orders.html'">View Orders</button>
       </div>
 
       <!-- Back Button -->
       <button class="back-btn" onclick="window.location.href='../index_profile.html'">←</button>
-
-
     </div>
   </div>
 </body>
