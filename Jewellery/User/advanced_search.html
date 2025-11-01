@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Search | 36 Jewelry</title>
+  <link rel="stylesheet" href="advanced_search.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1> Advanced Search</h1>
+
+    <table class="search-table">
+      <tr>
+        <th>Field</th>
+        <th>Input</th>
+      </tr>
+
+      <tr>
+        <td><label for="keyword">Keyword</label></td>
+        <td><input type="text" id="keyword" name="keyword" placeholder="Enter product name"></td>
+      </tr>
+
+      <tr>
+        <td><label for="category">Category</label></td>
+        <td>
+          <select id="category" name="category">
+            <option value="">All</option>
+            <option value="rings">Rings</option>
+            <option value="necklaces">Necklaces</option>
+            <option value="earrings">Earrings</option>
+            <option value="bracelets">Bracelets</option>
+          </select>
+        </td>
+      </tr>
+
+      <tr>
+        <td><label for="material">Material</label></td>
+        <td>
+          <select id="material" name="material">
+            <option value="">All</option>
+            <option value="gold">Gold</option>
+            <option value="silver">Silver</option>
+            <option value="platinum">Platinum</option>
+            <option value="diamond">Diamond</option>
+          </select>
+        </td>
+      </tr>
+
+      <tr>
+        <td><label for="min-price">Price Range</label></td>
+        <td>
+          <div class="price-range">
+            <input type="number" id="min-price" name="min-price" placeholder="Min"> 
+            <span>–</span>
+            <input type="number" id="max-price" name="max-price" placeholder="Max">
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td><label for="color">Color</label></td>
+        <td><input type="text" id="color" name="color" placeholder="e.g. Silver, Rose Gold"></td>
+      </tr>
+    </table>
+
+    <div class="buttons">
+      <button class="btn search"onclick="window.location.href='search.html'">Search</button>
+      <button class="btn reset">Reset</button>
+      <button class="btn back" onclick="window.history.back()">← Back</button>
+    </div>
+  </div>
+
+</body>
+</html>

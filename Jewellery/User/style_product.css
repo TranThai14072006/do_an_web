@@ -413,3 +413,62 @@ header .user-items a {
 #page-banner {
   padding-top: 80px;
 }
+
+/* =============================
+   FILTER NAV + FILTER BUTTON
+============================= */
+.filter-nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap; /* giữ responsive */
+}
+
+/* Các nút All / Male / Female / Unisex */
+.filter-nav {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-nav a {
+  text-decoration: none;
+  padding: 6px 14px;
+  border: 1px solid #ccc;
+  border-radius: 25px;
+  font-weight: 500;
+  color: #222;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.filter-nav a:hover {
+  background: #e67e22;
+  color: #fff;
+  border-color: #e67e22;
+}
+
+.filter-nav a.active {
+  background: #e67e22;
+  color: #fff;
+  border-color: #e67e22;
+}
+
+/* Nút Filter bo tròn */
+.filter-button {
+  padding: 6px 16px;
+  border-radius: 25px;
+  border: 1px solid #ccc;
+  background: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  color: #222;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  background: #e67e22;
+  color: #fff;
+  border-color: #e67e22;
+}
