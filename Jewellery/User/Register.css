@@ -1,8 +1,6 @@
 /* ==============================
-   STYLE.CSS – REGISTER PAGE (Luxury Yellow + Elegant Font)
+   REGISTER PAGE – Luxury Slim Style (Fixed Title Center)
 ============================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Poppins:wght@400;500;600&display=swap');
 
 * {
   margin: 0;
@@ -13,16 +11,17 @@
 /* TOÀN TRANG */
 body {
   font-family: 'Poppins', sans-serif;
-  height: 80h;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   background: 
-    linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)),
-    url('../images/bg-fashion.jpg') no-repeat center 40% / cover;
+    linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)),
+    url('../images/registerbg.jpg') no-repeat center 40% / cover;
+  backdrop-filter: blur(2px);
 }
 
-/* KHUNG NGOÀI CÙNG */
+/* KHUNG NGOÀI */
 .register-container {
   display: flex;
   justify-content: center;
@@ -30,77 +29,92 @@ body {
   width: 100%;
 }
 
-/* KHUNG FORM */
+/* BOX FORM */
 .register-box {
-  background: rgba(255, 255, 255, 0.92);
-  padding: 40px 35px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  width: 400px;
+  background: rgba(255, 255, 255, 0.93);
+  padding: 60px 45px;
+  border-radius: 25px;
+  width: 300px; /* form thon */
   max-width: 90%;
-  backdrop-filter: blur(8px);
-  border: 2px solid #eede9a;   /* viền vàng sang */
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+  border: 1.8px solid #e9da8f;
   animation: fadeIn 0.7s ease;
+  backdrop-filter: blur(10px);
+  text-align: center; /* 💡 Căn giữa toàn bộ nội dung */
 }
 
 /* TIÊU ĐỀ */
 .register-box h2 {
-  text-align: center;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
+  text-align: center; /* 💡 Giữ căn giữa riêng cho h2 */
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
   color: #3a3a3a;
   letter-spacing: 0.5px;
+  width: 100%;
+  display: block;
 }
 
 /* INPUT */
-.form-control {
-  border-radius: 8px;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  font-size: 13.5px;
-  font-family: 'Poppins', sans-serif;
-  color: #333;
-}
-
 .form-label {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  margin-bottom: 4px;
-  color: #444;
-}
-
-/* NÚT REGISTER – vàng sang */
-.btn-register {
-  width: 100%;
-  background: linear-gradient(135deg, #f5e6ab, #f5e7a0);
-  border: none;
-  color: #3a3a3a;
-  padding: 10px;
-  font-size: 14.5px;
-  border-radius: 8px;
-  margin-top: 12px;
-  transition: all 0.3s ease;
+  display: block;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
-  letter-spacing: 0.3px;
-  box-shadow: 0 3px 12px rgba(129, 107, 20, 0.4);
+  font-size: 13.5px;
+  margin-bottom: 5px;
+  color: #4a4a4a;
+  text-align: left; /* ⚠️ Đặt lại label về bên trái */
+}
+
+.form-control {
+  width: 100%;
+  border-radius: 10px;
+  padding: 9px 12px;
+  border: 1px solid #d4d4d4;
+  font-size: 13.5px;
+  color: #333;
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: 0.25s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #c8a600;
+  box-shadow: 0 0 8px rgba(200, 166, 0, 0.3);
+}
+
+/* NÚT REGISTER */
+.btn-register {
+  display: inline-block;
+  width: 100%;
+  background: linear-gradient(135deg, #f8eeb1, #f5d97b);
+  color: #3a3a3a;
+  padding: 10px 0;
+  font-size: 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(193, 166, 40, 0.45);
 }
 
 .btn-register:hover {
-  background: linear-gradient(135deg, #ffdf3e, #f6c90e);
+  background: linear-gradient(135deg, #ffe45e, #f6c90e);
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(76, 63, 14, 0.5);
+  box-shadow: 0 6px 16px rgba(161, 139, 22, 0.5);
 }
+
+
+
 
 /* LINK LOGIN */
 .login-link {
   text-align: center;
-  margin-top: 15px;
+  margin-top: 20px;
   font-size: 13px;
-  font-family: 'Poppins', sans-serif;
 }
 
 .login-link a {
@@ -115,7 +129,7 @@ body {
 
 /* HIỆU ỨNG */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(25px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -123,9 +137,14 @@ body {
 @media (max-width: 480px) {
   .register-box {
     width: 85%;
-    padding: 22px;
+    padding: 35px 25px;
   }
+
   .register-box h2 {
     font-size: 20px;
+  }
+
+  .btn-register {
+    font-size: 13.5px;
   }
 }
