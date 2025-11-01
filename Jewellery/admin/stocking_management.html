@@ -1,679 +1,419 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Inventory Management - Stocking</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stocking Management - Luxury Jewelry</title>
   <style>
-    /* Color Palette (Gold/Yellowish) */
-    :root {
-      --primary-color: #d4af37; /* Gold */
-      --primary-gradient-start: #d4af37;
-      --primary-gradient-end: #b8942d;
-      --background-color: #fafafa;
-      --text-color: #333;
-      --low-stock-color: #c62828; /* Red for danger */
-      --low-stock-bg: rgba(244,67,54,0.1);
-      --low-stock-border: #ef9a9a;
-      --low-stock-warning: #f57c00; /* Orange for warning */
-      --low-stock-warning-bg: rgba(255,193,7,0.1);
-      --low-stock-warning-border: #ffd54f;
-      --normal-color: #2e7d32; /* Green for normal */
-      --normal-bg: rgba(76,175,80,0.1);
-      --normal-border: #81c784;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
     }
 
     body {
-      font-family: 'Roboto', sans-serif;
-      background-color: var(--background-color);
-      color: var(--text-color);
-      line-height: 1.6;
-      overflow-x: hidden;
-      margin: 0;
+      display: flex;
+      background: #f3f3f3;
+      color: #333;
+      min-height: 100vh;
     }
 
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 80px;
+      border-radius: 50%;
+    }
+
+    .logo h2 {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .menu a {
+      display: block;
+      padding: 12px;
+      color: #f8ce86;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .menu a:hover,
+    .menu a.active {
+      background-color: #f8ce86;
+      color: #8e4b00;
+    }
+
+    /* Main */
     main {
-      min-height: 100vh; 
-      padding: 1.5rem;
+      flex: 1;
+      padding: 25px;
     }
 
-    .card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      margin-bottom: 1.5rem;
-      overflow: hidden;
-    }
-
-    .card-header {
-      background: linear-gradient(195deg, var(--primary-gradient-start), var(--primary-gradient-end));
-      color: white;
-      padding: 1rem 1.5rem;
-    }
-
-    .card-body {
-      padding: 1.5rem;
+    h1 {
+      color: #8e4b00;
+      margin-bottom: 20px;
+      font-size: 24px;
     }
 
     /* Tabs */
     .tabs {
       display: flex;
-      border-bottom: 1px solid #e9ecef;
-      margin-bottom: 1.5rem;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
     }
 
     .tab {
-      padding: 0.75rem 1.5rem;
+      padding: 10px 18px;
+      font-weight: 600;
+      color: #555;
       cursor: pointer;
       border-bottom: 3px solid transparent;
       transition: all 0.3s;
     }
 
     .tab.active {
-      border-bottom-color: var(--primary-color);
-      color: var(--primary-color);
-      font-weight: 600;
+      color: #8e4b00;
+      border-bottom-color: #8e4b00;
     }
 
     .tab-content {
       display: none;
+      animation: fadeIn 0.3s ease;
     }
 
     .tab-content.active {
       display: block;
     }
 
-    /* Form styles */
-    .form-group {
-      margin-bottom: 1.5rem;
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
     }
 
-    .form-label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: var(--text-color);
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #d2d6da;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      transition: all 0.2s;
-    }
-
-    .form-control:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
-      outline: none;
-    }
-
-    .form-row {
+    /* Search form */
+    .search-form {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 20px;
       display: flex;
       flex-wrap: wrap;
-      margin: 0 -0.5rem;
+      gap: 1rem;
+      align-items: flex-end;
     }
 
-    .form-col {
+    .form-group {
+      display: flex;
+      flex-direction: column;
       flex: 1;
-      padding: 0 0.5rem;
-      min-width: 200px;
+      min-width: 180px;
     }
 
-    /* Button styles */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0.75rem 1.5rem;
+    label {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      padding: 10px;
+      border: 1px solid #ccc;
       border-radius: 6px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: #8e4b00;
+    }
+
+    .btn {
+      display: inline-block;
+      background-color: #8e4b00;
+      color: #f8ce86;
       border: none;
-      color: white;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
-      text-decoration: none;
+      transition: 0.3s;
     }
 
-    .btn-primary { 
-      background: linear-gradient(195deg, var(--primary-gradient-start), var(--primary-gradient-end)); 
-    }
-    .btn-primary:hover { 
-      background: linear-gradient(195deg, var(--primary-color), #a3812a); 
+    .btn:hover {
+      background-color: #f8ce86;
+      color: #8e4b00;
     }
 
-    .btn-secondary { 
-      background: #6c757d; 
-    }
-    .btn-secondary:hover { 
-      background: #5a6268; 
+    .btn.secondary {
+      background: #ccc;
+      color: #333;
     }
 
-    .btn-warning { 
-      background: var(--primary-color); 
-    }
-    .btn-warning:hover { 
-      background: var(--primary-gradient-end); 
+    .btn.secondary:hover {
+      background: #aaa;
     }
 
-    .btn-sm {
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
-    }
-
-    .material-icons-round { 
-      font-size: 18px; 
-      vertical-align: middle; 
-    }
-
-    /* Table styles */
+    /* Full-width table */
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-
-    thead {
-      background: #f8f9fa;
-      color: var(--text-color);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
 
     th, td {
       padding: 14px 16px;
-      font-size: 14px;
-      text-align: left;
-      border-bottom: 1px solid #e9ecef;
+      text-align: center;
+      font-size: 15px;
+      border-bottom: 1px solid #f0e2d0;
     }
 
     th {
-      text-transform: uppercase;
-      font-size: 12px;
-      letter-spacing: 0.5px;
+      background: linear-gradient(195deg, #8e4b00, #a3670b);
+      color: #f8ce86;
       font-weight: 600;
+      letter-spacing: 0.3px;
     }
 
-    tbody tr:nth-child(even) {
-      background-color: #fafafa;
-    }
-
-    tbody tr:hover {
-      background-color: #f3f4f8;
-      transition: 0.2s;
-    }
-
-    .text-right {
-      text-align: right;
-    }
-
-    .text-center {
-      text-align: center;
-    }
-
-    /* Search form */
-    .search-form {
-      background: #f8f9fa;
-      padding: 1.5rem;
-      border-radius: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .search-row {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-end;
-    }
-
-    .search-actions {
-      display: flex;
-      gap: 0.5rem;
+    tr:hover td {
+      background: #f9f2e7;
     }
 
     /* Status badges */
     .status-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
-      border-radius: 50px;
-      padding: 5px 12px;
-      min-width: 110px;
     }
+    .status-normal { background-color: #e8f5e9; color: #2e7d32; }
+    .status-warning { background-color: #fff8e1; color: #f57c00; }
+    .status-danger { background-color: #ffebee; color: #c62828; }
 
-    .status-normal { background-color: var(--normal-bg); color:var(--normal-color); border:1px solid var(--normal-border); }
-    .status-warning { background-color: var(--low-stock-warning-bg); color:var(--low-stock-warning); border:1px solid var(--low-stock-warning-border); }
-    .status-danger { background-color: var(--low-stock-bg); color:var(--low-stock-color); border:1px solid var(--low-stock-border); }
-    
-    .status-badge.low-stock-text { color: var(--low-stock-warning); }
-
-    /* Report info */
-    .report-info {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    
-    .report-details {
-      flex: 1;
-    }
-
-    .report-name {
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-    
-    /* Alert section (repurposed for Note) */
+    /* Alert section */
     .alert-section {
       background: #fffbe6;
-      border-left: 4px solid var(--primary-color);
-      border-radius: 0.5rem;
+      border-left: 4px solid #8e4b00;
       padding: 1rem;
-      margin-bottom: 1.5rem;
+      margin-top: 1.5rem;
+      border-radius: 6px;
     }
 
     .alert-title {
       font-weight: 600;
-      color: var(--primary-gradient-end);
-    }
-    
-    /* Summary cards - not directly in original stocking_management, but useful for low stock alert view */
-    .summary-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .summary-card {
-      background: white;
-      border-radius: 0.5rem;
-      padding: 1.5rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-
-    .summary-value {
-      font-size: 2rem;
-      font-weight: 700;
+      color: #8e4b00;
       margin-bottom: 0.5rem;
-    }
-
-    .summary-label {
-      color: #6c757d;
-      font-size: 0.875rem;
-    }
-
-    .summary-warning .summary-value {
-      color: var(--low-stock-warning);
-    }
-
-    .summary-danger .summary-value {
-      color: var(--low-stock-color);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .form-col {
-        flex: 100%;
-        margin-bottom: 1rem;
-      }
-      
-      .tabs {
-        flex-direction: column;
-      }
-      
-      .search-row {
-        flex-direction: column;
-      }
-      
-      .search-actions {
-        width: 100%;
-        justify-content: center;
-      }
-      
-      .btn {
-        width: 100%;
-        justify-content: center;
-        margin-bottom: 0.5rem;
-      }
-      
-      .summary-cards {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
-
 <body>
-  <main>
-    <div class="card">
-      <div class="card-header">
-        <h3 style="margin: 0; font-size: 1.2rem;">Inventory Management</h3>
-      </div>
-      <div class="card-body">
-        <div class="tabs">
-          <div class="tab active" data-tab="inventory-search">Stock Lookup</div>
-          <div class="tab" data-tab="stock-alert">Low Stock Alert</div>
-          <div class="tab" data-tab="inventory-report">Import - Export - Balance Report</div>
-        </div>
 
-        <div class="tab-content active" id="inventory-search">
-          <div class="search-form">
-            <div class="form-row">
-              <div class="form-col">
-                <div class="form-group">
-                  <label class="form-label" for="product-search">Product Name</label>
-                  <input type="text" id="product-search" class="form-control" placeholder="e.g. Gold Ring">
-                </div>
-              </div>
-              <div class="form-col">
-                <div class="form-group">
-                  <label class="form-label" for="category-search">Category</label>
-                  <select id="category-search" class="form-control">
-                    <option>All</option>
-                    <option>Ring</option>
-                    <option>Necklace</option>
-                    <option>Bracelet</option>
-                    <option>Earring</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-col">
-                <div class="form-group">
-                  <label class="form-label" for="date-search">As of Date</label>
-                  <input type="date" id="date-search" class="form-control">
-                </div>
-              </div>
-            </div>
-            <div class="search-actions">
-              <button class="btn btn-primary">
-                <i class="material-icons-round">search</i> Search
-              </button>
-              <button class="btn btn-secondary" id="reset-search">
-                <i class="material-icons-round">refresh</i> Reset
-              </button>
-            </div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Product Code</th>
-                <th>Product Name</th>
-                <th>Category</th>
-                <th class="text-center">Stock Quantity</th>
-                <th class="text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>JW001</td>
-                <td>
-                  <div class="report-info">
-                    <div class="report-details">
-                      <div class="report-name">Diamond Ring</div>
-                    </div>
-                  </div>
-                </td>
-                <td>Ring</td>
-                <td class="text-center">25</td>
-                <td class="text-center">
-                  <span class="status-badge status-normal">
-                    <i class="material-icons-round">check_circle</i>In Stock
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>JW002</td>
-                <td>
-                  <div class="report-info">
-                    <div class="report-details">
-                      <div class="report-name">Gold Necklace</div>
-                    </div>
-                  </div>
-                </td>
-                <td>Necklace</td>
-                <td class="text-center">5</td>
-                <td class="text-center">
-                  <span class="status-badge status-warning low-stock-text">
-                    <i class="material-icons-round">warning</i>Low Stock
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td>JW003</td>
-                <td>
-                  <div class="report-info">
-                    <div class="report-details">
-                      <div class="report-name">Silver Bracelet</div>
-                    </div>
-                  </div>
-                </td>
-                <td>Bracelet</td>
-                <td class="text-center">0</td>
-                <td class="text-center">
-                  <span class="status-badge status-danger low-stock-text">
-                    <i class="material-icons-round">error</i>Out of Stock
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="alert-section" style="margin-top: 1.5rem;">
-            <div class="alert-title">Note:</div>
-            <p>Products with less than 10 items are considered **Low Stock**.</p>
-          </div>
-        </div>
-
-        <div class="tab-content" id="stock-alert">
-          <div class="alert-section">
-            <div class="alert-title">ALERT: 1 product is Low Stock and 1 product is Out of Stock.</div>
-            <p>Please check and import more items for the products below to ensure business continuity (Threshold: 10 items).</p>
-          </div>
-
-          <div class="summary-cards">
-            <div class="summary-card">
-              <div class="summary-value">3</div>
-              <div class="summary-label">Total Products</div>
-            </div>
-            <div class="summary-card">
-              <div class="summary-value">2</div>
-              <div class="summary-label">Products in Stock</div>
-            </div>
-            <div class="summary-card summary-warning">
-              <div class="summary-value">1</div>
-              <div class="summary-label">Low Stock</div>
-            </div>
-            <div class="summary-card summary-danger">
-              <div class="summary-value">1</div>
-              <div class="summary-label">Out of Stock</div>
-            </div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Product Code</th>
-                <th>Product Name</th>
-                <th>Category</th>
-                <th class="text-center">Stock Quantity</th>
-                <th class="text-center">Min Stock Level</th>
-                <th class="text-center">Status</th>
-                <th class="text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>JW002</td>
-                <td>
-                  <div class="report-info">
-                    <div class="report-details">
-                      <div class="report-name">Gold Necklace</div>
-                    </div>
-                  </div>
-                </td>
-                <td>Necklace</td>
-                <td class="text-center">5</td>
-                <td class="text-center">10</td>
-                <td class="text-center">
-                  <span class="status-badge status-warning low-stock-text">
-                    <i class="material-icons-round">warning</i>Low Stock
-                  </span>
-                </td>
-                <td class="text-center">
-                  <button class="btn btn-warning btn-sm" onclick="alert('Simulate Import Action for Gold Necklace')">
-                    <i class="material-icons-round">inventory_2</i> Import Stock
-                  </button>
-                </td>
-              </tr>
-              <tr>
-                <td>JW003</td>
-                <td>
-                  <div class="report-info">
-                    <div class="report-details">
-                      <div class="report-name">Silver Bracelet</div>
-                    </div>
-                  </div>
-                </td>
-                <td>Bracelet</td>
-                <td class="text-center">0</td>
-                <td class="text-center">10</td>
-                <td class="text-center">
-                  <span class="status-badge status-danger low-stock-text">
-                    <i class="material-icons-round">error</i>Out of Stock
-                  </span>
-                </td>
-                <td class="text-center">
-                  <button class="btn btn-warning btn-sm" onclick="alert('Simulate Import Action for Silver Bracelet')">
-                    <i class="material-icons-round">inventory_2</i> Import Stock
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="tab-content" id="inventory-report">
-          <div class="search-form">
-            <div class="form-row">
-              <div class="form-col">
-                <div class="form-group">
-                  <label class="form-label" for="report-product">Product</label>
-                  <input type="text" id="report-product" class="form-control" placeholder="e.g. Gold Ring">
-                </div>
-              </div>
-              <div class="form-col">
-                <div class="form-group">
-                  <label class="form-label" for="from-date">From</label>
-                  <input type="date" id="from-date" class="form-control">
-                </div>
-              </div>
-              <div class="form-col">
-                <div class="form-group">
-                  <label class="form-label" for="to-date">To</label>
-                  <input type="date" id="to-date" class="form-control">
-                </div>
-              </div>
-            </div>
-            <div class="search-actions">
-              <button class="btn btn-primary">
-                <i class="material-icons-round">search</i> Search
-              </button>
-              <button class="btn btn-secondary" id="reset-report">
-                <i class="material-icons-round">refresh</i> Reset
-              </button>
-            </div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th class="text-center">Import Qty</th>
-                <th class="text-center">Export Qty</th>
-                <th class="text-center">Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>2025-10-20</td>
-                <td class="text-center">10</td>
-                <td class="text-center">2</td>
-                <td class="text-center">8</td>
-              </tr>
-              <tr>
-                <td>2025-10-22</td>
-                <td class="text-center">15</td>
-                <td class="text-center">5</td>
-                <td class="text-center">18</td>
-              </tr>
-              <tr>
-                <td>2025-10-25</td>
-                <td class="text-center">0</td>
-                <td class="text-center">8</td>
-                <td class="text-center">10</td>
-              </tr>
-            </tbody>
-          </table>
-          
-          <div class="alert-section" style="margin-top: 1.5rem;">
-            <div class="alert-title">Note:</div>
-            <p>This section helps track the number of items imported, exported, and remaining over time.</p>
-          </div>
-        </div>
-
-        </div>
+  <div class="sidebar">
+    <div class="logo">
+      <img src="../images/Admin_login.jpg" alt="Admin Logo">
+      <h2>Luxury Jewelry Admin</h2>
     </div>
+
+    <div class="menu">
+      <a href="Administration_menu.html#products">Jewelry List</a>
+      <a href="Administration_menu.html#product-manage">Product Management</a>
+      <a href="Administration_menu.html#users">Customers</a>
+      <a href="import_management.html">Import Management</a>
+      <a href="Administration_menu.html#stock">Stocking</a>
+      <a href="Administration_menu.html#settings">Settings</a>
+    </div>
+  </div>
+
+  <main>
+    <h1>Stocking Management</h1>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="stock-lookup">Stock Lookup</div>
+      <div class="tab" data-tab="stock-alert">Low Stock Alert</div>
+      <div class="tab" data-tab="stock-report">Import - Export - Balance Report</div>
+    </div>
+
+    <!-- Tab 1 -->
+    <div class="tab-content active" id="stock-lookup">
+      <form class="search-form">
+        <div class="form-group">
+          <label>Product Name</label>
+          <input type="text" placeholder="Enter product name...">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select>
+            <option>All</option>
+            <option>Ring</option>
+            <option>Necklace</option>
+            <option>Bracelet</option>
+            <option>Earring</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>As of Date</label>
+          <input type="date">
+        </div>
+        <button type="button" class="btn">Search</button>
+        <button type="reset" class="btn secondary">Reset</button>
+      </form>
+
+      <table>
+        <tr>
+          <th>Product Code</th>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Stock Quantity</th>
+          <th>Status</th>
+        </tr>
+        <tr>
+          <td>JW001</td>
+          <td>Diamond Ring</td>
+          <td>Ring</td>
+          <td>25</td>
+          <td><span class="status-badge status-normal">In Stock</span></td>
+        </tr>
+        <tr>
+          <td>JW002</td>
+          <td>Gold Necklace</td>
+          <td>Necklace</td>
+          <td>5</td>
+          <td><span class="status-badge status-warning">Low Stock</span></td>
+        </tr>
+        <tr>
+          <td>JW003</td>
+          <td>Silver Bracelet</td>
+          <td>Bracelet</td>
+          <td>0</td>
+          <td><span class="status-badge status-danger">Out of Stock</span></td>
+        </tr>
+      </table>
+
+      <div class="alert-section">
+        <div class="alert-title">Note:</div>
+        Products below 10 in quantity are considered low stock.
+      </div>
+    </div>
+
+    <!-- Tab 2 -->
+    <div class="tab-content" id="stock-alert">
+      <div class="alert-section">
+        <div class="alert-title">Low Stock Warning:</div>
+        There are items that need restocking soon.
+      </div>
+
+      <table>
+        <tr>
+          <th>Product Code</th>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Stock</th>
+          <th>Minimum</th>
+          <th>Status</th>
+        </tr>
+        <tr>
+          <td>JW002</td>
+          <td>Gold Necklace</td>
+          <td>Necklace</td>
+          <td>5</td>
+          <td>10</td>
+          <td><span class="status-badge status-warning">Low Stock</span></td>
+        </tr>
+        <tr>
+          <td>JW003</td>
+          <td>Silver Bracelet</td>
+          <td>Bracelet</td>
+          <td>0</td>
+          <td>10</td>
+          <td><span class="status-badge status-danger">Out of Stock</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Tab 3 -->
+    <div class="tab-content" id="stock-report">
+      <form class="search-form">
+        <div class="form-group">
+          <label>Product</label>
+          <input type="text" placeholder="Enter product name...">
+        </div>
+        <div class="form-group">
+          <label>From</label>
+          <input type="date">
+        </div>
+        <div class="form-group">
+          <label>To</label>
+          <input type="date">
+        </div>
+        <button type="button" class="btn">Search</button>
+        <button type="reset" class="btn secondary">Reset</button>
+      </form>
+
+      <table>
+        <tr>
+          <th>Date</th>
+          <th>Import Qty</th>
+          <th>Export Qty</th>
+          <th>Balance</th>
+        </tr>
+        <tr>
+          <td>2025-10-20</td>
+          <td>10</td>
+          <td>2</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>2025-10-22</td>
+          <td>15</td>
+          <td>5</td>
+          <td>18</td>
+        </tr>
+        <tr>
+          <td>2025-10-25</td>
+          <td>0</td>
+          <td>8</td>
+          <td>10</td>
+        </tr>
+      </table>
+    </div>
+
   </main>
 
   <script>
-    // Tab functionality
+    // Tabs switching
     document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', function() {
-        // Remove active class from all tabs and contents
+      tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        
-        // Add active class to clicked tab and corresponding content
-        this.classList.add('active');
-        const tabId = this.getAttribute('data-tab');
-        document.getElementById(tabId).classList.add('active');
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
       });
     });
-
-    // Reset buttons
-    document.getElementById('reset-search').addEventListener('click', function() {
-      document.getElementById('product-search').value = '';
-      document.getElementById('category-search').value = 'All';
-      document.getElementById('date-search').value = '';
-    });
-
-    document.getElementById('reset-report').addEventListener('click', function() {
-      document.getElementById('report-product').value = '';
-      document.getElementById('from-date').value = '';
-      document.getElementById('to-date').value = '';
-    });
-    
-    // Set today's date and one month ago as default for date inputs (Optional, keeping simple reset for now)
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('date-search').value = today;
-    
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    document.getElementById('from-date').value = oneMonthAgo.toISOString().split('T')[0];
-    document.getElementById('to-date').value = today;
-
   </script>
 </body>
 </html>
