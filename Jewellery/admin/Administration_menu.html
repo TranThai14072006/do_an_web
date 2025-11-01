@@ -210,49 +210,208 @@
     </section>
 
     <!-- Customers -->
-    <section id="users" class="section">
-      <header><h1>Customer Management</h1></header>
+<section id="users" class="section">
+  <header><h1>Customer Management</h1></header>
+
+  <!-- Tìm kiếm và lọc -->
+  <div class="search-section">
+    <div class="search-group">
+      <label class="search-label" for="customer-name">Search by Name</label>
+      <input type="text" id="customer-name" class="search-input" placeholder="Enter customer name">
+    </div>
     
-      <input type="checkbox" id="toggleCustomerList" hidden>
-    
-    <div class="user-actions">
-      <label for="toggleCustomerList" class="btn">Show List</label>
-      <a href="#" class="btn">Reset Password</a>
-      <a href="order_management.html" class="btn">Orders</a>
+    <div class="search-group">
+      <label class="search-label" for="customer-status">Filter by Status</label>
+      <select id="customer-status" class="search-select">
+        <option value="">All</option>
+        <option value="active">Active</option>
+        <option value="locked">Locked</option>
+      </select>
     </div>
 
-      <div class="user-list">
-        <table>
-          <tr>
-            <th>ID</th>
-            <th>Customer Name</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>Alice Nguyen</td>
-            <td>alice@example.com</td>
-            <td>Active</td>
-            <td>
-              <a href="#" class="btn small">Reset</a>
-              <a href="#" class="btn small">Lock</a>
-            </td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Emma Tran</td>
-            <td>emma@example.com</td>
-            <td>Locked</td>
-            <td>
-              <a href="#" class="btn small">Reset</a>
-              <a href="#" class="btn small">Unlock</a>
-            </td>
-          </tr>
-        </table>
-      </div>
-    </section>
+    <button class="btn-search">
+      <i class="material-icons-round">search</i> 
+    </button>
+  </div>
+
+  <!-- Toggle danh sách -->
+  <input type="checkbox" id="toggleCustomerList" hidden>
+
+  <div class="user-actions">
+    <label for="toggleCustomerList" class="btn">Show / Hide List</label>
+    <!-- <a href="#" class="btn">Reset Password</a> -->
+    <a href="order_management.html" class="btn">Orders</a>
+  </div>
+
+  <!-- Danh sách khách hàng -->
+<div class="user-list">
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Customer Name</th>
+      <th>Email</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+
+    <tr><td>1</td><td>Alice Nguyen</td><td>alice@example.com</td><td>Active</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="lockPopup" class="btn small">Lock</label>
+      </td>
+    </tr>
+
+    <tr><td>2</td><td>Emma Tran</td><td>emma@example.com</td><td>Locked</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="unlockPopup" class="btn small">Unlock</label>
+      </td>
+    </tr>
+
+    <tr><td>3</td><td>David Le</td><td>david@example.com</td><td>Active</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="lockPopup" class="btn small">Lock</label>
+      </td>
+    </tr>
+
+    <tr><td>4</td><td>Olivia Pham</td><td>olivia@example.com</td><td>Active</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="lockPopup" class="btn small">Lock</label>
+      </td>
+    </tr>
+
+    <tr><td>5</td><td>Lucas Hoang</td><td>lucas@example.com</td><td>Locked</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="unlockPopup" class="btn small">Unlock</label>
+      </td>
+    </tr>
+
+    <tr><td>6</td><td>Sophia Vu</td><td>sophia@example.com</td><td>Active</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="lockPopup" class="btn small">Lock</label>
+      </td>
+    </tr>
+
+    <tr><td>7</td><td>Henry Bui</td><td>henry@example.com</td><td>Locked</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="unlockPopup" class="btn small">Unlock</label>
+      </td>
+    </tr>
+
+    <tr><td>8</td><td>Isabella Do</td><td>isabella@example.com</td><td>Active</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="lockPopup" class="btn small">Lock</label>
+      </td>
+    </tr>
+
+    <tr><td>9</td><td>Ethan Tran</td><td>ethan@example.com</td><td>Active</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="lockPopup" class="btn small">Lock</label>
+      </td>
+    </tr>
+
+    <tr><td>10</td><td>Chloe Nguyen</td><td>chloe@example.com</td><td>Locked</td>
+      <td>
+        <label for="view" class="btn small">View</label>
+        <label for="resetPopup" class="btn small">Reset</label>
+        <label for="unlockPopup" class="btn small">Unlock</label>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Pagination -->
+<div class="pagination">
+  <input type="radio" name="page" id="page1" checked hidden>
+  <input type="radio" name="page" id="page2" hidden>
+  <input type="radio" name="page" id="page3" hidden>
+
+  <div class="page-buttons">
+    <label for="page1" class="pagination-btn">1</label>
+    <label for="page2" class="pagination-btn">2</label>
+    <label for="page3" class="pagination-btn">3</label>
+  </div>
+
+  <div class="pagination-content">
+    <div class="page page1">
+      <p>Showing customers 1–5</p>
+    </div>
+    <div class="page page2">
+      <p>Showing customers 6–10</p>
+    </div>
+    <div class="page page3">
+      <p>Page 3 (placeholder)</p>
+    </div>
+  </div>
+</div>
+
+
+</div>
+
+<!-- Popup Reset -->
+<input type="checkbox" id="resetPopup" hidden>
+<div class="popup">
+  <label for="resetPopup" class="overlay"></label>
+  <div class="popup-box">
+    <h3>Password Reset</h3>
+    <p>The customer's password has been successfully reset.</p>
+    <label for="resetPopup" class="btn close-btn">OK</label>
+  </div>
+</div>
+
+<!-- Popup Lock -->
+<input type="checkbox" id="lockPopup" hidden>
+<div class="popup">
+  <label for="lockPopup" class="overlay"></label>
+  <div class="popup-box">
+    <h3>Account Locked</h3>
+    <p>The customer's account has been locked successfully.</p>
+    <label for="lockPopup" class="btn close-btn">OK</label>
+  </div>
+</div>
+
+<!-- Popup Unlock -->
+<input type="checkbox" id="unlockPopup" hidden>
+<div class="popup">
+  <label for="unlockPopup" class="overlay"></label>
+  <div class="popup-box">
+    <h3>Account Unlocked</h3>
+    <p>The customer's account has been successfully unlocked.</p>
+    <label for="unlockPopup" class="btn close-btn">OK</label>
+  </div>
+</div>
+
+
+  <!-- Popup chi tiết dùng chung -->
+  <input type="checkbox" id="view" hidden>
+  <div class="user-detail">
+    <label for="view" class="overlay"></label>
+    <div class="detail-box">
+      <h3>Customer Details</h3>
+      <p><strong>Name:</strong> Demo Customer</p>
+      <p><strong>Email:</strong> demo@example.com</p>
+      <p><strong>Phone:</strong> +84 900 123 456</p>
+      <p><strong>Address:</strong> 123 Demo Street, District 1, HCMC</p>
+      <label for="view" class="btn close-btn">Close</label>
+    </div>
+  </div>
+</section>
+
     <!-- Settings -->
     <section id="settings" class="section">
       <header><h1>System Settings</h1></header>
