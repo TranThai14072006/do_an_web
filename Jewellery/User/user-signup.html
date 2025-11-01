@@ -147,7 +147,7 @@
         <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Re-enter password" required>
       </div>
 
-      <button type="submit" class="btn-register">Register</button>
+      <button type="button" class="btn-register" id="registerBtn">Register</button>
 
       <div class="login-link">
         Already have an account? <a href="login.html">Login here</a>
@@ -156,16 +156,18 @@
   </div>
 
   <script>
-    // Kiểm tra mật khẩu trùng khớp
-    document.querySelector("form").addEventListener("submit", function(e) {
-      const pass = document.getElementById("password").value;
-      const confirm = document.getElementById("confirmPassword").value;
-      if (pass !== confirm) {
-        e.preventDefault();
-        alert("Passwords do not match!");
-      }
-    });
-  </script>
+  document.getElementById("registerBtn").addEventListener("click", function() {
+    const pass = document.getElementById("password").value;
+    const confirm = document.getElementById("confirmPassword").value;
+
+    if (pass !== confirm) {
+      alert("Passwords do not match!");
+    } else {
+      // Khi mật khẩu trùng khớp -> chuyển sang trang index_profile.html
+      window.location.href = "../index_profile.html";
+    }
+  });
+</script>
 
 </body>
 </html>
