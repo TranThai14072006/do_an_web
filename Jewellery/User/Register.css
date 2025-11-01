@@ -82,6 +82,7 @@ body {
   font-size: 14.5px;
   border-radius: 8px;
   margin-top: 12px;
+  margin-bottom: 20px;
   transition: all 0.3s ease;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
@@ -98,7 +99,7 @@ body {
 /* LINK LOGIN */
 .login-link {
   text-align: center;
-  margin-top: 15px;
+  margin-top: 20px;
   font-size: 13px;
   font-family: 'Poppins', sans-serif;
 }
