@@ -135,6 +135,7 @@ body {
   max-width: 1100px;
   margin: 100px auto;
   flex-wrap: wrap;
+  position: relative;
 }
 
 /* ====== PRODUCT IMAGE ====== */
@@ -374,8 +375,79 @@ body {
   pointer-events: none;
 }
 
-/* ====== RESPONSIVE CHO HIỆU ỨNG ====== */
+/* ====== BACK BUTTON ====== */
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: #fff;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 50%;
+  font-size: 20px;
+  width: 38px;
+  height: 38px;
+  line-height: 34px;
+  text-align: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.back-btn:hover {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(142, 75, 0, 0.4);
+  transform: scale(1.1);
+}
+
+.back-button {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--grey-color);
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.back-button:hover {
+  color: var(--primary-color);
+}
+
+/* ====== RESPONSIVE ====== */
 @media (max-width: 768px) {
+  body {
+    padding: 20px;
+  }
+
+  .product-detail {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 25px;
+  }
+
+  .product-image img {
+    max-width: 90%;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .add-to-cart, .buy-now {
+    width: 100%;
+  }
+
+  .cart-notification {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
   .product-image:hover img {
     transform: none;
     filter: none;
@@ -387,3 +459,4 @@ body {
     letter-spacing: 0.5px;
   }
 }
+
