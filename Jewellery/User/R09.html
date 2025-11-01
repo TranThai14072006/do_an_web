@@ -19,6 +19,25 @@
 
   <!-- HACK CSS: checkbox để bật số lượng -->
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
+  <button class="back-btn" onclick="window.history.back()">←</button>
+
+  <!-- CART NOTIFICATION -->
+  <div class="cart-notification" id="cart-notification">
+    <div class="notification-content">
+      <div class="notification-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="notification-text">
+        <h3>Added to cart!</h3>
+        <p>The product has been added to your shopping cart.</p>
+      </div>
+      <button class="close-notification" onclick="closeNotification()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- PRODUCT DETAIL -->
   <div class="product-detail">
     <div class="product-image">
       <img src="../images/R009.jpg" alt="Miracle Queen CZ Ring">
@@ -41,8 +60,24 @@
         </select>
       </div>
 
-      <!-- Back Button -->
-      <a href="Product.html" class="back-button">Back</a>
+      <ul class="product-specs">
+        <li><span>Material:</span> <span>925 Sterling Silver, Platinum-Plated</span></li>
+        <li><span>Design:</span> <span>Queen crown motif, elegant and feminine</span></li>
+        <li><span>Stone:</span> <span>Cubic Zirconia (CZ)</span></li>
+        <li><span>Color:</span> <span>Platinum / White</span></li>
+        <li><span>Brand:</span> <span>ThirtySix Jewellery</span></li>
+      </ul>
+
+      <div class="action-buttons">
+        <label for="add-cart-checkbox" class="add-to-cart" onclick="showNotification()">
+          <i class="fas fa-shopping-cart"></i>
+          Add to cart
+        </label>
+        <a href="#" class="buy-now">
+          <i class="fas fa-bolt"></i>
+          Buy now
+        </a>
+      </div>
     </div>
   </div>
 

@@ -19,6 +19,23 @@
 
   <!-- HACK CSS: checkbox để bật số lượng -->
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
+  <button class="back-btn" onclick="window.history.back()">←</button>
+
+  <!-- THÔNG BÁO THÊM VÀO GIỎ HÀNG -->
+  <div class="cart-notification" id="cart-notification">
+    <div class="notification-content">
+      <div class="notification-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="notification-text">
+        <h3>Added to cart!</h3>
+        <p>The product has been added to your shopping cart.</p>
+      </div>
+      <button class="close-notification" onclick="closeNotification()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
 
   <div class="product-detail">
     <div class="product-image">
@@ -70,10 +87,6 @@
         </a>
       </div>
 
-      <a href="Product.html" class="back-button">
-        <i class="fas fa-arrow-left"></i>
-        Back to Products
-      </a>
     </div>
   </div>
 
