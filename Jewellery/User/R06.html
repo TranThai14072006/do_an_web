@@ -6,10 +6,9 @@
   <title>Winston Anchor Ring</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="pr_detail.css">
-  
 </head>
-<body>
 
+<body>
   <!-- ICON GIỎ HÀNG -->
   <div class="cart-icon">
     <a href="Jewelry-cart.html" class="cart has-count" data-count="1" id="cart-icon">
@@ -21,7 +20,23 @@
   <!-- HACK CSS: checkbox để bật số lượng -->
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
   <button class="back-btn" onclick="window.history.back()">←</button>
-  
+
+  <!-- THÔNG BÁO THÊM VÀO GIỎ HÀNG -->
+  <div class="cart-notification" id="cart-notification">
+    <div class="notification-content">
+      <div class="notification-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="notification-text">
+        <h3>Added to cart!</h3>
+        <p>The product has been added to your shopping cart.</p>
+      </div>
+      <button class="close-notification" onclick="closeNotification()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
   <div class="product-detail">
     <div class="product-image">
       <img src="../images/R006.jpg" alt="Winston Anchor Ring">
@@ -55,7 +70,7 @@
 
       <!-- NÚT HÀNH ĐỘNG -->
       <div class="action-buttons">
-        <label for="add-cart-checkbox" class="add-to-cart">
+        <label for="add-cart-checkbox" class="add-to-cart" onclick="showNotification()">
           <i class="fas fa-shopping-cart"></i>
           Add to cart
         </label>
@@ -64,10 +79,23 @@
           Buy now
         </a>
       </div>
-
-      <!-- NÚT QUAY LẠI -->
     </div>
   </div>
+
+  <script>
+    function showNotification() {
+      const notification = document.getElementById('cart-notification');
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+
+    function closeNotification() {
+      const notification = document.getElementById('cart-notification');
+      notification.classList.remove('show');
+    }
+  </script>
 
 </body>
 </html>

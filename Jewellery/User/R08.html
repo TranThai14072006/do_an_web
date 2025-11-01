@@ -17,44 +17,80 @@
     </a>
   </div>
 
-  <!-- HACK CSS: checkbox to enable quantity -->
+  <!-- HACK CSS: checkbox để bật số lượng -->
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
   <button class="back-btn" onclick="window.history.back()">←</button>
-  
+
+  <!-- CART NOTIFICATION -->
+  <div class="cart-notification" id="cart-notification">
+    <div class="notification-content">
+      <div class="notification-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="notification-text">
+        <h3>Added to cart!</h3>
+        <p>The product has been added to your shopping cart.</p>
+      </div>
+      <button class="close-notification" onclick="closeNotification()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- PRODUCT DETAIL -->
   <div class="product-detail">
-    <!-- Product Image -->
     <div class="product-image">
       <img src="../images/R008.jpg" alt="Arielle Princess CZ Ring">
     </div>
 
-    <!-- Product Info -->
     <div class="product-info">
       <h1>Arielle Princess CZ Ring</h1>
       <p class="price">$1.250</p>
-
-      <!-- Product Description -->
       <p class="description">
-A delicate sterling silver ring adorned with sparkling CZ stones, inspired by Princess Arielle, elegant and feminine.
+        A delicate sterling silver ring adorned with sparkling CZ stones, inspired by Princess Arielle, elegant and feminine.
       </p>
 
-      <!-- Product Specs -->
-      <ul class="product-specs">
-        <li>Material: 925 Sterling Silver</li>
-        <li>Design: Princess motif, elegant and feminine</li>
-        <li>Stone: Cubic Zirconia (CZ)</li>
-        <li>Color: Silver and pink </li>
-        <li>Brand: ThirtySix Jewellery</li>
-      </ul>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <label for="add-cart-checkbox" class="add-to-cart">Add to cart</label>
-        <a href="#" class="buy-now">Buy now</a>
+      <div class="size-selection">
+        <h3>Select Ring Size</h3>
+        <select name="ring-size" id="ring-size">
+          <option value="5">Size 5 (12cm - 15cm)</option>
+          <option value="6">Size 6 (15cm - 18cm)</option>
+          <option value="7">Size 7 (18cm - 21cm)</option>
+          <option value="8">Size 8 (21cm - 24cm)</option>
+        </select>
       </div>
 
-      <!-- Back Button -->
+      <ul class="product-specs">
+        <li><span>Material:</span> <span>925 Sterling Silver</span></li>
+        <li><span>Design:</span> <span>Princess motif, elegant and feminine</span></li>
+        <li><span>Stone:</span> <span>Cubic Zirconia (CZ)</span></li>
+        <li><span>Color:</span> <span>Silver and pink</span></li>
+        <li><span>Brand:</span> <span>ThirtySix Jewellery</span></li>
+      </ul>
+
+      <div class="action-buttons">
+        <label for="add-cart-checkbox" class="add-to-cart" onclick="showNotification()">
+          <i class="fas fa-shopping-cart"></i>
+          Add to cart
+        </label>
+        <a href="#" class="buy-now">
+          <i class="fas fa-bolt"></i>
+          Buy now
+        </a>
+      </div>
     </div>
   </div>
+
+  <script>
+    function showNotification() {
+      const notification = document.getElementById('cart-notification');
+      notification.classList.add('show');
+      setTimeout(() => notification.classList.remove('show'), 3000);
+    }
+    function closeNotification() {
+      document.getElementById('cart-notification').classList.remove('show');
+    }
+  </script>
 
 </body>
 </html>
