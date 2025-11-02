@@ -22,6 +22,7 @@
   @keyframes fadeInBody { to { opacity:1; } }
   @keyframes fadeOutBody { to { opacity:0; } }
 
+  /* ===== HEADER ===== */
   .header {
     width:100%;
     background: rgba(255,255,255,0.4);
@@ -38,12 +39,28 @@
   .logo-link img:hover { transform: scale(1.1); }
 
   .header nav { margin-top:10px; }
-  .header nav a { text-decoration:none; color:#444; font-weight:600; margin:0 15px; transition: color 0.3s, transform 0.3s; }
-  .header nav a:hover, .header nav a.active { color:#b8860b; transform:scale(1.1); }
+  .header nav a {
+    text-decoration:none; color:#444; font-weight:600;
+    margin:0 15px; transition: color 0.3s, transform 0.3s;
+  }
+  .header nav a:hover, .header nav a.active {
+    color:#b8860b; transform:scale(1.1);
+  }
 
-  .back-button { position:absolute; top:20px; left:20px; font-size:32px; text-decoration:none; color:#0e0101; font-weight:bold; transition:color 0.3s, transform 0.3s; z-index:200; }
+  /* ===== BACK BUTTON ===== */
+  .back-button {
+    position:fixed;
+    top:20px; left:20px;
+    font-size:32px;
+    text-decoration:none;
+    color:#0e0101;
+    font-weight:bold;
+    transition:color 0.3s, transform 0.3s;
+    z-index:200;
+  }
   .back-button:hover { color:gold; transform:scale(1.1); }
 
+  /* ===== MAIN CONTENT ===== */
   .main-content {
     width:90%; max-width:800px;
     background: rgba(255,255,255,0.9);
@@ -53,13 +70,26 @@
     box-shadow:0 8px 25px rgba(0,0,0,0.15);
   }
 
-  .orders-section h2 { text-align:center; color:#b8860b; font-size:28px; margin-bottom:30px; }
+  .orders-section h2 {
+    text-align:center; color:#b8860b;
+    font-size:28px; margin-bottom:30px;
+  }
 
-  .orders-table { width:100%; border-collapse:collapse; font-size:16px; }
-  .orders-table th, .orders-table td { padding:12px; border-bottom:1px solid #ddd; text-align:center; }
-  .orders-table th { background: rgba(218,165,32,0.15); text-transform:uppercase; letter-spacing:0.5px; color:#333; }
+  .orders-table {
+    width:100%; border-collapse:collapse; font-size:16px;
+  }
+  .orders-table th, .orders-table td {
+    padding:12px; border-bottom:1px solid #ddd; text-align:center;
+  }
+  .orders-table th {
+    background: rgba(218,165,32,0.15);
+    text-transform:uppercase; letter-spacing:0.5px; color:#333;
+  }
 
-  .status { font-weight:600; padding:5px 10px; border-radius:8px; color:#fff; }
+  .status {
+    font-weight:600; padding:5px 10px;
+    border-radius:8px; color:#fff;
+  }
   .status.pending { background-color:#ff9800; }
   .status.completed { background-color:#4caf50; }
   .status.cancelled { background-color:#f44336; }
@@ -67,20 +97,25 @@
   .view-details-btn {
     padding:6px 12px;
     background-color:#b8860b;
-    color:#fff;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-weight:600;
+    color:#fff; border:none; border-radius:6px;
+    cursor:pointer; font-weight:600;
     transition: background-color 0.3s, transform 0.2s;
   }
-  .view-details-btn:hover { background-color:#ffdb58; color:#333; transform:scale(1.05); }
+  .view-details-btn:hover {
+    background-color:#ffdb58;
+    color:#333; transform:scale(1.05);
+  }
 
-  .footer { margin-top:40px; text-align:center; font-size:14px; color:#555; padding:20px 0; }
-
+  .footer {
+    margin-top:40px; text-align:center;
+    font-size:14px; color:#555; padding:20px 0;
+  }
 </style>
 </head>
 <body>
+
+<!-- NÚT BACK -->
+<a href="profile.html" class="back-button">&#8592;</a>
 
 <header class="header">
   <a href="../index.html" class="logo-link"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
@@ -137,6 +172,7 @@
 </footer>
 
 <script>
+  // Hiệu ứng chuyển trang khi bấm "View Details"
   const buttons = document.querySelectorAll(".view-details-btn");
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -144,6 +180,14 @@
       document.body.style.animation = "fadeOutBody 0.5s forwards";
       setTimeout(() => { window.location.href = url; }, 500);
     });
+  });
+
+  // Hiệu ứng chuyển trang cho nút Back
+  const backBtn = document.querySelector(".back-button");
+  backBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    document.body.style.animation = "fadeOutBody 0.5s forwards";
+    setTimeout(() => { window.location.href = backBtn.href; }, 500);
   });
 </script>
 
