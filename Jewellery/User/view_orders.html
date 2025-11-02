@@ -1,195 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>View Orders | 36 Jewelry</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; font-family:"Cormorant Garamond", serif; }
-  
-  body {
-    background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)),
-                url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    color:#333;
-    opacity:0;
-    animation: fadeInBody 1s forwards;
-  }
-
-  @keyframes fadeInBody { to { opacity:1; } }
-  @keyframes fadeOutBody { to { opacity:0; } }
-
-  /* ===== HEADER ===== */
-  .header {
-    width:100%;
-    background: rgba(255,255,255,0.4);
-    backdrop-filter: blur(10px);
-    padding:15px 0;
-    text-align:center;
-    box-shadow:0 2px 10px rgba(0,0,0,0.1);
-    position: sticky;
-    top:0;
-    z-index:100;
-  }
-
-  .logo-link img { height:50px; transition: transform 0.3s; }
-  .logo-link img:hover { transform: scale(1.1); }
-
-  .header nav { margin-top:10px; }
-  .header nav a {
-    text-decoration:none; color:#444; font-weight:600;
-    margin:0 15px; transition: color 0.3s, transform 0.3s;
-  }
-  .header nav a:hover, .header nav a.active {
-    color:#b8860b; transform:scale(1.1);
-  }
-
-  /* ===== BACK BUTTON ===== */
-  .back-button {
-    position:fixed;
-    top:20px; left:20px;
-    font-size:32px;
-    text-decoration:none;
-    color:#0e0101;
-    font-weight:bold;
-    transition:color 0.3s, transform 0.3s;
-    z-index:200;
-  }
-  .back-button:hover { color:gold; transform:scale(1.1); }
-
-  /* ===== MAIN CONTENT ===== */
-  .main-content {
-    width:90%; max-width:800px;
-    background: rgba(255,255,255,0.9);
-    border-radius:20px;
-    margin-top:60px;
-    padding:30px 40px;
-    box-shadow:0 8px 25px rgba(0,0,0,0.15);
-  }
-
-  .orders-section h2 {
-    text-align:center; color:#b8860b;
-    font-size:28px; margin-bottom:30px;
-  }
-
-  .orders-table {
-    width:100%; border-collapse:collapse; font-size:16px;
-  }
-  .orders-table th, .orders-table td {
-    padding:12px; border-bottom:1px solid #ddd; text-align:center;
-  }
-  .orders-table th {
-    background: rgba(218,165,32,0.15);
-    text-transform:uppercase; letter-spacing:0.5px; color:#333;
-  }
-
-  .status {
-    font-weight:600; padding:5px 10px;
-    border-radius:8px; color:#fff;
-  }
-  .status.pending { background-color:#ff9800; }
-  .status.completed { background-color:#4caf50; }
-  .status.cancelled { background-color:#f44336; }
-
-  .view-details-btn {
-    padding:6px 12px;
-    background-color:#b8860b;
-    color:#fff; border:none; border-radius:6px;
-    cursor:pointer; font-weight:600;
-    transition: background-color 0.3s, transform 0.2s;
-  }
-  .view-details-btn:hover {
-    background-color:#ffdb58;
-    color:#333; transform:scale(1.05);
-  }
-
-  .footer {
-    margin-top:40px; text-align:center;
-    font-size:14px; color:#555; padding:20px 0;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Orders | 36 Jewelry</title>
+  <link rel="stylesheet" href="view_orders.css">
 </head>
 <body>
 
-<!-- NÚT BACK -->
-<a href="profile.html" class="back-button">&#8592;</a>
+  <!-- Back button -->
+  <button class="back-btn" onclick="window.location.href='order_success.html'">←</button>
 
-<header class="header">
-  <a href="../index.html" class="logo-link"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
-  <nav>
-    <a href="../index_profile.html">Home</a>
-    <a href="Product.html">Product</a>
-    <a href="Jewelry-cart.html">Cart</a>
-    <a href="view-orders.html" class="active">Orders</a>
-  </nav>
-</header>
+  <!-- HEADER -->
+  <header class="header">
+    <a href="../index.html" class="logo-link"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
+    <nav>
+      <a href="../index_profile.html">Home</a>
+      <a href="profile.html">Profile</a>
+      
+    </nav>
+  </header>
 
-<main class="main-content">
-  <section class="orders-section">
-    <h2>Your Orders</h2>
-    <table class="orders-table">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Date</th>
-          <th>Total</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>#1001</td>
-          <td>2025-10-01</td>
-          <td>$125.00</td>
-          <td><span class="status completed">Completed</span></td>
-          <td><button class="view-details-btn" data-url="view_details.html">View Details</button></td>
-        </tr>
-        <tr>
-          <td>#1002</td>
-          <td>2025-10-05</td>
-          <td>$120.00</td>
-          <td><span class="status pending">Pending</span></td>
-          <td><button class="view-details-btn" data-url="view_details.html">View Details</button></td>
-        </tr>
-        <tr>
-          <td>#1003</td>
-          <td>2025-10-10</td>
-          <td>$80.00</td>
-          <td><span class="status cancelled">Cancelled</span></td>
-          <td><button class="view-details-btn" data-url="view_details.html">View Details</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-</main>
+  <!-- MAIN CONTENT -->
+  <main class="orders-container">
+    <h2>Your Recent Orders</h2>
+    <p class="subtitle">Here are the items you’ve recently purchased with 36 Jewelry.</p>
 
-<footer class="footer">
-  <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
-</footer>
+    <div class="order-card">
+      <div class="order-header">
+        <span>Order ID: <strong>#ORD10245</strong></span>
+        <span>Date: <strong>Nov 2, 2025</strong></span>
+        <span>Status: <strong class="status success">Delivered</strong></span>
+      </div>
+      <table class="order-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="product-info">
+              <img src="../images/R001.jpg" alt="Ula Opal Teardrop Ring">
+              <span>Ula Opal Teardrop Ring</span>
+            </td>
+            <td>$59.96</td>
+            <td>1</td>
+            <td>$59.96</td>
+          </tr>
+          <tr>
+            <td class="product-info">
+              <img src="../images/R003.jpg" alt="Platinum Clover Charm Ring">
+              <span>Platinum Clover Charm Ring</span>
+            </td>
+            <td>$1,950</td>
+            <td>1</td>
+            <td>$1,950</td>
+          </tr>
+          <tr>
+            <td class="product-info">
+              <img src="../images/R007.jpg" alt="Paisley Moissanite Ring">
+              <span>Paisley Moissanite Ring</span>
+            </td>
+            <td>$1,380</td>
+            <td>1</td>
+            <td>$1,380</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="order-total">Order Total: <strong>$3,389.96</strong></p>
+    </div>
 
-<script>
-  // Hiệu ứng chuyển trang khi bấm "View Details"
-  const buttons = document.querySelectorAll(".view-details-btn");
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const url = btn.dataset.url;
-      document.body.style.animation = "fadeOutBody 0.5s forwards";
-      setTimeout(() => { window.location.href = url; }, 500);
-    });
-  });
+    <div class="order-card">
+      <div class="order-header">
+        <span>Order ID: <strong>#ORD10230</strong></span>
+        <span>Date: <strong>Oct 28, 2025</strong></span>
+        <span>Status: <strong class="status pending">Pending</strong></span>
+      </div>
+      <table class="order-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="product-info">
+              <img src="../images/R008.jpg" alt="Golden Leaf Diamond Ring">
+              <span>Golden Leaf Diamond Ring</span>
+            </td>
+            <td>$2,120</td>
+            <td>1</td>
+            <td>$2,120</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="order-total">Order Total: <strong>$2,120.00</strong></p>
+    </div>
+  </main>
 
-  // Hiệu ứng chuyển trang cho nút Back
-  const backBtn = document.querySelector(".back-button");
-  backBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    document.body.style.animation = "fadeOutBody 0.5s forwards";
-    setTimeout(() => { window.location.href = backBtn.href; }, 500);
-  });
-</script>
+  <footer class="footer">
+    <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
+  </footer>
 
 </body>
 </html>
