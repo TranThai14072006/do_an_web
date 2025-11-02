@@ -3,60 +3,57 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Products - Male</title>
+  <title>Products</title>
   <link rel="stylesheet" href="../style.css">
-  <link rel="stylesheet" href="style_product.css">
+  <link rel="stylesheet" href="Product.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="hompage bg-accent-light">
-<!-- header (trimmed) -->
-<div class="right-block col-md-5 col-sm-4">
-          <nav class="navbar justify-content-end">
-            <div class="user-items">
-              <ul class="list-unstyled content-light d-flex align-items-center m-0">
-                <li>
-                  <i class="icon icon-user"></i>
-                  <a href="profile.html" class="text-uppercase item-anchor">Profile</a>
+<body class="homepage bg-accent-light">
 
-                </li>
-                <li class="search-item">
-                  <div class="search-bar">
-                    <form action="search.html" class="search-form d-flex no-margin">
-                      <i class="icon icon-search"></i>
-                      <input type="text" placeholder="SEARCH.." name="search"
-                        class="title-placeholder no-margin text-light ">
-                    </form>
-                  </div>
-                </li>
-                <li>
-                  <a href="#" class="like">
-                    <i class="icon icon-like"></i>
-                  </a>
-                </li>
-                <li>
-                  <a href="User/Login3.html" class="cart for-buy">
-                    <i class="icon icon-shopping-cart"></i>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </nav>
-        </div>
+<!-- HEADER -->
+<header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="../index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+    </div>
+    <div class="center">
+      <a href="../index.html">
+        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" placeholder="Search products...">
+        <button onclick="window.location.href='search.html'">
+  <i class="fas fa-search"></i>
+</button>
 
+      </div>
+    </div>
+    <div class="right">
+      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
+</header>
 
 <section id="page-banner" class="padding-large no-padding-top position-relative">
   <div class="page-container">
-    <h2 class="section-title">Products - Male</h2>
     
-  <nav class="filter-nav">
-    <a href="product.html" class="">All</a>
-    <a href="product_male.html" class="active">Male</a>
-    <a href="product_female.html" class="">Female</a>
-    <a href="product_unisex.html" class="">Unisex</a>
-  </nav>
-<button class="filter-button"onclick="window.location.href='advanced_search.html'">Filter</button>
-    <div class="products-grid">
+    
+    <nav class="filter-nav">
+      <a href="product.html" >All</a>
+      <a href="product_male.html"class="active">Male</a>
+      <a href="product_female.html">Female</a>
+      <a href="product_unisex.html">Unisex</a>
+    </nav>
 
-      <article class="product-card">
+    <button class="filter-button" onclick="window.location.href='advanced_search.html'">
+      <i class="fas fa-filter"></i> Filter
+    </button>
+
+    <div class="products-grid">
+ 
+
+<article class="product-card">
   <a href="R02.html" class="product-card-link">
     <div class="image-holder">
       <img src="../images/R002.jpg" alt="Kane Moissanite Ring" class="product-image">
@@ -64,10 +61,13 @@
     <h3 class="product-title">Kane Moissanite Ring</h3>
     <span class="product-price">$1.371</span>
   </a>
-  <a href="#" class="btn-add">Add to Cart</a>
+  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
+
 </article>
 
-      <article class="product-card">
+ 
+
+<article class="product-card">
   <a href="R06.html" class="product-card-link">
     <div class="image-holder">
       <img src="../images/R006.jpg" alt="Winston Anchor Ring" class="product-image">
@@ -75,55 +75,99 @@
     <h3 class="product-title">Winston Anchor Ring</h3>
     <span class="product-price">$1.850</span>
   </a>
-  <a href="#" class="btn-add">Add to Cart</a>
+ <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
+
 </article>
 
+
+
     </div>
-  </div>
-</section>
-<!-- footer (trimmed) -->
+       <div class="pagination">
+        <a href="#" class="disabled"><</a>
+        <a href="#" class="active">1</a>
+        <a href="#">2</a>
+        <a href="#">3</a>
+        <a href="#">></a>
+      </div>
+    </div>
+
+  
+
+<!-- FOOTER -->
 <footer id="footer" class="overflow-hidden">
   <div class="container mt-5">
-    <div class="row">
-      <div class="footer-top-area">
-        <div class="row d-flex flex-wrap justify-content-between">
-          <div class="col-lg-3 col-sm-6">
-            <div class="footer-menu menu-001">
-              <img src="images/dark-logo.png" alt="logo">
-              <p>Questions? Contact us at <a href="mailto:yourinfo@gmail.com">yourinfo@gmail.com</a></p>
-            </div>
+    <div class="footer-top-area">
+      <div class="row d-flex flex-wrap justify-content-between">
+        <div class="col-lg-3 col-sm-6">
+          <div class="footer-menu menu-001">
+            <img src="../images/36-logo.png" alt="logo">
+            <p>Questions? Contact us at <a href="mailto:yourinfo@gmail.com">yourinfo@gmail.com</a></p>
           </div>
-          <div class="col-lg-2 col-sm-6">
-            <div class="footer-menu menu-002">
-              <h5 class="widget-title">Quick Links</h5>
-              <ul class="menu-list list-unstyled text-uppercase">
-                <li class="menu-item"><a href="index.html">Home</a></li>
-                <li class="menu-item"><a href="product.html">Products</a></li>
-                <li class="menu-item"><a href="#">Contact</a></li>
-              </ul>
-            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+          <div class="footer-menu menu-002">
+            <h5 class="widget-title">Quick Links</h5>
+            <ul class="menu-list list-unstyled text-uppercase">
+              <li class="menu-item"><a href="index.html">Home</a></li>
+              <li class="menu-item"><a href="product.html">Products</a></li>
+              <li class="menu-item"><a href="#">Contact</a></li>
+            </ul>
           </div>
-          <div class="col-lg-3 col-sm-6">
-            <div class="footer-menu text-uppercase menu-003">
-              <h5 class="widget-title">Help & Info</h5>
-              <ul class="menu-list list-unstyled">
-                <li class="menu-item"><a href="#">Shipping</a></li>
-                <li class="menu-item"><a href="#">Returns</a></li>
-                <li class="menu-item"><a href="#">Faqs</a></li>
-              </ul>
-            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="footer-menu text-uppercase menu-003">
+            <h5 class="widget-title">Help & Info</h5>
+            <ul class="menu-list list-unstyled">
+              <li class="menu-item"><a href="#">Shipping</a></li>
+              <li class="menu-item"><a href="#">Returns</a></li>
+              <li class="menu-item"><a href="#">Faqs</a></li>
+            </ul>
           </div>
-          <div class="col-lg-3 col-sm-6">
-            <div class="footer-menu contact-item menu-004">
-              <h5 class="widget-title">Contact Us</h5>
-              <p>If you need support? Call +55 111 222 333</p>
-            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="footer-menu contact-item menu-004">
+            <h5 class="widget-title">Contact Us</h5>
+            <p>If you need support? Call +55 111 222 333</p>
           </div>
         </div>
       </div>
     </div>
   </div>
 </footer>
+<!-- THÔNG BÁO THÊM VÀO GIỎ HÀNG -->
+<div class="cart-notification" id="cart-notification">
+  <div class="notification-content">
+    <div class="notification-icon">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    <div class="notification-text">
+      <h3>Added to cart!</h3>
+      <p>The product has been added to your shopping cart.</p>
+    </div>
+    <button class="close-notification" onclick="closeNotification()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+<script>
+function showNotification(event) {
+  event.preventDefault(); // ❌ chặn nhảy trang
+
+  const notification = document.getElementById('cart-notification');
+  notification.classList.add('show');
+
+  // Tự động ẩn sau 3 giây
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, 3000);
+}
+
+function closeNotification() {
+  const notification = document.getElementById('cart-notification');
+  notification.classList.remove('show');
+}
+</script>
+
 
 </body>
 </html>

@@ -233,21 +233,7 @@ body{
   .search-box input{font-size:14px}
 }
 
-/* ---- small helpers so product grid won't be broken if nhap.css used alone ---- */
-.page-container{
-  max-width:var(--max-width);
-  margin:0 auto;
-  padding:0 16px;
-}
-.section-title {
-  font-size: 38px;            /* to hơn (28px → 38px) */
-  text-align: center;
-  margin: 26px 0 20px;
-  font-weight: 700;           /* đậm hơn */
-  color: var(--dark);
-  letter-spacing: 1px;        /* giãn nhẹ chữ cho sang */
-  
-}
+
 
 
 /* product grid minimal fallback (if not defined elsewhere) */
@@ -302,11 +288,47 @@ body{
 
 
 /* Pagination basic */
-.pagination{display:flex; justify-content:center; gap:10px; margin:28px 0 56px}
-.pagination a{display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; text-decoration:none; color:var(--dark); border:1px solid rgba(0,0,0,0.06)}
-.pagination a.active, .pagination a:hover{background:var(--primary); color:#fff; border-color:var(--primary)}
-.pagination a.disabled{opacity:.45; pointer-events:none}
+/* Pagination trên nền vàng */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 28px 0 56px;
+}
 
+.pagination a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    text-decoration: none;
+    color: #333; /* chữ hơi đậm trên nền vàng */
+    background: #f6f6f6; /* nền nhạt để nổi trên vàng */
+    border: 1px solid rgba(0,0,0,0.1);
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.pagination a.active {
+    background: #111;  /* nền đậm cho active */
+    color: #fff;       /* chữ trắng */
+    border-color: #111;
+}
+
+.pagination a:hover {
+    background: #333;  /* hover nền đậm */
+    color: #fff;       /* chữ trắng khi hover */
+}
+
+.pagination a.disabled {
+    opacity: 1;               /* bỏ mờ hoàn toàn */
+    pointer-events: none;     /* vẫn không bấm được */
+    background: #f0f0f0;      /* nền nhạt hơn active/hover */
+    color: #888;              /* chữ hơi tối, rõ nhưng vẫn nhận diện disabled */
+    border-color: #ccc;       /* viền nhạt hơn */
+}
 /* accessibility focus */
 .back-btn:focus, .icon-link:focus, .search-box button:focus, .btn-add:focus{
   outline:3px solid rgba(186,134,11,0.18);
@@ -314,13 +336,25 @@ body{
 }
 
 /* end of nhap.css */
+/* FILTER NAV - nền đen, chữ trắng, hiệu ứng vàng */
+/* NAV FILTER - nền đen, nút nổi bật */
 .filter-nav {
-  
-    justify-content: center;
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
     margin-bottom: 20px;
     align-items: center;
+    
+    /* CÁCH FULL WIDTH ĐƠN GIẢN */
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    background-color: var(--accent);
+    padding: 10px 0;
+    gap: 10px;
 }
 
 .filter-nav a {
@@ -363,6 +397,7 @@ body{
 h3.product-title {
     margin: 5px;
 }
+
 
 .product-title {
     font-size: 18px;
@@ -451,4 +486,109 @@ h3.product-title {
 .close-notification:hover {
   background: var(--dark-color);
   transform: scale(1.1);
+}
+/* FOOTER CHUNG */
+#footer {
+  background-color: #000; /* nền đen */
+  color: #fff;            /* chữ trắng */
+  padding: 40px 16px;     /* khoảng cách bên trong */
+  font-size: 14px;
+}
+
+/* Tiêu đề trong footer */
+#footer .widget-title {
+  color: #fff;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+/* Link trong footer */
+#footer a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* Hover link đổi màu vàng đồng bộ với primary */
+#footer a:hover {
+  color: var(--primary);
+}
+
+/* Nếu có menu list */
+#footer .menu-list li {
+  margin-bottom: 8px;
+}
+
+/* Nếu có hình ảnh logo */
+#footer img {
+  max-width: 150px;
+  margin-bottom: 10px;
+}
+
+/* Footer responsive */
+@media (max-width: 768px) {
+  #footer {
+    text-align: center;
+  }
+  #footer .row {
+    justify-content: center;
+  }
+}
+.page-container {
+  width: 100vw;                /* toàn bộ chiều ngang viewport */
+  min-height: 100vh;           /* chiều cao toàn màn hình */
+  padding: 0;                  /* bỏ padding */
+  margin: 0;                   /* bỏ căn giữa */
+  
+  /* Background ảnh full */
+  background-image: url('../images/Banner3-2.jpg');
+  background-size: cover;       /* phủ hết container */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* ảnh cố định khi scroll */
+
+  color: #fff;                  /* chữ nổi bật trên ảnh */
+  position: relative;
+  z-index: 0;
+}
+
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* tối đa 4 cột trên desktop */
+  gap: 30px;
+  margin-top: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+  max-width: 1400px; /* chiều rộng tối đa cho grid */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive: giảm số cột khi màn hình nhỏ */
+@media (max-width: 1200px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr); /* 3 cột */
+  }
+}
+
+@media (max-width: 900px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 cột */
+  }
+}
+
+@media (max-width: 600px) {
+  .products-grid {
+    grid-template-columns: 1fr; /* 1 cột */
+  }
+}
+/*hiện*/
+.header-container {
+    width: 100%;
+    position: sticky;  /* dính trên cùng */
+    top: 0;
+    z-index: 1000;    /* cao hơn nội dung nhưng thấp hơn filter-nav nếu muốn */
+    background-color: #fff; /* nền logo/search-bar */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* optional: bóng nhẹ */
 }
