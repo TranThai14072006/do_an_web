@@ -1,176 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Inventory Management</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stocking Management - Luxury Jewelry</title>
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #fafafa;
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      display: flex;
+      background: #f3f3f3;
       color: #333;
+      min-height: 100vh;
     }
 
-    .container {
-      width: 90%;
-      max-width: 950px;
-      margin: 30px auto;
-      background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
     }
 
-    h2 {
+    .logo {
       text-align: center;
-      color: #b8942d;
+      margin-bottom: 30px;
     }
 
-    .filters {
+    .logo img {
+      width: 80px;
+      border-radius: 50%;
+    }
+
+    .logo h2 {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .menu a {
+      display: block;
+      padding: 12px;
+      color: #f8ce86;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .menu a:hover,
+    .menu a.active {
+      background-color: #f8ce86;
+      color: #8e4b00;
+    }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 25px;
+    }
+
+    h1 {
+      color: #8e4b00;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .tab {
+      padding: 10px 18px;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .tab.active {
+      color: #8e4b00;
+      border-bottom-color: #8e4b00;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    /* Search form */
+    .search-form {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 20px;
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
-      margin-bottom: 20px;
+      gap: 1rem;
+      align-items: flex-end;
     }
 
-    .filters div {
-      margin: 5px 0;
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 180px;
     }
 
     label {
-      font-weight: 600;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 6px;
     }
 
     input, select {
-      padding: 5px 8px;
+      padding: 10px;
       border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-left: 5px;
+      border-radius: 6px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
     }
 
-    button {
-      background: #d4af37;
-      color: white;
+    input:focus, select:focus {
+      border-color: #8e4b00;
+    }
+
+    .btn {
+      display: inline-block;
+      background-color: #8e4b00;
+      color: #f8ce86;
       border: none;
-      padding: 6px 12px;
-      border-radius: 5px;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-weight: bold;
       cursor: pointer;
       transition: 0.3s;
     }
 
-    button:hover {
-      background: #b8962f;
+    .btn:hover {
+      background-color: #f8ce86;
+      color: #8e4b00;
     }
 
+    .btn.secondary {
+      background: #ccc;
+      color: #333;
+    }
+
+    .btn.secondary:hover {
+      background: #aaa;
+    }
+
+    /* Full-width table */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
 
     th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ccc;
+      padding: 14px 16px;
       text-align: center;
+      font-size: 15px;
+      border-bottom: 1px solid #f0e2d0;
     }
 
-    .low-stock {
-      color: red;
-      font-weight: bold;
+    th {
+      background: linear-gradient(195deg, #8e4b00, #a3670b);
+      color: #f8ce86;
+      font-weight: 600;
+      letter-spacing: 0.3px;
     }
 
-    .section-title {
-      color: #b8942d;
-      margin-top: 30px;
-      border-bottom: 2px solid #d4af37;
-      padding-bottom: 5px;
+    tr:hover td {
+      background: #f9f2e7;
     }
 
-    .note {
+    /* Status badges */
+    .status-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .status-normal { background-color: #e8f5e9; color: #2e7d32; }
+    .status-warning { background-color: #fff8e1; color: #f57c00; }
+    .status-danger { background-color: #ffebee; color: #c62828; }
+
+    /* Alert section */
+    .alert-section {
       background: #fffbe6;
-      border-left: 4px solid #d4af37;
-      padding: 10px;
-      border-radius: 5px;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-     
-    .detail {
-        background: #f9f9f9;
-        padding: 15px;
-        border-radius: 10px;
-        margin-top: 25px;
-        display: none; /* Ẩn mặc định */
+      border-left: 4px solid #8e4b00;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      border-radius: 6px;
     }
 
-    .detail:target {
-        display: block; 
+    .alert-title {
+      font-weight: 600;
+      color: #8e4b00;
+      margin-bottom: 0.5rem;
     }
-
-    .btn {
-        background: #d4af37;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 5px;
-        cursor: pointer;
-        text-decoration: none; /* bỏ gạch chân */
-        transition: 0.3s;
-    }
-
-    .btn:hover {
-        background: #b8962f;
-    }
-
-
-    .bottom-action {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 20px;
-    }
-
-    #report-detail:target ~ .bottom-action {
-        display: none;
-    }
-
-    #stock_lookup:target ~ .bottom-action {
-        display: none;
-    }
-
-
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h2>Inventory Management</h2>
-
-    <!-- Tra cứu sản phẩm -->
-    <h3 class="section-title">Stock Lookup</h3>
-    <div class="filters">
-      <div>
-        <label>Product Name:</label>
-        <input type="text" placeholder="e.g. Gold Ring">
-      </div>
-      <div>
-        <label>Category:</label>
-        <select>
-          <option>All</option>
-          <option>Ring</option>
-          <option>Necklace</option>
-          <option>Bracelet</option>
-          <option>Earring</option>
-        </select>
-      </div>
-      <div>
-        <label>As of Date:</label>
-        <input type="date">
-      </div>
-      <a href="#stock_lookup" class="btn">Search</a>
+  <div class="sidebar">
+    <div class="logo">
+      <img src="../images/Admin_login.jpg" alt="Admin Logo">
+      <h2>Luxury Jewelry Admin</h2>
     </div>
 
-    <table>
-      <thead>
+    <div class="menu">
+      <a href="Administration_menu.html#products">Jewelry List</a>
+      <a href="Administration_menu.html#product-manage">Product Management</a>
+      <a href="Administration_menu.html#users">Customers</a>
+      <a href="import_management.html">Import Management</a>
+      <a href="Administration_menu.html#stock">Stocking</a>
+      <a href="Administration_menu.html#settings">Settings</a>
+    </div>
+  </div>
+
+  <main>
+    <h1>Stocking Management</h1>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="stock-lookup">Stock Lookup</div>
+      <div class="tab" data-tab="stock-alert">Low Stock Alert</div>
+      <div class="tab" data-tab="stock-report">Import - Export - Balance Report</div>
+    </div>
+
+    <!-- Tab 1 -->
+    <div class="tab-content active" id="stock-lookup">
+      <form class="search-form">
+        <div class="form-group">
+          <label>Product Name</label>
+          <input type="text" placeholder="Enter product name...">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select>
+            <option>All</option>
+            <option>Ring</option>
+            <option>Necklace</option>
+            <option>Bracelet</option>
+            <option>Earring</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>As of Date</label>
+          <input type="date">
+        </div>
+        <button type="button" class="btn">Search</button>
+        <button type="reset" class="btn secondary">Reset</button>
+      </form>
+
+      <table>
         <tr>
           <th>Product Code</th>
           <th>Product Name</th>
@@ -178,62 +291,96 @@
           <th>Stock Quantity</th>
           <th>Status</th>
         </tr>
-      </thead>
-      <tbody>
         <tr>
           <td>JW001</td>
           <td>Diamond Ring</td>
           <td>Ring</td>
           <td>25</td>
-          <td>In Stock</td>
+          <td><span class="status-badge status-normal">In Stock</span></td>
         </tr>
         <tr>
           <td>JW002</td>
           <td>Gold Necklace</td>
           <td>Necklace</td>
           <td>5</td>
-          <td class="low-stock">Low Stock </td>
+          <td><span class="status-badge status-warning">Low Stock</span></td>
         </tr>
         <tr>
           <td>JW003</td>
           <td>Silver Bracelet</td>
           <td>Bracelet</td>
           <td>0</td>
-          <td class="low-stock">Out of Stock </td>
+          <td><span class="status-badge status-danger">Out of Stock</span></td>
         </tr>
-      </tbody>
-    </table>
+      </table>
 
-    <div class="note">
-       <b>Note:</b> Products with less than 10 items are considered <b>Low Stock</b>.
+      <div class="alert-section">
+        <div class="alert-title">Note:</div>
+        Products below 10 in quantity are considered low stock.
+      </div>
     </div>
 
-    <!-- Thống kê nhập - xuất - tồn -->
-    <h3 class="section-title">Import - Export - Balance Report</h3>
-    <div class="filters">
-      <div>
-        <label>From:</label>
-        <input type="date">
-        <label>To:</label>
-        <input type="date">
+    <!-- Tab 2 -->
+    <div class="tab-content" id="stock-alert">
+      <div class="alert-section">
+        <div class="alert-title">Low Stock Warning:</div>
+        There are items that need restocking soon.
       </div>
-      <div>
-        <label>Product:</label>
-        <input type="text" placeholder="e.g. Gold Ring">
-      </div>
-      <a href="#report-detail" class="btn">Search</a>
+
+      <table>
+        <tr>
+          <th>Product Code</th>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Stock</th>
+          <th>Minimum</th>
+          <th>Status</th>
+        </tr>
+        <tr>
+          <td>JW002</td>
+          <td>Gold Necklace</td>
+          <td>Necklace</td>
+          <td>5</td>
+          <td>10</td>
+          <td><span class="status-badge status-warning">Low Stock</span></td>
+        </tr>
+        <tr>
+          <td>JW003</td>
+          <td>Silver Bracelet</td>
+          <td>Bracelet</td>
+          <td>0</td>
+          <td>10</td>
+          <td><span class="status-badge status-danger">Out of Stock</span></td>
+        </tr>
+      </table>
     </div>
 
-    <table>
-      <thead>
+    <!-- Tab 3 -->
+    <div class="tab-content" id="stock-report">
+      <form class="search-form">
+        <div class="form-group">
+          <label>Product</label>
+          <input type="text" placeholder="Enter product name...">
+        </div>
+        <div class="form-group">
+          <label>From</label>
+          <input type="date">
+        </div>
+        <div class="form-group">
+          <label>To</label>
+          <input type="date">
+        </div>
+        <button type="button" class="btn">Search</button>
+        <button type="reset" class="btn secondary">Reset</button>
+      </form>
+
+      <table>
         <tr>
           <th>Date</th>
           <th>Import Qty</th>
           <th>Export Qty</th>
           <th>Balance</th>
         </tr>
-      </thead>
-      <tbody>
         <tr>
           <td>2025-10-20</td>
           <td>10</td>
@@ -252,77 +399,21 @@
           <td>8</td>
           <td>10</td>
         </tr>
-      </tbody>
-    </table>
-
-    <div class="note">
-      This section helps track the number of items imported, exported, and remaining over time.
+      </table>
     </div>
 
-    <div id="stock_lookup" class="detail">
-      <h3>Stock Details</h3>
-      <p><b>Product Code:</b>JW002</p>
-      <p><b>Product Name:</b>Gold Necklace</p>
-      <p><b>Category:</b>Necklace</p>
-      <p><b>Stock Quantity:</b>5</p>
-      <p><b>Status:</b> Low Stock</p>
+  </main>
 
-      <div style="text-align:center; margin-top:15px;">
-        <a href="Administration_menu.html#stock" class="btn">Back Menu</a>
-        <a href="stocking_management.html" class="btn">Back</a>
-      </div>
-    </div>
-
-    <div id="report-detail" class="detail">
-      <h3>Report Details</h3>
-          <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Import Qty</th>
-          <th>Export Qty</th>
-          <th>Balance</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>18-10-2025</td>
-          <td>12</td>
-          <td>17</td>
-          <td>14</td>
-        </tr>
-        <tr>
-          <td>16-10-2025</td>
-          <td>15</td>
-          <td>5</td>
-          <td>19</td>
-        </tr>
-        <tr>
-          <td>15-10-2025</td>
-          <td>7</td>
-          <td>8</td>
-          <td>9</td>
-        </tr>
-        <tr>
-          <td>12-10-2025</td>
-          <td>0</td>
-          <td>8</td>
-          <td>10</td>
-        </tr>
-      </tbody>
-    </table>
-
-      <div style="text-align:center; margin-top:15px;">
-        <a href="Administration_menu.html#stock" class="btn">Back Menu</a>
-        <a href="stocking_management.html" class="btn">Back</a>
-      </div>
-    </div>
-
-    <div class="bottom-action">
-        <a href="Administration_menu.html#stock" class="btn">Back Menu</a>
-    </div> 
-
-  </div>
-
+  <script>
+    // Tabs switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+  </script>
 </body>
 </html>
