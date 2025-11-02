@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Entry Form Management</title>
+  <style>
+    /* ====== RESET CƠ BẢN ====== */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+
+    body {
+      background-color: #f5f5f5;
+      color: #333;
+      display: flex;
+    }
+
+    /* ====== SIDEBAR ====== */
+    .sidebar {
+      width: 220px;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      height: 100vh;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 80px;
+      border-radius: 50%;
+    }
+
+    .logo h2 {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .menu a {
+      display: block;
+      padding: 12px;
+      color: #f8ce86;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .menu a:hover,
+    .menu a.active {
+      background-color: #f8ce86;
+      color: #8e4b00;
+    }
+
+    /* ====== MAIN ====== */
+    main {
+      flex: 1;
+      padding: 25px 40px;
+    }
+
+    header h1 {
+      font-size: 24px;
+      color: #8e4b00;
+      margin-bottom: 20px;
+    }
+
+    /* ====== NÚT THÊM ====== */
+    .user-actions {
+      margin-bottom: 20px;
+      text-align: right;
+    }
+
+    .btn {
+      background: linear-gradient(195deg, #8e4b00, #8e4b00);
+      color: #f8ce86;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: linear-gradient(195deg, #d8921b, #a3670b);
+      transform: translateY(-2px);
+    }
+
+    /* ====== PHẦN TÌM KIẾM ====== */
+    .search-section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-end;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      margin-bottom: 25px;
+    }
+
+    .search-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .search-label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .search-input {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    .btn-search,
+    .btn-reset {
+      height: 42px;
+      padding: 0 20px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      font-size: 15px;
+    }
+
+    .btn-search {
+      background-color: #8e4b00;
+      color: #fff;
+    }
+
+    .btn-reset {
+      background-color: #888;
+      color: #fff;
+    }
+
+    .btn-search:hover { background-color: #3d8b40; }
+    .btn-reset:hover { background-color: #666; }
+
+    /* ====== BẢNG DỮ LIỆU ====== */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    th {
+      background-color: #8e4b00;
+      color: #f8ce86;
+      font-weight: 600;
+      text-align: center;
+      padding: 14px 10px;
+      font-size: 15px;
+    }
+
+    td {
+      text-align: center;
+      padding: 12px 10px;
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+    }
+
+    tr:nth-child(even) td { background: #faf6f2; }
+    tr:hover td { background: #f3ede6; }
+
+    /* ====== NÚT XEM ====== */
+    .btn.small {
+      background-color: #f8ce86;
+      color: #f8ce86;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .btn.small:hover {
+      background-color: #8e4b00;
+      color: white;
+    }
+
+    /* ====== PHÂN TRANG ====== */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .pagination-btn {
+      border: 1px solid #ddd;
+      background: white;
+      color: #8e4b00;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-weight: bold;
+    }
+
+    .pagination-btn:hover {
+      background-color: #f8ce86;
+      color: #8e4b00;
+    }
+
+    .pagination-btn.active {
+      background-color: #8e4b00;
+      color: #fff;
+      border-color: #8e4b00;
+    }
+
+    .pagination-info {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">
+      <img src="../../images/Admin_login.jpg" alt="Admin Logo">
+      <h2>Luxury Jewelry Admin</h2>
+    </div>
+
+    <div class="menu">
+      <a href="../Administration_menu.html#products">Jewelry List</a>
+      <a href="../Administration_menu.html#product-manage">Product Management</a>
+      <a href="../Administration_menu.htm#users">Customers</a>
+      <a href="import_management.html">Import Management</a>
+      <a href="../Administration_menu.html#stock">Stocking</a>
+      <a href="../Administration_menu.html#setting">Settings</a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main>
+    <header><h1>Draft List</h1></header>
+
+    <div class="user-actions">
+      <a href="import_management.html" class="btn">Back</a>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-section">
+      <div class="search-group">
+        <label class="search-label">From date</label>
+        <input type="date" class="search-input">
+      </div>
+
+      <div class="search-group">
+        <label class="search-label">To date</label>
+        <input type="date" class="search-input">
+      </div>
+
+      <button class="btn-search">Search</button>
+      <button class="btn-reset">Reset</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="user-list">
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Order No.</th>
+            <th>Date</th>
+            <th>Quantity of products</th>
+            <th>Total value</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>IMP.001</td>
+            <td>01-10-2025</td>
+            <td>15</td>
+            <td>12.500 USD</td>
+            <td>
+                <a href="entry_form_detail.html" class="btn small">View</a>
+                <a href="edit_form.html" class="btn small">Edit</a>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>IMP.002</td>
+            <td>25-09-2025</td>
+            <td>8</td>
+            <td>8.750 USD</td>
+            <td>
+                <a href="entry_form_detail.html" class="btn small">View</a>
+                <a href="edit_form.html" class="btn small">Edit</a>
+            </td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>IMP.003</td>
+            <td>15-09-2025</td>
+            <td>12</td>
+            <td>15.200 USD</td>
+            <td>
+                <a href="entry_form_detail.html" class="btn small">View</a>
+                <a href="edit_form.html" class="btn small">Edit</a>
+            </td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>IMP.004</td>
+            <td>10-09-2025</td>
+            <td>20</td>
+            <td>18.500 USD</td>
+            <td>
+                <a href="entry_form_detail.html" class="btn small">View</a>
+                <a href="edit_form.html" class="btn small">Edit</a>
+            </td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>IMP.005</td>
+            <td>05-09-2025</td>
+            <td>6</td>
+            <td>7.800 USD</td>
+            <td>
+                <a href="entry_form_detail.html" class="btn small">View</a>
+                <a href="edit_form.html" class="btn small">Edit</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <button class="pagination-btn">&#10094;</button>
+      <button class="pagination-btn active">1</button>
+      <button class="pagination-btn">2</button>
+      <button class="pagination-btn">3</button>
+      <button class="pagination-btn">4</button>
+      <button class="pagination-btn">5</button>
+      <button class="pagination-btn">&#10095;</button>
+    </div>
+
+    <div class="pagination-info">Showing 1-5 of 25 Entry form</div>
+  </main>
+</body>
+</html>

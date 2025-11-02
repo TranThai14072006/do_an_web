@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Entry Form Management</title>
+  <title>Order Management</title>
   <style>
-    /* ====== RESET CƠ BẢN ====== */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
 
     body {
@@ -13,7 +12,7 @@
       display: flex;
     }
 
-    /* ====== SIDEBAR ====== */
+    /* SIDEBAR */
     .sidebar {
       width: 220px;
       background-color: #8e4b00;
@@ -56,7 +55,7 @@
       color: #8e4b00;
     }
 
-    /* ====== MAIN ====== */
+    /* MAIN */
     main {
       flex: 1;
       padding: 25px 40px;
@@ -68,12 +67,7 @@
       margin-bottom: 20px;
     }
 
-    /* ====== NÚT THÊM ====== */
-    .user-actions {
-      margin-bottom: 20px;
-      text-align: right;
-    }
-
+    /* BUTTONS */
     .btn {
       background: linear-gradient(195deg, #8e4b00, #8e4b00);
       color: #f8ce86;
@@ -91,7 +85,7 @@
       transform: translateY(-2px);
     }
 
-    /* ====== PHẦN TÌM KIẾM ====== */
+    /* SEARCH */
     .search-section {
       background: #fff;
       border-radius: 10px;
@@ -115,11 +109,15 @@
       margin-bottom: 6px;
     }
 
-    .search-input {
+    .search-input,
+    .search-input[type="date"],
+    .search-input select {
+      height: 42px;
       padding: 10px 12px;
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 15px;
+      width: 100%;
     }
 
     .btn-search,
@@ -133,20 +131,12 @@
       font-size: 15px;
     }
 
-    .btn-search {
-      background-color: #8e4b00;
-      color: #fff;
-    }
-
-    .btn-reset {
-      background-color: #888;
-      color: #fff;
-    }
-
+    .btn-search { background-color: #8e4b00; color: #fff; }
+    .btn-reset { background-color: #888; color: #fff; }
     .btn-search:hover { background-color: #3d8b40; }
     .btn-reset:hover { background-color: #666; }
 
-    /* ====== BẢNG DỮ LIỆU ====== */
+    /* TABLE */
     table {
       width: 100%;
       border-collapse: separate;
@@ -176,10 +166,9 @@
     tr:nth-child(even) td { background: #faf6f2; }
     tr:hover td { background: #f3ede6; }
 
-    /* ====== NÚT XEM ====== */
     .btn.small {
       background-color: #f8ce86;
-      color: #f8ce86;
+      color: #8e4b00;
       padding: 6px 12px;
       border-radius: 6px;
       text-decoration: none;
@@ -192,7 +181,20 @@
       color: white;
     }
 
-    /* ====== PHÂN TRANG ====== */
+    /* STATUS BADGE */
+    .status {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: capitalize;
+    }
+
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    .status-processed { background-color: #d1ecf1; color: #0c5460; }
+    .status-delivered { background-color: #d4edda; color: #155724; }
+    .status-cancelled { background-color: #f8d7da; color: #721c24; }
+
     .pagination {
       display: flex;
       justify-content: center;
@@ -230,35 +232,29 @@
       color: #666;
       margin-top: 10px;
     }
-
   </style>
 </head>
 <body>
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="logo">
-      <img src="../images/Admin_login.jpg" alt="Admin Logo">
+      <img src="../../images/Admin_login.jpg" alt="Admin Logo">
       <h2>Luxury Jewelry Admin</h2>
     </div>
 
     <div class="menu">
-      <a href="Administration_menu.html#products">Jewelry List</a>
-      <a href="Administration_menu.html#product-manage">Product Management</a>
-      <a href="Administration_menu.htm#users">Customers</a>
-      <a href="import_management.html">Import Management</a>
-      <a href="Administration_menu.html#stock">Stocking</a>
-      <a href="Administration_menu.html#setting">Settings</a>
+      <a href="../Administration_menu.html#products">Jewelry List</a>
+      <a href="../Administration_menu.html#product-manage">Product Management</a>
+      <a href="../Administration_menu.html#users">Customers</a>
+      <a href="order_management.html" class="active">Order Management</a>
+      <a href="../Administration_menu.html#stock">Stocking</a>
+      <a href="../Administration_menu.html#setting">Settings</a>
     </div>
   </div>
 
   <!-- MAIN -->
   <main>
-    <header><h1>Entry Form Management</h1></header>
-
-    <div class="user-actions">
-      <a href="add_entry_form.html" class="btn">Add entry form</a>
-      <a href="edit_entry_form.html" class="btn">Edit entry form</a>
-    </div>
+    <header><h1>Order Management</h1></header>
 
     <!-- SEARCH -->
     <div class="search-section">
@@ -272,6 +268,17 @@
         <input type="date" class="search-input">
       </div>
 
+      <div class="search-group">
+        <label class="search-label">Status</label>
+        <select class="search-input">
+          <option selected>All</option>
+          <option>Pending</option>
+          <option>Processed</option>
+          <option>Delivered</option>
+          <option>Cancelled</option>
+        </select>
+      </div>
+
       <button class="btn-search">Search</button>
       <button class="btn-reset">Reset</button>
     </div>
@@ -283,53 +290,26 @@
           <tr>
             <th>No.</th>
             <th>Order No.</th>
+            <th>Customer Name</th>
+            <th>Address</th>
+            <th>Phone Number</th>
             <th>Date</th>
-            <th>Quantity of products</th>
-            <th>Total value</th>
+            <th>Total Amount</th>
+            <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>1</td>
-            <td>ODR.001</td>
-            <td>01-10-2025</td>
-            <td>15</td>
-            <td>12.500 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>ODR.002</td>
-            <td>25-09-2025</td>
-            <td>8</td>
-            <td>8.750 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>ODR.003</td>
-            <td>15-09-2025</td>
-            <td>12</td>
-            <td>15.200 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>ODR.004</td>
-            <td>10-09-2025</td>
-            <td>20</td>
-            <td>18.500 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>5</td>
-            <td>ODR.005</td>
-            <td>05-09-2025</td>
-            <td>6</td>
-            <td>7.800 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
+          <tr><td>1</td><td>ODR.001</td><td>Sophia Nguyen</td><td>123 Le Loi, Q1, HCMC</td><td>0901 234 567</td><td>2025-10-01</td><td>12,500 USD</td><td><span class="status status-processed">Processed</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
+          <tr><td>2</td><td>ODR.002</td><td>Minh Tran</td><td>45 Vo Van Tan, Q3, HCMC</td><td>0938 456 789</td><td>2025-09-25</td><td>8,750 USD</td><td><span class="status status-delivered">Delivered</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
+          <tr><td>3</td><td>ODR.003</td><td>David Le</td><td>56 Hai Ba Trung, Hanoi</td><td>0912 987 654</td><td>2025-09-18</td><td>9,200 USD</td><td><span class="status status-pending">Pending</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
+          <tr><td>4</td><td>ODR.004</td><td>Emily Pham</td><td>22 Nguyen Hue, Q1, HCMC</td><td>0987 112 233</td><td>2025-09-10</td><td>15,400 USD</td><td><span class="status status-cancelled">Cancelled</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
+          <tr><td>5</td><td>ODR.005</td><td>Huy Dang</td><td>78 Le Duan, Da Nang</td><td>0909 654 321</td><td>2025-09-05</td><td>10,200 USD</td><td><span class="status status-delivered">Delivered</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
+          <tr><td>6</td><td>ODR.006</td><td>Anna Vu</td><td>14 Tran Phu, Hue</td><td>0935 111 222</td><td>2025-08-29</td><td>7,800 USD</td><td><span class="status status-processed">Processed</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
+          <tr><td>7</td><td>ODR.007</td><td>Thanh Ho</td><td>99 Nguyen Trai, HCMC</td><td>0902 222 333</td><td>2025-08-25</td><td>5,600 USD</td><td><span class="status status-pending">Pending</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
+          <tr><td>8</td><td>ODR.008</td><td>Mai Do</td><td>64 Pasteur, Q3, HCMC</td><td>0944 777 888</td><td>2025-08-20</td><td>11,400 USD</td><td><span class="status status-processed">Processed</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
+          <tr><td>9</td><td>ODR.009</td><td>Kevin Truong</td><td>11 Hoang Dieu, Hanoi</td><td>0988 999 000</td><td>2025-08-15</td><td>6,700 USD</td><td><span class="status status-delivered">Delivered</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
+          <tr><td>10</td><td>ODR.010</td><td>Lisa Nguyen</td><td>03 Nguyen Van Linh, Da Nang</td><td>0911 222 444</td><td>2025-08-10</td><td>13,200 USD</td><td><span class="status status-pending">Pending</span></td><td><a href="order_detail.html" class="btn small">View</a></td></tr>
         </tbody>
       </table>
     </div>
@@ -340,12 +320,10 @@
       <button class="pagination-btn active">1</button>
       <button class="pagination-btn">2</button>
       <button class="pagination-btn">3</button>
-      <button class="pagination-btn">4</button>
-      <button class="pagination-btn">5</button>
       <button class="pagination-btn">&#10095;</button>
     </div>
 
-    <div class="pagination-info">Showing 1-5 of 25 Entry form</div>
+    <div class="pagination-info">Showing 1–10 of 10 Orders</div>
   </main>
 </body>
 </html>
