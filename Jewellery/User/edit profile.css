@@ -1,5 +1,4 @@
-/* RESET */
-
+/* ===== RESET ===== */
 * {
   margin: 0;
   padding: 0;
@@ -7,20 +6,39 @@
   font-family: 'Cormorant Garamond', serif;
 }
 
-/* BACKGROUND */
+/* ===== BACKGROUND ===== */
 body {
   height: 100vh;
   background: url("../images/pfb11.jpg") no-repeat center center/cover;
-  background-attachment: fixed; /* giữ ảnh cố định khi cuộn */
-  background-size: cover;       /* ảnh full màn hình */
-  background-position: center;
+  background-attachment: fixed;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  animation: fadeInBody 1.2s ease;
 }
 
-/* CONTAINER */
+/* ===== BACK BUTTON ===== */
+.back-btn {
+  position: absolute;
+  top: 25px;
+  left: 30px;
+  text-decoration: none;
+  color: #12110e;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: color 0.3s, transform 0.3s;
+  animation: fadeSlideIn 1s ease;
+}
+
+.back-btn:hover {
+  color: gold;
+  transform: translateX(-5px) scale(1.05);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+
+/* ===== CONTAINER ===== */
 .edit-container {
   display: flex;
   justify-content: center;
@@ -28,39 +46,41 @@ body {
   width: 100%;
 }
 
-/* BOX TRONG SUỐT */
+/* ===== BOX ===== */
 .edit-box {
-  background: rgba(255, 255, 255, 0.15); /* trong suốt nhẹ */
-  backdrop-filter: blur(15px); /* làm mờ nền sau */
-  padding: 35px 40px;
-  border-radius: 18px;
-  width: 360px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  padding: 40px 45px;
+  border-radius: 20px;
+  width: 380px;
   text-align: center;
-  border: 2px solid rgba(212, 175, 55, 0.7); /* viền vàng ánh kim */
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(212, 175, 55, 0.7);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   color: #fff;
-  animation: fadeIn 0.8s ease;
+  animation: fadeSlideIn 1s ease;
 }
 
-/* LOGO */
+/* ===== LOGO ===== */
 .logo img {
-  width: 70px;
-  display: block;
-  margin: 0 auto 10px auto;
+  width: 75px;
+  margin-bottom: 10px;
+  animation: floatLogo 4s ease-in-out infinite;
 }
 
-/* TIÊU ĐỀ */
+/* ===== TITLE ===== */
 .edit-box h2 {
-  font-size: 22px;
-  color: #fff;
-  margin-bottom: 20px;
+  font-size: 24px;
+  color: #f8e7a2;
+  margin-bottom: 25px;
   font-weight: 600;
+  letter-spacing: 1px;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
 }
 
-/* INPUT GROUP */
+/* ===== INPUT GROUP ===== */
 .input-group {
   text-align: left;
-  margin-bottom: 15px;
+  margin-bottom: 18px;
 }
 
 .input-group label {
@@ -89,9 +109,10 @@ body {
 .input-group input:focus {
   border-color: #d4af37;
   background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
 }
 
-/* NÚT LƯU */
+/* ===== BUTTON ===== */
 .save-btn {
   width: 100%;
   padding: 12px;
@@ -102,16 +123,15 @@ body {
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: 0.3s;
 }
 
 .save-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.6);
 }
-/* 🌟 ANIMATIONS */
 
-/* Form xuất hiện mượt, hơi phóng nhẹ */
+/* ===== ANIMATIONS ===== */
 @keyframes fadeSlideIn {
   0% {
     opacity: 0;
@@ -129,22 +149,12 @@ body {
   }
 }
 
-/* Logo chuyển động nhẹ kiểu “floating” */
-@keyframes floatLogo {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
+@keyframes fadeInBody {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Hiệu ứng ánh sáng mờ nhấp nháy */
-@keyframes logoGlow {
-  0% {
-    filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.2));
-  }
-  100% {
-    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.8));
-  }
+@keyframes floatLogo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
