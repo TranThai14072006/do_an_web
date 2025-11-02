@@ -6,88 +6,153 @@
   <link rel="stylesheet" href="admin_function.css">
   <style>
     body { font-family: "Segoe UI", sans-serif; background: #fafafa; margin: 0; }
+
     .container {
       width: 80%;
-      max-width: 700px;
+      max-width: 900px;
       background: #fff;
       margin: 50px auto;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
     }
-    h2 { text-align: center; color: #b8942d; margin-bottom: 25px; }
-    .form-group { margin-bottom: 15px; }
+
+    .card-header {
+      background: linear-gradient(195deg, #f5e6ab, #eede9a);
+      padding: 14px 22px;
+      color: #3a3a3a;
+      font-weight: 700;
+      font-size: 17px;
+    }
+
+    .card-body { padding: 28px; }
+
+    .form-row { display:flex; flex-wrap:wrap; margin:0 -0.5rem; }
+    .form-col { flex:1; padding:0 0.5rem; min-width:260px; }
+
+    .form-group { margin-bottom: 1.3rem; }
     label { font-weight: bold; display: block; margin-bottom: 6px; }
+
     input, select, textarea {
-      width: 100%; padding: 8px 10px; border: 1px solid #ccc;
-      border-radius: 5px; font-size: 15px;
+      width: 100%; padding: 10px 12px; border: 1px solid #ccc;
+      border-radius: 6px; font-size: 15px;
     }
+
     textarea { resize: vertical; }
-    .form-actions { text-align: center; margin-top: 20px; }
-    .btn {
-      text-decoration: none; background: #d4af37; color: white;
-      padding: 10px 20px; border-radius: 5px; margin: 0 5px;
-      transition: 0.3s;
+
+    .form-actions {
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:25px;
     }
-    .btn:hover { background: #b8962f; }
+
+    .btn {
+      background: linear-gradient(135deg, #f5e6ab, #f5e7a0);
+      border:none;
+      padding:10px 18px;
+      border-radius:6px;
+      font-weight:600;
+      color:#3a3a3a;
+      cursor:pointer;
+      transition:0.25s;
+    }
+
+    .btn:hover {
+      background: linear-gradient(135deg, #ffdf3e, #f6c90e);
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <h2>Add Entry Form</h2>
-    <form>
-      <div class="form-group">
-        <label>Jewelry Type:</label>
-        <select>
-          <option>Ring</option>
-          <option>Necklace</option>
-          <option>Earring</option>
-          <option>Bracelet</option>
-        </select>
-      </div>
+    <div class="card-header">Add Entry Form</div>
+    <div class="card-body">
+      <form>
 
-      <div class="form-group">
-        <label>Stock Receipt Code:</label>
-        <input type="text">
-      </div>
+        <div class="form-row">
+          <div class="form-col">
+            <div class="form-group">
+              <label>Jewelry Type:</label>
+              <select>
+                <option>Ring</option>
+                <option>Necklace</option>
+                <option>Earring</option>
+                <option>Bracelet</option>
+              </select>
+            </div>
+          </div>
 
-      <div class="form-group">
-        <label>Product Code:</label>
-        <input type="text">
-      </div>
+          <div class="form-col">
+            <div class="form-group">
+              <label>Stock Receipt Code:</label>
+              <input type="text">
+            </div>
+          </div>
+        </div>
 
-        <label for="import-date">Import Date:</label>
-        <input type="date" id="import-date" name="import-date">
+        <div class="form-row">
+          <div class="form-col">
+            <div class="form-group">
+              <label>Product Code:</label>
+              <input type="text">
+            </div>
+          </div>
 
-      <div class="form-group">
-        <label>Product Name:</label>
-        <input type="text" >
-      </div>
+          <div class="form-col">
+            <div class="form-group">
+              <label for="import-date">Import Date:</label>
+              <input type="date" id="import-date" name="import-date">
+            </div>
+          </div>
+        </div>
 
-      <div class="form-group">
-        <label>COGS (USD):</label>
-        <input type="number" id="cogs"  oninput="updatePrice()">
-      </div>
+        <div class="form-row">
+          <div class="form-col">
+            <div class="form-group">
+              <label>Product Name:</label>
+              <input type="text">
+            </div>
+          </div>
 
-      <div class="form-group">
-        <label>Import Quantity:</label>
-        <input type="number" >
-      </div>
+          <div class="form-col">
+            <div class="form-group">
+              <label>COGS (USD):</label>
+              <input type="number" id="cogs">
+            </div>
+          </div>
+        </div>
 
-      <div class="form-group">
-        <label>Image File Name:</label>
-        <input type="text">
-      </div>
+        <div class="form-row">
+          <div class="form-col">
+            <div class="form-group">
+              <label>Import Quantity:</label>
+              <input type="number">
+            </div>
+          </div>
 
-      <div class="form-group">
-        <label>Description:</label>
-        <textarea rows="4" placeholder="Product Description..."></textarea>
-      </div>
-      <div class="form-actions">
-        <a href="Administration_menu.html#stock" class="btn">Save</a>
-        <a href="Administration_menu.html#stock" class="btn">Draft</a>
-      </div>
-    </form>
+          <div class="form-col">
+            <div class="form-group">
+              <label>Image File Name:</label>
+              <input type="text">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description:</label>
+          <textarea rows="4" placeholder="Product Description..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <a href="Administration_menu.html#stock" class="btn">Save</a>
+          <a href="Administration_menu.html#stock" class="btn">Draft</a>
+        </div>
+
+      </form>
+    </div>
   </div>
+
 </body>
 </html>
