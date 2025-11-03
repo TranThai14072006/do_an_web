@@ -7,30 +7,17 @@
   <link rel="stylesheet" href="profile.css">
 </head>
 <body>
-  <!-- ===== HEADER ===== -->
-<header class="header">
-  <div class="logo">
-    <img src="../images/36-logo.png" alt="36 Jewelry Logo">
-  </div>
-
-  <nav class="nav-icons">
-    <a href="../index_profile.html" class="nav-icon">Home</a>
-    <a href="profile.html" class="nav-icon active">Profile</a>
-    <a href="Jewelry-cart.html" class="nav-icon">Cart</a>
-  </nav>
-</header>
-
-
-  <!-- ===== PROFILE CONTENT ===== -->
   <div class="profile-container">
     <div class="profile-card">
+      <!-- Header -->
       <div class="profile-header">
         <div class="avatar-wrapper">
           <img src="../images/chocolat/ava.jpg" alt="User Avatar" class="avatar">
 
+          <!-- Nút đổi ảnh -->
           <form action="#" method="post" enctype="multipart/form-data" class="change-photo-form">
             <label for="avatar-upload" class="change-photo-label">Change Photo</label>
-
+            <input type="file" id="avatar-upload" name="avatar" accept="image/*">
           </form>
         </div>
 
@@ -38,6 +25,7 @@
         <p class="role">Member of 36 Jewelry</p>
       </div>
 
+      <!-- Body -->
       <div class="profile-body">
         <div class="info">
           <h3>Personal Information</h3>
@@ -56,6 +44,7 @@
         </div>
       </div>
 
+      <!-- Footer Buttons -->
       <div class="profile-footer">
         <div class="top-buttons">
           <button class="btn edit" onclick="window.location.href='edit profile.html'">Edit Profile</button>
@@ -64,7 +53,8 @@
         <button class="btn History" onclick="window.location.href='History.html'">History</button>
       </div>
 
-      <button class="back-btn" onclick="history.back()">←</button>
+      <!-- Back Button -->
+      <button class="back-btn" onclick="window.location.href='../index_profile.html'">←</button>
     </div>
   </div>
 </body>
