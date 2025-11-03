@@ -23,6 +23,9 @@
 <main class="main-content">
   <h2>Your Shopping Cart</h2>
 
+  <!-- Thông báo -->
+  <div id="alert-message" class="alert-message"></div>
+
   <table class="cart-table">
     <thead>
       <tr>
@@ -33,49 +36,95 @@
         <th>Action</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="cart-body">
       <tr>
         <td class="product-info">
           <img src="../images/R001.jpg" alt="Ula Opal Teardrop Ring" class="product-thumb">
           <span>Ula Opal Teardrop Ring</span>
         </td>
-        <td>$59.96</td>
+        <td class="price">$59.96</td>
         <td><input type="number" value="1" min="1"></td>
         <td class="item-total">$59.96</td>
-        <td><button class="view-details-btn" onclick="location.href='product-detail1.html'">View Details</button></td>
+        <td>
+          <button class="view-details-btn" onclick="location.href='product-detail1.html'">View</button>
+          <button class="remove-btn">Remove</button>
+        </td>
       </tr>
       <tr>
         <td class="product-info">
           <img src="../images/R003.jpg" alt="Platinum Clover Charm Ring" class="product-thumb">
           <span>Platinum Clover Charm Ring</span>
         </td>
-        <td>$1,950</td>
+        <td class="price">$1950</td>
         <td><input type="number" value="1" min="1"></td>
-        <td class="item-total">$1,950</td>
-        <td><button class="view-details-btn" onclick="location.href='product-detail2.html'">View Details</button></td>
+        <td class="item-total">$1950</td>
+        <td>
+          <button class="view-details-btn" onclick="location.href='product-detail2.html'">View</button>
+          <button class="remove-btn">Remove</button>
+        </td>
       </tr>
       <tr>
         <td class="product-info">
           <img src="../images/R007.jpg" alt="Paisley Moissanite Ring" class="product-thumb">
           <span>Paisley Moissanite Ring</span>
         </td>
-        <td>$1,380</td>
+        <td class="price">$1380</td>
         <td><input type="number" value="1" min="1"></td>
-        <td class="item-total">$1,380</td>
-        <td><button class="view-details-btn" onclick="location.href='product-detail3.html'">View Details</button></td>
+        <td class="item-total">$1380</td>
+        <td>
+          <button class="view-details-btn" onclick="location.href='product-detail3.html'">View</button>
+          <button class="remove-btn">Remove</button>
+        </td>
       </tr>
     </tbody>
   </table>
 
-  <p class="total">Total: <strong>$3,389.96</strong></p>
+  <p class="total">Total: <strong id="cart-total">$3,389.96</strong></p>
 
   <a href="order_confirm.html" class="checkout-btn">Proceed to Checkout</a>
-
 </main>
 
 <footer class="footer">
   <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
 </footer>
+
+<script>
+function updateTotals() {
+  let total = 0;
+  document.querySelectorAll('#cart-body tr').forEach(row => {
+    const price = parseFloat(row.querySelector('.price').textContent.replace('$', '').replace(',', ''));
+    const qty = parseInt(row.querySelector('input').value);
+    const itemTotal = price * qty;
+    row.querySelector('.item-total').textContent = '$' + itemTotal.toLocaleString();
+    total += itemTotal;
+  });
+  document.getElementById('cart-total').textContent = '$' + total.toLocaleString();
+}
+
+// Hiện thông báo
+function showAlert(message) {
+  const alertBox = document.getElementById('alert-message');
+  alertBox.textContent = message;
+  alertBox.style.opacity = '1';
+  alertBox.style.transform = 'translateY(0)';
+  setTimeout(() => {
+    alertBox.style.opacity = '0';
+    alertBox.style.transform = 'translateY(-20px)';
+  }, 2000);
+}
+
+// Cập nhật khi đổi số lượng
+document.querySelectorAll('#cart-body input').forEach(input => {
+  input.addEventListener('input', updateTotals);
+});
+
+// Khi bấm Remove chỉ hiện thông báo, không xóa sản phẩm
+document.querySelectorAll('.remove-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    showAlert('🟢 Đã xóa sản phẩm khỏi giỏ hàng!');
+  });
+});
+</script>
 
 </body>
 </html>
