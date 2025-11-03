@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Entry Form Detail | Luxury Jewelry Admin</title>
+  <style>
+    /* ====== RESET ====== */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+
+    body {
+      background-color: #f5f5f5;
+      color: #333;
+      display: flex;
+    }
+
+    /* ====== SIDEBAR ====== */
+    .sidebar {
+      width: 220px;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 80px;
+      border-radius: 50%;
+    }
+
+    .logo h2 {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .menu a {
+      display: block;
+      padding: 12px;
+      color: #f8ce86;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .menu a:hover,
+    .menu a.active {
+      background-color: #f8ce86;
+      color: #8e4b00;
+    }
+
+    /* ====== MAIN ====== */
+    main {
+      flex: 1;
+      padding: 30px 40px;
+      margin-left: 220px;
+    }
+
+    header h1 {
+      font-size: 24px;
+      color: #8e4b00;
+      margin-bottom: 20px;
+    }
+
+    /* ====== CARD ====== */
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+
+    .card-header {
+      font-weight: bold;
+      font-size: 18px;
+      color: #8e4b00;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #f1e4e1;
+      padding-bottom: 10px;
+    }
+
+    /* ====== INFO GRID ====== */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .info-item {
+      margin-bottom: 10px;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-size: 15px;
+    }
+
+    /* ====== TABLE ====== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-top: 20px;
+    }
+
+    th {
+      background-color: #8e4b00;
+      color: #f8ce86;
+      font-weight: 600;
+      text-align: center;
+      padding: 12px 10px;
+      font-size: 15px;
+    }
+
+    td {
+      text-align: center;
+      padding: 12px 10px;
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+    }
+
+    tr:nth-child(even) td { background: #faf6f2; }
+    tr:hover td { background: #f3ede6; }
+
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    .product-image {
+      width: 60px;
+      height: 60px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid #ddd;
+    }
+
+    /* ====== SUMMARY ====== */
+    .summary-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .summary-total {
+      font-weight: bold;
+      color: #8e4b00;
+      font-size: 16px;
+    }
+
+    /* ====== BUTTONS ====== */
+    .btn {
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #8e4b00;
+      color: #f8ce86;
+      border: none;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #a3670b;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary:hover {
+      background-color: #555;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    /* ====== STATUS BADGE ====== */
+    .status-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    .status-processed { background-color: #d1ecf1; color: #0c5460; }
+    .status-delivered { background-color: #d4edda; color: #155724; }
+    .status-cancelled { background-color: #f8d7da; color: #721c24; }
+
+    /* ====== STATUS FORM ====== */
+    .status-form {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .status-form label {
+      font-weight: 600;
+      color: #555;
+    }
+
+    .status-form select {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">
+      <img src="../../images/Admin_login.jpg" alt="Admin Logo">
+      <h2>Luxury Jewelry Admin</h2>
+    </div>
+
+    <div class="menu">
+      <a href="../Administration_menu.html#products">Jewelry List</a>
+      <a href="../Administration_menu.html#product-manage">Product Management</a>
+      <a href="entry_form_detail.html" class="active">Import Management</a>
+      <a href="../Order Manage/order_management.html" class="active">Order Management</a>
+      <a href="../Stock Manage/stocking_management.html">Stocking</a>
+      <a href="../Administration_menu.html#setting">Settings</a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main>
+    <header><h1>Order Detail - #ORD001</h1></header>
+
+    <div class="card">
+      <div class="card-header">Order Information</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="info-label">ENTRY FORM ID</div><div class="info-value">#IMP036</div></div>
+        <div class="info-item"><div class="info-label">Date</div><div class="info-value">01-10-2025</div></div>
+      </div>
+
+    <div class="card">
+      <div class="card-header">Product List</div>
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Product ID</th>
+            <th>Image</th>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Unit Price (USD)</th>
+            <th>Total (USD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>PR001</td><td><img src="../../images/R001.jpg" class="product-image"></td><td>Diamond Ring</td><td>1</td><td class="text-right">25,000,000</td><td class="text-right">25,000,000</td></tr>
+          <tr><td>2</td><td>PR002</td><td><img src="../../images/R002.jpg" class="product-image"></td><td>Gold Necklace</td><td>2</td><td class="text-right">12,000,000</td><td class="text-right">24,000,000</td></tr>
+          <tr><td>3</td><td>PR003</td><td><img src="../../images/R003.jpg" class="product-image"></td><td>Platinum Earrings</td><td>1</td><td class="text-right">9,500,000</td><td class="text-right">9,500,000</td></tr>
+          <tr><td>4</td><td>PR004</td><td><img src="../../images/R004.jpg" class="product-image"></td><td>Emerald Bracelet</td><td>1</td><td class="text-right">7,000,000</td><td class="text-right">7,000,000</td></tr>
+          <tr><td>5</td><td>PR005</td><td><img src="../../images/R005.jpg" class="product-image"></td><td>Ruby Ring</td><td>2</td><td class="text-right">13,000,000</td><td class="text-right">26,000,000</td></tr>
+          <tr><td>6</td><td>PR006</td><td><img src="../../images/R006.jpg" class="product-image"></td><td>Pearl Necklace</td><td>1</td><td class="text-right">8,000,000</td><td class="text-right">8,000,000</td></tr>
+          <tr><td>7</td><td>PR007</td><td><img src="../../images/R007.jpg" class="product-image"></td><td>Silver Anklet</td><td>1</td><td class="text-right">3,000,000</td><td class="text-right">3,000,000</td></tr>
+          <tr><td>8</td><td>PR008</td><td><img src="../../images/R008.jpg" class="product-image"></td><td>Rose Gold Pendant</td><td>1</td><td class="text-right">5,500,000</td><td class="text-right">5,500,000</td></tr>
+          <tr><td>9</td><td>PR009</td><td><img src="../../images/R009.jpg" class="product-image"></td><td>Topaz Earrings</td><td>2</td><td class="text-right">6,500,000</td><td class="text-right">13,000,000</td></tr>
+          <tr><td>10</td><td>PR010</td><td><img src="../../images/R010.jpg" class="product-image"></td><td>Platinum Wedding Band</td><td>1</td><td class="text-right">14,000,000</td><td class="text-right">14,000,000</td></tr>
+        </tbody>
+      </table>
+
+      <div class="summary-card">
+        <div class="summary-row"><span>Total Products:</span><span>10</span></div>
+        <div class="summary-row"><span>Total Quantity:</span><span>13</span></div>
+        <div class="summary-row summary-total"><span>Grand Total:</span><span>135,000,000 VNĐ</span></div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <a href="import_management.html" class="btn btn-secondary">Back</a>
+      <a href="#" class="btn btn-primary">Print Order</a>
+    </div>
+  </main>
+</body>
+</html>
