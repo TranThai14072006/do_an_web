@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,6 +123,7 @@
 </head>
 <body>
 
+
   <div class="register-box">
     <h2>Create Account</h2>
     <form action="#" method="post">
@@ -146,28 +146,23 @@
         <label for="confirmPassword" class="form-label">Confirm Password</label>
         <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Re-enter password" required>
       </div>
-      <button type="button" class="btn-register" id="registerBtn">Register</button>
 
-      <div class="login-link">
-        Already have an account? <a href="login.html">Login here</a>
-      </div>
+      <!-- Chuyển trang bằng thẻ a -->
+      <a href="../index_profile.html" class="btn-register">Register</a>
     </form>
   </div>
 
   <script>
-  document.getElementById("registerBtn").addEventListener("click", function() {
-    const pass = document.getElementById("password").value;
-    const confirm = document.getElementById("confirmPassword").value;
-
-    if (pass !== confirm) {
-      alert("Passwords do not match!");
-    } else {
-      // Khi mật khẩu trùng khớp -> chuyển sang trang index_profile.html
-      window.location.href = "../index_profile.html";
-    }
-  });
-</script>
-
+    // Kiểm tra mật khẩu trùng khớp
+    document.querySelector("form").addEventListener("submit", function(e) {
+      const pass = document.getElementById("password").value;
+      const confirm = document.getElementById("confirmPassword").value;
+      if (pass !== confirm) {
+        e.preventDefault();
+        alert("Passwords do not match!");
+      }
+    });
+  </script>
 
 </body>
 </html>
