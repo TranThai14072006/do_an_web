@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Checkout | 36 Jewelry</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Cormorant Garamond', serif;
+    }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cormorant Garamond', serif; }
-
-    body {   
-
+    body {
       background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)),
                   url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
       min-height: 100vh;
@@ -38,9 +41,7 @@
       transform: translateY(-20px);
       opacity: 0;
     }
-    @keyframes slideDown {
-      to { transform: translateY(0); opacity: 1; }
-    }
+    @keyframes slideDown { to { transform: translateY(0); opacity: 1; } }
 
     .header img.logo {
       height: 50px;
@@ -60,10 +61,10 @@
     }
     .header nav a:hover, .header nav a.active { color: #b8860b; transform: scale(1.1); }
 
-    /* Main content */
+    /* Main */
     .main-content {
       width: 90%;
-      max-width: 700px;
+      max-width: 750px;
       background: rgba(255,255,255,0.95);
       border-radius: 20px;
       margin-top: 40px;
@@ -73,10 +74,7 @@
       transform: translateY(20px);
       opacity: 0;
     }
-
-    @keyframes fadeSlideUp {
-      to { transform: translateY(0); opacity: 1; }
-    }
+    @keyframes fadeSlideUp { to { transform: translateY(0); opacity: 1; } }
 
     h2 {
       text-align: center;
@@ -106,9 +104,6 @@
     .form-check { display: inline-flex; align-items: center; gap: 5px; margin-right: 20px; }
     .form-check input { width: 18px; height: 18px; }
 
-    /* Hidden sections */
-    #newAddressSection { display: none; }
-
     /* Button */
     .btn-submit {
       text-decoration: none;
@@ -128,12 +123,29 @@
       color: #333;
     }
 
+    /* Profile info box */
+    .profile-info {
+      background: rgba(255, 250, 240, 0.9);
+      border: 1px solid #e0c97f;
+      border-radius: 15px;
+      padding: 20px 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    .profile-info h3 {
+      color: #b8860b;
+      margin-bottom: 10px;
+      font-size: 22px;
+      border-bottom: 1px solid #e0c97f;
+      padding-bottom: 8px;
+    }
+    .profile-info p { margin: 6px 0; font-size: 16px; }
+
     /* Footer */
     .footer { margin-top: 40px; text-align: center; font-size: 14px; color: #555; padding: 20px 0; }
 
     @media (max-width: 600px) {
       .main-content { padding: 25px; }
-      .header h1 { font-size: 28px; }
       .header img.logo { height: 45px; }
     }
   </style>
@@ -153,15 +165,19 @@
 
   <main class="main-content">
     <h2>Shipping Information</h2>
-    <form action="/submit-order" method="post">
+
+    
+
+    <!-- Form giao hàng -->
+    <form id="checkoutForm">
       <div class="form-group">
         <label for="name">Full Name</label>
-        <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+        <input type="text" id="name" name="name" placeholder="Enter your full name" required value="Quỳnh Như">
       </div>
 
       <div class="form-group">
         <label for="phone">Phone Number</label>
-        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required value="+84 912 345 678">
       </div>
 
       <div class="form-group">
@@ -179,12 +195,12 @@
       <div class="form-group" id="savedAddressSection">
         <label for="saved_address">Saved Address</label>
         <select id="saved_address" name="saved_address">
-          <option value="1">36 Trần Hưng Đạo, Quận 5</option>
+          <option value="1">36 Diamond Street, HCMC</option>
           <option value="2">45A Lê Duẩn, Quận 1</option>
         </select>
       </div>
 
-      <div class="form-group" id="newAddressSection">
+      <div class="form-group" id="newAddressSection" style="display:none;">
         <label for="c_address">New Address</label>
         <input type="text" id="c_address" name="c_address" placeholder="Enter your street address">
       </div>
@@ -207,20 +223,23 @@
   </footer>
 
   <script>
-    const savedAddressSection = document.getElementById("savedAddressSection");
-    const newAddressSection = document.getElementById("newAddressSection");
-    document.getElementsByName("addressOption").forEach(radio => {
-      radio.addEventListener("change", () => {
-        if(radio.value === "saved") {
-          savedAddressSection.style.display = "block";
-          newAddressSection.style.display = "none";
-        } else {
-          savedAddressSection.style.display = "none";
-          newAddressSection.style.display = "block";
-        }
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedAddressSection = document.getElementById("savedAddressSection");
+      const newAddressSection = document.getElementById("newAddressSection");
+      const radios = document.getElementsByName("addressOption");
+
+      radios.forEach(radio => {
+        radio.addEventListener("change", () => {
+          if (radio.value === "saved" && radio.checked) {
+            savedAddressSection.style.display = "block";
+            newAddressSection.style.display = "none";
+          } else if (radio.value === "new" && radio.checked) {
+            savedAddressSection.style.display = "none";
+            newAddressSection.style.display = "block";
+          }
+        });
       });
     });
   </script>
-
 </body>
 </html>
