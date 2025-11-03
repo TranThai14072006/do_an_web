@@ -158,8 +158,12 @@
       font-weight: bold;
       cursor: pointer;
       transition: 0.3s;
+      text-decoration: none;
     }
-
+       .btn.small {
+    padding: 6px 12px;
+    font-size: 14px;
+    }
     .btn:hover {
       background-color: #f8ce86;
       color: #8e4b00;
@@ -243,7 +247,7 @@
       <a href="../Administration_menu.html#product-manage">Product Management</a>
       <a href="../Administration_menu.html#users">Customers</a>
       <a href="../Import product manage/import_management.html">Import Management</a>
-      <a href="../Stock Manage/stocking_management.html">Stocking</a>
+      <a href="../Stock Manage/stocking_management.html">Stocking Mangement</a>
       <a href="../Administration_menu.html#settings">Settings</a>
     </div>
   </div>
@@ -279,7 +283,7 @@
           <label>As of Date</label>
           <input type="date">
         </div>
-        <button type="button" class="btn">Search</button>
+        <button type="button" class="btn" onclick="window.location.href = 'search_tab1.html'">Search</button>
         <button type="reset" class="btn secondary">Reset</button>
       </form>
 
@@ -312,6 +316,79 @@
           <td>0</td>
           <td><span class="status-badge status-danger">Out of Stock</span></td>
         </tr>
+
+        <tr>
+  <td>JW004</td>
+  <td>Pearl Earrings</td>
+  <td>Earrings</td>
+  <td>12</td>
+  <td><span class="status-badge status-normal">In Stock</span></td>
+</tr>
+<tr>
+  <td>JW005</td>
+  <td>Platinum Ring</td>
+  <td>Ring</td>
+  <td>3</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+<tr>
+  <td>JW006</td>
+  <td>Ruby Pendant</td>
+  <td>Necklace</td>
+  <td>0</td>
+  <td><span class="status-badge status-danger">Out of Stock</span></td>
+</tr>
+<tr>
+  <td>JW007</td>
+  <td>Gold Anklet</td>
+  <td>Anklet</td>
+  <td>15</td>
+  <td><span class="status-badge status-normal">In Stock</span></td>
+</tr>
+<tr>
+  <td>JW008</td>
+  <td>Sapphire Ring</td>
+  <td>Ring</td>
+  <td>8</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+<tr>
+  <td>JW009</td>
+  <td>Emerald Bracelet</td>
+  <td>Bracelet</td>
+  <td>20</td>
+  <td><span class="status-badge status-normal">In Stock</span></td>
+</tr>
+<tr>
+  <td>JW010</td>
+  <td>Silver Chain</td>
+  <td>Necklace</td>
+  <td>2</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+<tr>
+  <td>JW011</td>
+  <td>Diamond Earrings</td>
+  <td>Earrings</td>
+  <td>0</td>
+  <td><span class="status-badge status-danger">Out of Stock</span></td>
+</tr>
+<tr>
+  <td>JW012</td>
+  <td>Gold Bracelet</td>
+  <td>Bracelet</td>
+  <td>18</td>
+  <td><span class="status-badge status-normal">In Stock</span></td>
+</tr>
+<tr>
+  <td>JW013</td>
+  <td>Rose Gold Ring</td>
+  <td>Ring</td>
+  <td>6</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+
+
       </table>
 
       <div class="alert-section">
@@ -370,7 +447,7 @@
           <label>To</label>
           <input type="date">
         </div>
-        <button type="button" class="btn">Search</button>
+        <button type="button" class="btn" onclick="window.location.href = 'search_tab2.html'">Search</button>
         <button type="reset" class="btn secondary">Reset</button>
       </form>
 
@@ -380,25 +457,86 @@
           <th>Import Qty</th>
           <th>Export Qty</th>
           <th>Balance</th>
+          <th>Action</th>
         </tr>
         <tr>
           <td>2025-10-20</td>
           <td>10</td>
-          <td>2</td>
+          <td>4</td>
           <td>8</td>
+            <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
         </tr>
         <tr>
           <td>2025-10-22</td>
           <td>15</td>
           <td>5</td>
           <td>18</td>
+            <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
         </tr>
         <tr>
           <td>2025-10-25</td>
           <td>0</td>
           <td>8</td>
           <td>10</td>
+            <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
         </tr>
+        <tr>
+  <td>2025-10-27</td>
+  <td>12</td>
+  <td>3</td>
+  <td>9</td>
+  <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
+</tr>
+<tr>
+  <td>2025-10-28</td>
+  <td>5</td>
+  <td>0</td>
+  <td>5</td>
+  <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
+</tr>
+<tr>
+  <td>2025-10-29</td>
+  <td>0</td>
+  <td>6</td>
+  <td>4</td>
+  <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
+</tr>
+<tr>
+  <td>2025-10-30</td>
+  <td>20</td>
+  <td>10</td>
+  <td>14</td>
+  <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
+</tr>
+<tr>
+  <td>2025-11-01</td>
+  <td>8</td>
+  <td>2</td>
+  <td>12</td>
+  <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
+</tr>
+<tr>
+  <td>2025-11-02</td>
+  <td>10</td>
+  <td>5</td>
+  <td>17</td>
+  <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
+</tr>
+<tr>
+  <td>2025-11-03</td>
+  <td>0</td>
+  <td>4</td>
+  <td>13</td>
+  <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
+</tr>
+<tr>
+  <td>2025-11-04</td>
+  <td>7</td>
+  <td>1</td>
+  <td>19</td>
+  <td><a href="IEP_report_detail.html" class="btn small">View</a></td>
+</tr>
+
       </table>
     </div>
 
