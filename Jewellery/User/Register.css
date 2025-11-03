@@ -1,131 +1,202 @@
-/* ==============================
-   STYLE.CSS – REGISTER PAGE (Luxury Yellow + Elegant Font)
-============================== */
+/* ==========================================================
+   REGISTER PAGE – LUXURY GOLD + GLASS EFFECT (MATCH PROFILE PAGE)
+   ========================================================== */
 
-
+/* ===== FONT & RESET ===== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'Cormorant Garamond', serif;
 }
 
-/* TOÀN TRANG */
+html, body {
+  height: 100%;
+}
+
+/* ===== BODY ===== */
 body {
-  font-family: 'Poppins', sans-serif;
-  height: 80h;
+  min-height: 100%;
+  background: 
+    linear-gradient(to bottom, rgba(255, 245, 215, 0.35), rgba(0, 0, 0, 0.65)),
+    url('../images/registerbg.jpg') no-repeat center center / cover;
+  background-attachment: fixed;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: 
-    linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)),
-    url('../images/registerbg.jpg') no-repeat center 40% / cover;
+  overflow-x: hidden;
+  animation: fadeIn 1s ease;
 }
 
-/* KHUNG NGOÀI CÙNG */
+/* ==========================================================
+   REGISTER BOX
+   ========================================================== */
 .register-container {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
+  padding: 40px 20px;
 }
 
-/* KHUNG FORM */
 .register-box {
-  background: rgba(255, 255, 255, 0.92);
-  padding: 40px 35px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   width: 400px;
-  max-width: 90%;
-  backdrop-filter: blur(8px);
-  border: 2px solid #eede9a;   /* viền vàng sang */
-  animation: fadeIn 0.7s ease;
-}
-
-/* TIÊU ĐỀ */
-.register-box h2 {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
   text-align: center;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #3a3a3a;
-  letter-spacing: 0.5px;
+  padding: 40px 35px;
+  color: #fff9e6;
+  animation: cardUp 0.9s ease forwards;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* INPUT */
-.form-control {
-  border-radius: 8px;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  font-size: 13.5px;
-  font-family: 'Poppins', sans-serif;
-  color: #333;
+.register-box:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 35px rgba(255, 215, 0, 0.25);
 }
 
+/* ===== TITLE ===== */
+.register-box h2 {
+  font-size: 28px;
+  color: #fff9e6;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.5);
+  padding-bottom: 10px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+/* ==========================================================
+   FORM ELEMENTS
+   ========================================================== */
 .form-label {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  margin-bottom: 4px;
-  color: #444;
+  display: block;
+  color: #f8e7b6;
+  font-size: 15px;
+  text-align: left;
+  margin-bottom: 6px;
 }
 
-/* NÚT REGISTER – vàng sang */
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 10px;
+  outline: none;
+  margin-bottom: 18px;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.02);
+}
+
+/* ==========================================================
+   BUTTON REGISTER
+   ========================================================== */
 .btn-register {
   width: 100%;
-  background: linear-gradient(135deg, #f5e6ab, #f5e7a0);
+  padding: 12px 0;
+  background: #d4af37;
+  color: #fff;
   border: none;
-  color: #3a3a3a;
-  padding: 10px;
-  font-size: 14.5px;
-  border-radius: 8px;
-  margin-top: 12px;
-  margin-bottom: 20px;
-  transition: all 0.3s ease;
-  font-family: 'Poppins', sans-serif;
+  border-radius: 10px;
   font-weight: 600;
-  letter-spacing: 0.3px;
-  box-shadow: 0 3px 12px rgba(129, 107, 20, 0.4);
+  font-size: 17px;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 6px 18px rgba(183, 149, 11, 0.18);
 }
 
 .btn-register:hover {
-  background: linear-gradient(135deg, #ffdf3e, #f6c90e);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(76, 63, 14, 0.5);
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.35);
+  background: #ffde59;
+  color: #222;
 }
 
-/* LINK LOGIN */
+/* ==========================================================
+   LOGIN LINK
+   ========================================================== */
 .login-link {
-  text-align: center;
   margin-top: 20px;
-  font-size: 13px;
-  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  color: #f5e6b3;
 }
 
 .login-link a {
-  color: #c59c07;
-  text-decoration: none;
+  color: #ffd700;
   font-weight: 600;
+  text-decoration: none;
+  transition: color 0.25s ease, text-shadow 0.25s ease;
 }
 
 .login-link a:hover {
-  text-decoration: underline;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
 }
 
-/* HIỆU ỨNG */
+/* ==========================================================
+   BACK BUTTON
+   ========================================================== */
+.back-btn {
+  position: fixed;
+  top: 40px;
+  left: 25px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,215,0,0.75);
+  background: rgba(255,255,255,0.08);
+  color: #f8ce86;
+  font-size: 20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+  transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+  z-index: 1000;
+}
+.back-btn:hover {
+  background: rgba(255,215,0,0.22);
+  color: #fff;
+  transform: translateX(-4px) scale(1.08);
+  box-shadow: 0 0 18px rgba(255,215,0,0.45);
+}
+
+/* ==========================================================
+   ANIMATIONS
+   ========================================================== */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* RESPONSIVE */
+@keyframes cardUp {
+  from { opacity: 0; transform: translateY(25px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
 @media (max-width: 480px) {
   .register-box {
     width: 85%;
-    padding: 22px;
+    padding: 30px 25px;
   }
   .register-box h2 {
-    font-size: 20px;
+    font-size: 22px;
   }
 }
