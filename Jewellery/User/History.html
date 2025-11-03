@@ -5,131 +5,197 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>View Orders | 36 Jewelry</title>
 <style>
+  /* ===== RESET ===== */
   * { margin:0; padding:0; box-sizing:border-box; font-family:"Cormorant Garamond", serif; }
-  
+
+  /* ===== BODY ===== */
   body {
     background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)),
                 url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    color:#333;
-    opacity:0;
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #333;
+    opacity: 0;
     animation: fadeInBody 1s forwards;
+    overflow-x: hidden;
+    overflow-y: auto; /* Cho phép cuộn dọc */
+    padding-top: 110px; /* Tránh header che nội dung */
   }
 
   @keyframes fadeInBody { to { opacity:1; } }
   @keyframes fadeOutBody { to { opacity:0; } }
 
-  /* ===== HEADER ===== */
+  /* ===== HEADER (36 JEWELRY STYLE) ===== */
   .header {
-    width:100%;
-    background: rgba(255,255,255,0.4);
-    backdrop-filter: blur(10px);
-    padding:15px 0;
-    text-align:center;
-    box-shadow:0 2px 10px rgba(0,0,0,0.1);
-    position: sticky;
-    top:0;
-    z-index:100;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 80px;
+    padding: 0 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    animation: headerFadeIn 0.8s ease-in-out;
   }
 
-  .logo-link img { height:50px; transition: transform 0.3s; }
-  .logo-link img:hover { transform: scale(1.1); }
-
-  .header nav { margin-top:10px; }
-  .header nav a {
-    text-decoration:none; color:#444; font-weight:600;
-    margin:0 15px; transition: color 0.3s, transform 0.3s;
+  .logo img {
+    height: 55px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.45));
+    transition: transform 0.3s ease, filter 0.3s ease;
   }
-  .header nav a:hover, .header nav a.active {
-    color:#b8860b; transform:scale(1.1);
+  .logo img:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.7));
+  }
+
+  .nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 45px;
+  }
+
+  .nav-icon {
+    font-size: 20px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #f3dba5;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease, transform 0.2s ease, border-color 0.3s;
+    padding-bottom: 3px;
+  }
+
+  .nav-icon:hover {
+    color: #ffd700;
+    transform: translateY(-2px);
+  }
+
+  .nav-icon.active {
+    color: #fff;
+    border-bottom: 2px solid #ffd700;
+  }
+
+  @keyframes headerFadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity:1; transform: translateY(0); }
   }
 
   /* ===== BACK BUTTON ===== */
   .back-button {
-    position:fixed;
-    top:20px; left:20px;
-    font-size:32px;
-    text-decoration:none;
-    color:#0e0101;
-    font-weight:bold;
-    transition:color 0.3s, transform 0.3s;
-    z-index:200;
+    position: fixed;
+    top: 100px;
+    left: 25px;
+    font-size: 32px;
+    text-decoration: none;
+    color: #0e0101;
+    font-weight: bold;
+    transition: color 0.3s, transform 0.3s;
+    z-index: 200;
   }
-  .back-button:hover { color:gold; transform:scale(1.1); }
+  .back-button:hover { color: gold; transform: scale(1.1); }
 
   /* ===== MAIN CONTENT ===== */
   .main-content {
-    width:90%; max-width:800px;
-    background: rgba(255,255,255,0.9);
-    border-radius:20px;
-    margin-top:60px;
-    padding:30px 40px;
-    box-shadow:0 8px 25px rgba(0,0,0,0.15);
+    width: 90%;
+    max-width: 800px;
+    background: rgba(255,255,255,0.92);
+    border-radius: 20px;
+    margin: 40px auto;
+    padding: 30px 40px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
   }
 
   .orders-section h2 {
-    text-align:center; color:#b8860b;
-    font-size:28px; margin-bottom:30px;
+    text-align: center;
+    color: #b8860b;
+    font-size: 28px;
+    margin-bottom: 30px;
   }
 
   .orders-table {
-    width:100%; border-collapse:collapse; font-size:16px;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
   }
+
   .orders-table th, .orders-table td {
-    padding:12px; border-bottom:1px solid #ddd; text-align:center;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
   }
+
   .orders-table th {
     background: rgba(218,165,32,0.15);
-    text-transform:uppercase; letter-spacing:0.5px; color:#333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #333;
   }
 
   .status {
-    font-weight:600; padding:5px 10px;
-    border-radius:8px; color:#fff;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 8px;
+    color: #fff;
   }
-  .status.pending { background-color:#ff9800; }
-  .status.completed { background-color:#4caf50; }
-  .status.cancelled { background-color:#f44336; }
+  .status.pending { background-color: #ff9800; }
+  .status.completed { background-color: #4caf50; }
+  .status.cancelled { background-color: #f44336; }
 
   .view-details-btn {
-    padding:6px 12px;
-    background-color:#b8860b;
-    color:#fff; border:none; border-radius:6px;
-    cursor:pointer; font-weight:600;
+    padding: 6px 12px;
+    background-color: #b8860b;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
     transition: background-color 0.3s, transform 0.2s;
   }
   .view-details-btn:hover {
-    background-color:#ffdb58;
-    color:#333; transform:scale(1.05);
+    background-color: #ffdb58;
+    color: #333;
+    transform: scale(1.05);
   }
 
   .footer {
-    margin-top:40px; text-align:center;
-    font-size:14px; color:#555; padding:20px 0;
+    margin-top: 40px;
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+    padding: 20px 0;
   }
 </style>
 </head>
 <body>
 
 <!-- NÚT BACK -->
-<a href="profile.html" class="back-button">&#8592;</a>
+<a href="#" class="back-button">←</a>
 
+
+<!-- ===== HEADER ===== -->
 <header class="header">
-  <a href="../index.html" class="logo-link"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
-  <nav>
-    <a href="../index_profile.html">Home</a>
-    <a href="Product.html">Product</a>
-    <a href="Jewelry-cart.html">Cart</a>
-    <a href="History.html" class="active">History</a>
+  <div class="logo">
+    <a href="../index_profile.html"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
+  </div>
+  <nav class="nav-icons">
+    <a href="../index_profile.html" class="nav-icon">Home</a>
+    <a href="Product.html" class="nav-icon">Product</a>
+    <a href="Jewelry-cart.html" class="nav-icon">Cart</a>
+    <a href="History.html" class="nav-icon active">History</a>
+    <a href="profile.html" class="nav-icon">Profile</a>
   </nav>
 </header>
 
+<!-- ===== MAIN CONTENT ===== -->
 <main class="main-content">
   <section class="orders-section">
-    <h2> Orders History</h2>
+    <h2>Orders History</h2>
     <table class="orders-table">
       <thead>
         <tr>
@@ -184,12 +250,15 @@
 
   // Hiệu ứng chuyển trang cho nút Back
   const backBtn = document.querySelector(".back-button");
-  backBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    document.body.style.animation = "fadeOutBody 0.5s forwards";
-    setTimeout(() => { window.location.href = backBtn.href; }, 500);
-  });
+  if (backBtn) {
+    backBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.body.style.animation = "fadeOutBody 0.5s forwards";
+      setTimeout(() => { history.back(); }, 500); // Trở về trang trước
+    });
+  }
 </script>
+
 
 </body>
 </html>

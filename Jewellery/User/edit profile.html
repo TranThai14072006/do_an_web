@@ -8,11 +8,27 @@
 </head>
 <body>
 
-  <!-- 🔙 BACK BUTTON -->
-  <a href="profile.html" class="back-btn">⟵</a>
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="logo">
+      <a href="../index_profile.html"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
+    </div>
+    <nav class="nav-icons">
+      <a href="../index_profile.html" class="nav-icon">Home</a>
+      <a href="Product.html" class="nav-icon">Product</a>
+      <a href="Jewelry-cart.html" class="nav-icon">Cart</a>
+      <a href="History.html" class="nav-icon">History</a>
+      <a href="profile.html" class="nav-icon active">Profile</a>
+    </nav>
+  </header>
 
+  <!-- ===== EDIT PROFILE BOX ===== -->
   <div class="edit-container">
     <div class="edit-box">
+
+      <!-- 🔙 BACK BUTTON (đưa vào trong box) -->
+      <button class="back-btn" onclick="history.back()">←</button>
+
       <div class="logo">
         <img src="../images/36-logo.png" alt="36 Jewelry Logo">
       </div>
@@ -40,7 +56,9 @@
           <input type="text" placeholder="Your address" required>
         </div>
 
-        <button type="submit" class="save-btn" onclick="window.location.href='profile.html'">Save Changes</button>
+        <button type="submit" class="save-btn" onclick="window.location.href='profile.html'">
+          Save Changes
+        </button>
       </form>
     </div>
   </div>
