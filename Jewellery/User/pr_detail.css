@@ -377,9 +377,10 @@ body {
 
 /* ====== BACK BUTTON ====== */
 .back-btn {
-  position: absolute;
+  position: fixed; /* sửa từ absolute thành fixed */
   top: 20px;
   left: 20px;
+  z-index: 1000; /* đảm bảo nút nằm trên các phần tử khác */
   background: #fff;
   color: var(--primary-color);
   border: 1px solid var(--primary-color);
@@ -390,10 +391,10 @@ body {
   line-height: 34px;
   text-align: center;
   cursor: pointer;
-  z-index: 10;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
+
 
 .back-btn:hover {
   background: var(--primary-color);
