@@ -104,9 +104,9 @@
       font-size: 15px;
       color: #fff;
       border: 1px solid rgba(255, 215, 0, 0.4);
-      border-radius: 10px;
-      background: rgba(235, 223, 218, 0.91);
-      backdrop-filter: blur(6px);
+      border-radius: 10px !important;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
       outline: none;
       transition: all 0.4s ease;
     }
@@ -168,7 +168,20 @@
       transition: color 0.3s;
     }
     .extra-links a:hover { color: #fff; text-shadow: 0 0 10px #f8ce86; }
+    #email::placeholder
+    {
+      color: #b6a988;
+    }
 
+    #fullname::placeholder{
+      color: #b6a988;
+    }
+    #password::placeholder{
+      color: #b6a988;
+    }
+    #confirmPassword::placeholder{
+      color:#b6a988;
+    }
     /* ===== ANIMATIONS ===== */
     @keyframes fadeIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
     @keyframes slideUp { from {transform:translateY(30px);opacity:0;} to {transform:translateY(0);opacity:1;} }
@@ -178,9 +191,9 @@
 </head>
 
 <body>
-  <a href="login.html" class="back-btn">&#8592;</a>
 
   <div class="register-container">
+     <button onclick="window.history.back()" class="back-btn">←</button>
     <h2 class="register-title">Create Account</h2>
     <form id="registerForm" action="#">
       <div class="input-group">

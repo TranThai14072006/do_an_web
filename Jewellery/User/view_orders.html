@@ -8,20 +8,6 @@
 </head>
 <body>
 
-  <!-- Back button -->
-  <button class="back-btn" onclick="window.location.href='order_success.html'">←</button>
-
-<<<<<<< HEAD
-  <!-- HEADER -->
-  <header class="header">
-    <a href="../index.html" class="logo-link"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
-    <nav>
-      <a href="../index_profile.html">Home</a>
-      <a href="profile.html">Profile</a>
-      
-    </nav>
-  </header>
-=======
 <header class="header">
   <a href="../index_profile.html" class="logo-link"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
   <nav>
@@ -31,12 +17,23 @@
     <a href="view-orders.html" class="active">Orders</a>
   </nav>
 </header>
->>>>>>> 7cd82ce52669ca33c5d5bc2e90c4b584437efe40
 
   <!-- MAIN CONTENT -->
   <main class="orders-container">
+    <!-- Back button -->
+  <button class="back-btn" onclick="window.location.href='order_success.html'">←</button>
     <h2>Your Recent Orders</h2>
     <p class="subtitle">Here are the items you’ve recently purchased with 36 Jewelry.</p>
+    <!-- CUSTOMER INFORMATION -->
+<section class="customer-info">
+  <h3>Customer Information</h3>
+  <div class="info-grid">
+    <p><strong>Name:</strong> Tran Thai Vy</p>
+    <p><strong>Email:</strong> vytran@example.com</p>
+    <p><strong>Phone:</strong> +84 912 345 678</p>
+    <p><strong>Address:</strong> 36 Le Loi Street, District 1, Ho Chi Minh City</p>
+  </div>
+</section>
 
     <div class="order-card">
       <div class="order-header">
@@ -64,14 +61,14 @@
             <td>$59.96</td>
           </tr>
           <tr>
-            <td class="product-info">
+            <!-- <td class="product-info">
               <img src="../images/R003.jpg" alt="Platinum Clover Charm Ring">
               <span>Platinum Clover Charm Ring</span>
             </td>
             <td>$1,950</td>
             <td>1</td>
             <td>$1,950</td>
-          </tr>
+          </tr> -->
           <tr>
             <td class="product-info">
               <img src="../images/R007.jpg" alt="Paisley Moissanite Ring">
@@ -86,7 +83,7 @@
       <p class="order-total">Order Total: <strong>$3,389.96</strong></p>
     </div>
 
-    <div class="order-card">
+    <!-- <div class="order-card">
       <div class="order-header">
         <span>Order ID: <strong>#ORD10230</strong></span>
         <span>Date: <strong>Oct 28, 2025</strong></span>
@@ -114,7 +111,7 @@
         </tbody>
       </table>
       <p class="order-total">Order Total: <strong>$2,120.00</strong></p>
-    </div>
+    </div> -->
   </main>
 
   <footer class="footer">

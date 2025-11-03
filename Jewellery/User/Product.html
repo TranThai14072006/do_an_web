@@ -7,6 +7,59 @@
   <link rel="stylesheet" href="../style.css">
   <link rel="stylesheet" href="Product.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ==== Add to Cart Button ==== */
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      background-color: var(--dark);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95em;
+      text-transform: uppercase;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+      transition: all 0.25s ease;
+      margin-top: 10px;
+    }
+
+    .btn-add:hover {
+      background-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+    }
+
+    .btn-add:focus {
+      outline: 3px solid rgba(186,134,11,0.3);
+      outline-offset: 2px;
+    }
+
+    /* ==== Notification ==== */
+    .cart-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      padding: 20px;
+      max-width: 350px;
+      z-index: 1000;
+      transform: translateX(400px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border-left: 4px solid var(--primary);
+    }
+
+    .cart-notification.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  </style>
 </head>
 <body class="homepage bg-accent-light">
 
@@ -23,9 +76,8 @@
       <div class="search-box">
         <input type="text" placeholder="Search products...">
         <button onclick="window.location.href='search.html'">
-  <i class="fas fa-search"></i>
-</button>
-
+          <i class="fas fa-search"></i>
+        </button>
       </div>
     </div>
     <div class="right">
@@ -37,8 +89,8 @@
 
 <section id="page-banner" class="padding-large no-padding-top position-relative">
   <div class="page-container">
-   
-    
+
+    <!-- Filter Nav -->
     <nav class="filter-nav">
       <a href="product.html" class="active">All</a>
       <a href="product_male.html">Male</a>
@@ -50,152 +102,47 @@
       <i class="fas fa-filter"></i> Filter
     </button>
 
+    <!-- Products Grid -->
     <div class="products-grid">
+
+      <!-- Product Card Example -->
       <article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R001.jpg" alt="Ula Opal Teardrop Ring" class="product-image">
-    </div>
-    <h3 class="product-title">Ula Opal Teardrop Ring</h3>
-    <span class="product-price">$59.96</span>
-  </a>
-  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
+        <a href="R01.html" class="product-card-link">
+          <div class="image-holder">
+            <img src="../images/R001.jpg" alt="Ula Opal Teardrop Ring" class="product-image">
+          </div>
+          <h3 class="product-title">Ula Opal Teardrop Ring</h3>
+          <span class="product-price">$59.96</span>
+        </a>
+        <button class="btn-add" onclick="showNotification('Ula Opal Teardrop Ring')">Add to Cart</button>
+      </article>
 
-</article>
+      <article class="product-card">
+        <a href="R02.html" class="product-card-link">
+          <div class="image-holder">
+            <img src="../images/R002.jpg" alt="Kane Moissanite Ring" class="product-image">
+          </div>
+          <h3 class="product-title">Kane Moissanite Ring</h3>
+          <span class="product-price">$1,371</span>
+        </a>
+        <button class="btn-add" onclick="showNotification('Kane Moissanite Ring')">Add to Cart</button>
+      </article>
 
-<article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R002.jpg" alt="Kane Moissanite Ring" class="product-image">
-    </div>
-    <h3 class="product-title">Kane Moissanite Ring</h3>
-    <span class="product-price">$1.371</span>
-  </a>
-  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
-
-  <article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R003.jpg" alt="Platinum Clover Charm Ring" class="product-image">
-    </div>
-    <h3 class="product-title">Platinum Clover Charm Ring</h3>
-    <span class="product-price">$1.950</span>
-  </a>
-  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
-
-<article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R004.jpg" alt="Platinum CZ Couple Rings" class="product-image">
-    </div>
-    <h3 class="product-title">Platinum CZ Couple Rings</h3>
-    <span class="product-price">$44.99</span>
-  </a>
-  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
-
-<article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R005.jpg" alt="Royal Moissanite Rings" class="product-image">
-    </div>
-    <h3 class="product-title">Royal Moissanite Rings</h3>
-    <span class="product-price">$2.200</span>
-  </a>
-  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
-
-<article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R006.jpg" alt="Winston Anchor Ring" class="product-image">
-    </div>
-    <h3 class="product-title">Winston Anchor Ring</h3>
-    <span class="product-price">$1.850</span>
-  </a>
- <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
-
-<article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R007.jpg" alt="Paisley Moissanite Ring" class="product-image">
-    </div>
-    <h3 class="product-title">Paisley Moissanite Ring</h3>
-    <span class="product-price">$1.380</span>
-  </a>
-  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
-
-<article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R008.jpg" alt="Arielle Princess CZ Ring" class="product-image">
-    </div>
-    <h3 class="product-title">Arielle Princess CZ Ring</h3>
-    <span class="product-price">$1.250</span>
-  </a>
-  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
-
-
-<article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R009.jpg" alt="Miracle Queen CZ Ring" class="product-image">
-    </div>
-    <h3 class="product-title">Miracle Queen CZ Ring</h3>
-    <span class="product-price">$1.470</span>
-  </a>
- <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
-
-
-<article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R010.jpg" alt="Niche Crown Stack Ring" class="product-image">
-    </div>
-    <h3 class="product-title">Niche Crown Stack Ring</h3>
-    <span class="product-price">$1.490</span>
-  </a>
-  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
-
-<article class="product-card">
-  <a href="R01.html" class="product-card-link">
-    <div class="image-holder">
-      <img src="../images/R011.jpg" alt="Rosemary Topaz Ring" class="product-image">
-    </div>
-    <h3 class="product-title">Rosemary Topaz Ring</h3>
-    <span class="product-price">$1.430</span>
-  </a>
-  <a href="#" class="btn-add" onclick="showNotification(event)">Add to Cart</a>
-
-</article>
+      <!-- Add all other products in same format -->
+      <!-- ... -->
 
     </div>
-       <div class="pagination">
-        <a href="#" class="disabled"><</a>
-        <a href="#" class="active">1</a>
-        <a href="#">2</a>
-        <a href="#">3</a>
-        <a href="#">></a>
-      </div>
-    </div>
 
-  
+    <!-- Pagination -->
+    <div class="pagination">
+      <a href="#" class="disabled"><</a>
+      <a href="#" class="active">1</a>
+      <a href="#">2</a>
+      <a href="#">3</a>
+      <a href="#">></a>
+    </div>
+  </div>
+</section>
 
 <!-- FOOTER -->
 <footer id="footer" class="overflow-hidden">
@@ -238,7 +185,8 @@
     </div>
   </div>
 </footer>
-<!-- THÔNG BÁO THÊM VÀO GIỎ HÀNG -->
+
+<!-- Cart Notification -->
 <div class="cart-notification" id="cart-notification">
   <div class="notification-content">
     <div class="notification-icon">
@@ -253,15 +201,17 @@
     </button>
   </div>
 </div>
-<script>
-function showNotification(event) {
-  event.preventDefault(); // ❌ chặn nhảy trang
 
+<script>
+function showNotification(productName) {
   const notification = document.getElementById('cart-notification');
+  const textEl = notification.querySelector('.notification-text h3');
+  textEl.textContent = `"${productName}" added to cart!`;
+
   notification.classList.add('show');
 
-  // Tự động ẩn sau 3 giây
-  setTimeout(() => {
+  clearTimeout(notification.timeout);
+  notification.timeout = setTimeout(() => {
     notification.classList.remove('show');
   }, 3000);
 }
@@ -269,9 +219,9 @@ function showNotification(event) {
 function closeNotification() {
   const notification = document.getElementById('cart-notification');
   notification.classList.remove('show');
+  clearTimeout(notification.timeout);
 }
 </script>
-
 
 </body>
 </html>

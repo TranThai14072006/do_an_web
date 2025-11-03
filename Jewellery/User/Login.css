@@ -31,30 +31,25 @@ body {
   overflow: hidden;
 }
 
-/* ===== NÚT BACK ===== */
+/* Nút back nằm góc trên bên trái của box */
 .back-btn {
-  position: absolute;
-  top: 20px;
-  left: 25px;
+  position: absolute; /* so với .login-container */
+  top: 15px;          /* canh cách trên */
+  left: 15px;         /* canh cách trái */
   background: rgba(255, 215, 0, 0.1);
   color: #f8ce86;
   border: 1px solid rgba(255, 215, 0, 0.5);
   border-radius: 50px;
-  padding: 8px 18px;
-  font-size: 16px;
+  padding: 6px 14px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(6px);
 }
 
-.back-btn:hover {
-  background: rgba(255, 215, 0, 0.3);
-  color: #fff;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
 /* ===== LOGIN CONTAINER ===== */
 .login-container {
+  position: relative; /* thêm dòng này */
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(12px);
   padding: 45px 40px;
@@ -103,7 +98,7 @@ body {
   color: #fff;
   border: 1px solid rgba(255, 215, 0, 0.4);
   border-radius: 10px;
-  background: rgba(235, 223, 218, 0.91);
+  background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(6px);
   outline: none;
   transition: all 0.4s ease;
@@ -198,3 +193,16 @@ body {
   0%, 100% { box-shadow: 0 0 10px #f8ce86, 0 0 20px #8e4b00; }
   50% { box-shadow: 0 0 25px #fff8dc, 0 0 40px #f8ce86; }
 }
+/* Chỉnh màu chữ placeholder */
+#username::placeholder {
+    color: #b6a988;  /* Màu vàng nâu giống theme của bạn */
+    opacity: 1;       /* opacity mặc định thường thấp, để hiển thị đúng màu */
+    font-style: italic; /* tùy chọn: chữ nghiêng */
+}
+/* Chỉnh màu chữ placeholder */
+#password::placeholder {
+    color: #b6a988;  /* Màu vàng nâu giống theme của bạn */
+    opacity: 1;       /* opacity mặc định thường thấp, để hiển thị đúng màu */
+    font-style: italic; /* tùy chọn: chữ nghiêng */
+}
+
