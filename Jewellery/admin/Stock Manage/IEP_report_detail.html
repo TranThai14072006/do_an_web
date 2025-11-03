@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import & Export Report Detail</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      display: flex;
+      background: #f3f3f3;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 80px;
+      border-radius: 50%;
+    }
+
+    .logo h2 {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .menu a {
+      display: block;
+      padding: 12px;
+      color: #f8ce86;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .menu a:hover,
+    .menu a.active {
+      background-color: #f8ce86;
+      color: #8e4b00;
+    }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 25px;
+    }
+
+    h1 {
+      color: #8e4b00;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .report-header {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    .report-header h2 {
+      color: #8e4b00;
+      margin-bottom: 10px;
+    }
+
+    .report-header p {
+      font-size: 15px;
+      color: #555;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: center;
+      font-size: 15px;
+      border-bottom: 1px solid #f0e2d0;
+    }
+
+    th {
+      background: linear-gradient(195deg, #8e4b00, #a3670b);
+      color: #f8ce86;
+      font-weight: 600;
+    }
+
+    tr:hover td {
+      background: #f9f2e7;
+    }
+
+    .product-img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .btn {
+      display: inline-block;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background-color: #f8ce86;
+      color: #8e4b00;
+    }
+
+    .summary {
+      background: #fff;
+      border-left: 4px solid #8e4b00;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      border-radius: 6px;
+    }
+
+    .summary p {
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .summary strong {
+      color: #8e4b00;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <img src="../images/Admin_login.jpg" alt="Admin Logo">
+      <h2>Luxury Jewelry Admin</h2>
+    </div>
+
+    <div class="menu">
+      <a href="../Administration_menu.html#products">Jewelry List</a>
+      <a href="../Administration_menu.html#product-manage">Product Management</a>
+      <a href="../Administration_menu.html#users">Customers</a>
+      <a href="../Import product manage/import_management.html">Import Management</a>
+      <a href="../Stock Manage/stocking_management.html" class="active">Stocking</a>
+      <a href="../Administration_menu.html#settings">Settings</a>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <main>
+    <h1>Import & Export Report Detail</h1>
+
+    <div class="report-header">
+      <h2>Date: 2025-10-22</h2>
+      <p>Report showing detailed import and export of jewelry items on this date.</p>
+      <a href="search_results.html" class="btn">Back</a>
+    </div>
+
+    <table>
+      <tr>
+        <th>Product Image</th>
+        <th>Product Code</th>
+        <th>Product Name</th>
+        <th>Category</th>
+        <th>Import Qty</th>
+        <th>Export Qty</th>
+        <th>Balance</th>
+      </tr>
+
+      <tr>
+        <td><img src="../../images/R001.jpg" alt="Diamond Ring" class="product-img"></td>
+        <td>JW001</td>
+        <td>Diamond Ring</td>
+        <td>Ring</td>
+        <td>5</td>
+        <td>2</td>
+        <td>3</td>
+      </tr>
+      <tr>
+        <td><img src="../../images/R002.jpg" alt="Gold Necklace" class="product-img"></td>
+        <td>JW002</td>
+        <td>Gold Necklace</td>
+        <td>Ring</td>
+        <td>7</td>
+        <td>1</td>
+        <td>6</td>
+      </tr>
+      <tr>
+        <td><img src="../../images/R003.jpg" alt="Silver Bracelet" class="product-img"></td>
+        <td>JW003</td>
+        <td>Silver Bracelet</td>
+        <td>Ring</td>
+        <td>3</td>
+        <td>0</td>
+        <td>3</td>
+      </tr>
+      <tr>
+        <td><img src="../../images/R004.jpg" alt="Pearl Earrings" class="product-img"></td>
+        <td>JW004</td>
+        <td>Pearl Earrings</td>
+        <td>Ring</td>
+        <td>0</td>
+        <td>4</td>
+        <td>-4</td>
+      </tr>
+    </table>
+
+    <div class="summary">
+      <p><strong>Total Imported:</strong> 15 units</p>
+      <p><strong>Total Exported:</strong> 7 units</p>
+      <p><strong>Remaining Balance:</strong> 8 units</p>
+    </div>
+  </main>
+</body>
+</html>

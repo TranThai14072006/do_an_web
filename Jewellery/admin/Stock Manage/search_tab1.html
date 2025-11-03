@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stocking Management - Luxury Jewelry</title>
+  <title> Search Results </title>
   <style>
     * {
       margin: 0;
@@ -249,38 +249,12 @@
   </div>
 
   <main>
-    <h1>Stocking Management</h1>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <div class="tab active" data-tab="stock-lookup">Stock Lookup</div>
-      <div class="tab" data-tab="stock-alert">Low Stock Alert</div>
-      <div class="tab" data-tab="stock-report">Import - Export - Balance Report</div>
-    </div>
+    <h1>Search Results</h1>
 
     <!-- Tab 1 -->
     <div class="tab-content active" id="stock-lookup">
       <form class="search-form">
-        <div class="form-group">
-          <label>Product Name</label>
-          <input type="text" placeholder="Enter product name...">
-        </div>
-        <div class="form-group">
-          <label>Category</label>
-          <select>
-            <option>All</option>
-            <option>Ring</option>
-            <option>Necklace</option>
-            <option>Bracelet</option>
-            <option>Earring</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>As of Date</label>
-          <input type="date">
-        </div>
-        <button type="button" class="btn">Search</button>
-        <button type="reset" class="btn secondary">Reset</button>
+        <button type="button" class="btn" onclick="window.location.href='stocking_management.html'">Back</button>
       </form>
 
       <table>
@@ -292,26 +266,43 @@
           <th>Status</th>
         </tr>
         <tr>
-          <td>JW001</td>
-          <td>Diamond Ring</td>
-          <td>Ring</td>
-          <td>25</td>
-          <td><span class="status-badge status-normal">In Stock</span></td>
-        </tr>
-        <tr>
           <td>JW002</td>
           <td>Gold Necklace</td>
           <td>Necklace</td>
           <td>5</td>
           <td><span class="status-badge status-warning">Low Stock</span></td>
         </tr>
-        <tr>
-          <td>JW003</td>
-          <td>Silver Bracelet</td>
-          <td>Bracelet</td>
-          <td>0</td>
-          <td><span class="status-badge status-danger">Out of Stock</span></td>
-        </tr>
+
+<tr>
+  <td>JW005</td>
+  <td>Platinum Ring</td>
+  <td>Ring</td>
+  <td>3</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+<tr>
+  <td>JW008</td>
+  <td>Sapphire Ring</td>
+  <td>Ring</td>
+  <td>8</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+<tr>
+  <td>JW010</td>
+  <td>Silver Chain</td>
+  <td>Necklace</td>
+  <td>2</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+<tr>
+  <td>JW013</td>
+  <td>Rose Gold Ring</td>
+  <td>Ring</td>
+  <td>6</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+
+
       </table>
 
       <div class="alert-section">
@@ -319,89 +310,6 @@
         Products below 10 in quantity are considered low stock.
       </div>
     </div>
-
-    <!-- Tab 2 -->
-    <div class="tab-content" id="stock-alert">
-      <div class="alert-section">
-        <div class="alert-title">Low Stock Warning:</div>
-        There are items that need restocking soon.
-      </div>
-
-      <table>
-        <tr>
-          <th>Product Code</th>
-          <th>Product Name</th>
-          <th>Category</th>
-          <th>Stock</th>
-          <th>Minimum</th>
-          <th>Status</th>
-        </tr>
-        <tr>
-          <td>JW002</td>
-          <td>Gold Necklace</td>
-          <td>Necklace</td>
-          <td>5</td>
-          <td>10</td>
-          <td><span class="status-badge status-warning">Low Stock</span></td>
-        </tr>
-        <tr>
-          <td>JW003</td>
-          <td>Silver Bracelet</td>
-          <td>Bracelet</td>
-          <td>0</td>
-          <td>10</td>
-          <td><span class="status-badge status-danger">Out of Stock</span></td>
-        </tr>
-      </table>
-    </div>
-
-    <!-- Tab 3 -->
-    <div class="tab-content" id="stock-report">
-      <form class="search-form">
-        <div class="form-group">
-          <label>Product</label>
-          <input type="text" placeholder="Enter product name...">
-        </div>
-        <div class="form-group">
-          <label>From</label>
-          <input type="date">
-        </div>
-        <div class="form-group">
-          <label>To</label>
-          <input type="date">
-        </div>
-        <button type="button" class="btn">Search</button>
-        <button type="reset" class="btn secondary">Reset</button>
-      </form>
-
-      <table>
-        <tr>
-          <th>Date</th>
-          <th>Import Qty</th>
-          <th>Export Qty</th>
-          <th>Balance</th>
-        </tr>
-        <tr>
-          <td>2025-10-20</td>
-          <td>10</td>
-          <td>2</td>
-          <td>8</td>
-        </tr>
-        <tr>
-          <td>2025-10-22</td>
-          <td>15</td>
-          <td>5</td>
-          <td>18</td>
-        </tr>
-        <tr>
-          <td>2025-10-25</td>
-          <td>0</td>
-          <td>8</td>
-          <td>10</td>
-        </tr>
-      </table>
-    </div>
-
   </main>
 
   <script>
