@@ -377,7 +377,7 @@ body {
 
 /* ====== BACK BUTTON ====== */
 .back-btn {
-  position: fixed; /* sửa từ absolute thành fixed */
+  position: absolute; /* sửa từ absolute thành fixed */
   top: 20px;
   left: 20px;
   z-index: 1000; /* đảm bảo nút nằm trên các phần tử khác */
