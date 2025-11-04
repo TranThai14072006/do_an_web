@@ -7,6 +7,23 @@
 * {margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif;}
 body {background:#f5f5f5; display:flex; color:#333;}
 
+.btn {
+      background: linear-gradient(195deg, #8e4b00, #8e4b00);
+      color: #f8ce86;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: linear-gradient(195deg, #d8921b, #a3670b);
+      transform: translateY(-2px);
+    }
+
 /* SIDEBAR */
 .sidebar {
   width:220px; background:#8e4b00; color:#f8ce86;
@@ -81,13 +98,12 @@ tr:nth-child(even) td{background:#faf6f2;}
     <h2>Luxury Jewelry Admin</h2>
   </div>
   <div class="menu">
-    <a href="#">Jewelry List</a>
-    <a href="#">Product Management</a>
-    <a href="#">Customers</a>
-    <a href="#">Order Management</a>
-    <a href="#" class="active">Pricing</a>
-    <a href="#">Stocking</a>
-    <a href="#">Settings</a>
+    <a href="../Administration_menu.html#products">Jewelry List</a>
+    <a href="../Administration_menu.html#product-manage">Product Management</a>
+    <a href="#" class="active">Pricing Management</a>
+    <a href="../Administration_menu.html#users">Customers</a>
+    <a href="../Stock Manage/stocking_management.html">Stocking Management</a>
+    <a href="../Administration_menu.html#settings">Settings</a>
   </div>
 </div>
 
@@ -121,92 +137,92 @@ tr:nth-child(even) td{background:#faf6f2;}
         <tbody>
         <tr>
             <td>1</td>
-            <td>Diamond Ring</td>
-            <td>Rings</td>
+            <td>Kane Moissanite Ring</td>
+            <td>Ring</td>
             <td>25,000,000</td>
             <td>30%</td>
-            <td>32,500,000</td>
-            <td>Edit</td>
+            <td>$1.371</td>
+            <td><a href="order_detail.html" class="btn small">Edit</a></td></tr>
         </tr>
         <tr>
             <td>2</td>
-            <td>Gold Necklace</td>
-            <td>Necklaces</td>
+            <td>Winston Anchor Ring </td>
+            <td>Ring</td>
             <td>12,000,000</td>
             <td>40%</td>
-            <td>16,800,000</td>
+            <td>$1.850</td>
             <td>Edit</td>
         </tr>
         <tr>
             <td>3</td>
-            <td>Silver Bracelet</td>
-            <td>Bracelets</td>
+            <td>Ula Opal Teardrop Ring</td>
+            <td>Ring</td>
             <td>4,000,000</td>
             <td>25%</td>
-            <td>5,000,000</td>
+            <td>$59.96</td>
             <td>Edit</td>
         </tr>
         <tr>
             <td>4</td>
-            <td>Pearl Earrings</td>
-            <td>Earrings</td>
+            <td>Platinum Clover Charm Ring</td>
+            <td>Ring</td>
             <td>6,000,000</td>
             <td>35%</td>
-            <td>8,100,000</td>
+            <td>$1.950</td>
             <td>Edit</td>
         </tr>
         <tr>
             <td>5</td>
-            <td>Platinum Ring</td>
+            <td>Paisley Moissanite Ring</td>
             <td>Rings</td>
             <td>28,000,000</td>
             <td>20%</td>
-            <td>33,600,000</td>
+            <td>$1.380</td>
             <td>Edit</td>
         </tr>
         <tr>
             <td>6</td>
-            <td>Diamond Watch</td>
-            <td>Watches</td>
+            <td>Arielle Princess CZ Ring</td>
+            <td>Ring</td>
             <td>35,000,000</td>
             <td>25%</td>
-            <td>43,750,000</td>
+            <td>$1.250</td>
             <td>Edit</td>
         </tr>
         <tr>
             <td>7</td>
-            <td>Ruby Pendant</td>
-            <td>Necklaces</td>
+            <td>Miracle Queen CZ Ring</td>
+            <td>Ring</td>
             <td>15,000,000</td>
             <td>30%</td>
-            <td>19,500,000</td>
+            <td>$1.470</td>
             <td>Edit</td>
         </tr>
         <tr>
             <td>8</td>
-            <td>Gold Bracelet</td>
-            <td>Bracelets</td>
+            <td>Niche Crown Stack Ring</td>
+            <td>Ring</td>
             <td>10,000,000</td>
             <td>35%</td>
-            <td>13,500,000</td>
+            <td>$1.490</td>
             <td>Edit</td>
         </tr>
         <tr>
             <td>9</td>
-            <td>Sapphire Earrings</td>
-            <td>Earrings</td>
+            <td>Rosemary Topaz Ring</td>
+            <td>Ring</td>
             <td>8,000,000</td>
             <td>25%</td>
-            <td>10,000,000</td>
+            <td>$1.430</td>
             <td>Edit</td>
         </tr>
         <tr>
             <td>10</td>
-            <td>Luxury Watch</td>
-            <td>Watches</td>
+            <td>Royal Moissanite Ring</td>
+            <td>Ring</td>
             <td>50,000,000</td>
             <td>40%</td>
-            <td>70,000,000</td>
+            <td>$2.200</td>
             <td>Edit</td>
         </tr>
         </tbody>
