@@ -5,17 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Edit Profile | 36 Jewelry</title>
   <link rel="stylesheet" href="edit profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 </head>
 <body>
-
+  <header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="../index_profile.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+    </div>
+    <div class="center">
+      <a href="../index.html">
+        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" placeholder="Search products...">
+        <button onclick="window.location.href='search.html'">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="right">
+      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
+</header>
   <!-- 🔙 BACK BUTTON -->
   <div class="edit-container">
     <div class="edit-box">
+                <button class="back-btn" onclick="window.history.back()">⟵</button>
+
       <div class="logo">
         <img src="../images/36-logo.png" alt="36 Jewelry Logo">
       </div>
-      <button class="back-btn" onclick="window.history.back()">⟵</button>
-
       <h2>Edit Profile</h2>
 
       <form>

@@ -63,11 +63,10 @@
 </head>
 <body class="homepage bg-accent-light">
 
-<!-- HEADER -->
 <header class="header-container">
   <div class="search-bar">
     <div class="left">
-      <a href="../index.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+      <a href="../index_profile.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
     <div class="center">
       <a href="../index.html">
@@ -89,23 +88,25 @@
 
 <section id="page-banner" class="padding-large no-padding-top position-relative">
   <div class="page-container">
+    
+    <div class="category-and-filter-bar">
+        
+        <a href="../index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
 
-    <!-- Filter Nav -->
-    <nav class="filter-nav">
-      <a href="product.html" class="active">All</a>
-      <a href="product_male.html">Male</a>
-      <a href="product_female.html">Female</a>
-      <a href="product_unisex.html">Unisex</a>
-    </nav>
+        <nav class="filter-nav">
+          <a href="product.html" class="active">All</a>
+          <a href="product_male.html">Male</a>
+          <a href="product_female.html">Female</a>
+          <a href="product_unisex.html">Unisex</a>
+        </nav>
+        
+        <button class="filter-button" onclick="window.location.href='advanced_search.html'">
+          <i class="fas fa-filter"></i> Filter
+        </button>
+    </div>
 
-    <button class="filter-button" onclick="window.location.href='advanced_search.html'">
-      <i class="fas fa-filter"></i> Filter
-    </button>
-
-    <!-- Products Grid -->
     <div class="products-grid">
 
-      <!-- Product Card Example -->
       <article class="product-card">
         <a href="R01.html" class="product-card-link">
           <div class="image-holder">
@@ -128,12 +129,8 @@
         <button class="btn-add" onclick="showNotification('Kane Moissanite Ring')">Add to Cart</button>
       </article>
 
-      <!-- Add all other products in same format -->
-      <!-- ... -->
+      </div>
 
-    </div>
-
-    <!-- Pagination -->
     <div class="pagination">
       <a href="#" class="disabled"><</a>
       <a href="#" class="active">1</a>
@@ -144,7 +141,6 @@
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer id="footer" class="overflow-hidden">
   <div class="container mt-5">
     <div class="footer-top-area">
@@ -186,7 +182,6 @@
   </div>
 </footer>
 
-<!-- Cart Notification -->
 <div class="cart-notification" id="cart-notification">
   <div class="notification-content">
     <div class="notification-icon">

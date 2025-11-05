@@ -10,7 +10,7 @@
   --dark: #111;
   --accent: #f6f6f6;
   --radius: 10px;
-  --max-width: 1200px;
+  --max-width: 1400px;
   --gap: 18px;
   --fw-bold: 600;
   --body-font: 'Cormorant Garamond', serif;
@@ -33,31 +33,17 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* Logo Top */
-.logo-top {
-    width: 100%;
-    padding: 20px 16px 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: transparent;
-}
-.logo-top img {
-    height: 70px;
-    max-width: 250px;
-    object-fit: contain;
-    transition: all 0.25s ease;
-}
-
 /* Search Bar */
 .search-bar {
     width: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto;
     background: var(--bg);
     border-top: 1px solid rgba(0,0,0,0.03);
     border-bottom: 1px solid rgba(0,0,0,0.04);
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     padding: 12px 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     position: sticky;
@@ -72,29 +58,62 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
     display: flex;
     align-items: center;
 }
-.search-bar .left, .search-bar .right { width: 120px; }
-.search-bar .right { justify-content: flex-end; }
-.search-bar .center { justify-content: center; flex: 1 1 auto; }
 
-/* Back button */
-.back-btn {
+/* Cập nhật: Left block chứa nút Home */
+.search-bar .left { 
+    width: auto; 
+    justify-content: flex-start;
+}
+
+.search-bar .right { justify-content: flex-end; width: auto; }
+.search-bar .center { 
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: 30px;
+    position: relative;
+}
+
+/* Style cho nút Home */
+.home-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    padding: 10px 15px;
     border-radius: 8px;
-    background: transparent;
-    color: var(--dark);
-    border: 1px solid transparent;
     text-decoration: none;
+    color: var(--dark);
+    font-weight: 600;
+    font-size: 16px;
+    transition: background-color 0.2s;
 }
-.back-btn i { font-size: 18px; }
+.home-btn i {
+    margin-right: 5px;
+    font-size: 18px;
+}
+.home-btn:hover {
+    background: var(--accent);
+    color: var(--primary);
+}
 
-/* Search box */
+
+/* Căn giữa tuyệt đối cho logo */
+.search-bar .center a {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+.search-bar .center .header-logo {
+    height: 55px;
+    max-width: 180px;
+    object-fit: contain;
+    transition: all 0.25s ease;
+}
+
+/* Search box - Đẩy về bên phải của center div */
 .search-box {
-    flex: 1;
-    max-width: 480px;
+    flex: 0 1 450px;
+    margin-left: auto;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -104,6 +123,7 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
     border: 1px solid rgba(0,0,0,0.06);
     box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
     height: 50px;
+    opacity: 1;
 }
 .search-box input {
     flex: 1;
@@ -113,7 +133,7 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
     padding: 2px 6px;
     font-size: 15px;
     color: var(--dark);
-    min-width: 120px;
+    min-width: 100px;
 }
 .search-box button {
     display: inline-flex;
@@ -148,19 +168,58 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
     color: var(--primary);
 }
 
-/* ================= Filter Nav ================= */
+/* ================= Page Container & Layout ================= */
+.page-container {
+    width: 100%;
+    min-height: auto;
+    padding: 20px 16px 40px;
+    background-image: url('../images/Banner3-2.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Thanh điều khiển (Back, Filters, Filter Button) */
+.category-and-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+}
+
+/* Back button */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 8px 16px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--dark);
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0; 
+    transition: all 0.18s;
+}
+.back-btn:hover {
+    background: var(--accent);
+}
+.back-btn i { font-size: 16px; margin-right: 6px; }
+
+/* Filter Nav */
 .filter-nav {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    background-color: var(--accent);
-    padding: 10px 0;
+    flex-grow: 1;
     gap: 10px;
+    padding: 0 20px;
 }
 .filter-nav a {
     text-decoration: none;
@@ -174,16 +233,23 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
 .filter-nav a.active { background-color: var(--primary); color: #fff; }
 .filter-nav a:hover { background-color: var(--bg); color: var(--primary); }
 
-/* ================= Page Container ================= */
-.page-container {
-    width: 100%;
-    min-height: auto;
-    padding: 20px 16px 40px; /* bottom padding tránh chạm footer */
-    background-image: url('../images/Banner3-2.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+/* Filter Button */
+.filter-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 15px;
+    background-color: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    transition: background-color 0.25s ease;
 }
+.filter-button:hover { background-color: var(--dark); }
+
 
 /* ================= Products Grid ================= */
 .products-grid {
@@ -209,12 +275,12 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
 .product-title { font-size: 16px; font-weight: 600; padding: 12px 14px 6px; text-transform: capitalize; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .product-price { font-weight: 700; color: var(--primary); margin-bottom: 10px; font-size: 1.1em; display: block; }
 
-/* ================= Pagination ================= */
+/* ================= Pagination & Footer (Giữ nguyên) ================= */
 .pagination {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin: 24px 0; /* ngay dưới grid */
+    margin: 24px 0;
 }
 .pagination a {
     display: inline-flex;
@@ -234,7 +300,6 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
 .pagination a:hover { background: #333; color: #fff; }
 .pagination a.disabled { opacity: 1; pointer-events: none; background: #f0f0f0; color: #888; border-color: #ccc; }
 
-/* ================= Footer ================= */
 #footer {
     background-color: #000;
     color: #fff;
@@ -250,13 +315,59 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
 @media (max-width: 1200px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 900px) { .products-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .products-grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 950px){
+    /* Responsive Header (Logo/Search) */
+    .search-bar .center a {
+        position: static;
+        transform: none;
+    }
+    .search-bar .center .header-logo {
+        height: 45px;
+    }
+    .search-bar .center {
+        justify-content: flex-start;
+        gap: 15px;
+    }
+    .search-box {
+        margin-left: 0;
+    }
+}
+
 @media (max-width: 880px){
-    .logo-top img { height: 52px; }
+    /* Responsive Header (Logo/Search) */
     .search-bar { flex-wrap: wrap; gap: 8px; padding: 10px; }
-    .search-bar .left { width: 40px; order: 1; }
-    .search-bar .center { order: 2; width: 100%; }
-    .search-box { max-width: 100%; }
+    .search-bar .left { order: 1; width: auto; } /* Giữ nút Home ở góc trái */
     .search-bar .right { order: 3; width: auto; gap: 8px; }
-    .icon-link { width: 40px; height: 40px; }
-    .search-box input { font-size: 14px; }
+    .search-bar .center { order: 2; width: 100%; justify-content: space-between; flex-wrap: wrap; }
+    .search-bar .center a { order: 1; padding-left: 0; padding-right: 0; }
+    .search-bar .center .header-logo { height: 40px; }
+    .search-box { order: 2; flex-basis: 100%; max-width: 100%; margin-top: 8px; }
+    
+    .home-btn { padding: 5px 10px; font-size: 14px; }
+
+    /* Responsive Thanh điều khiển */
+    .category-and-filter-bar {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        padding-bottom: 10px;
+    }
+    .back-btn { 
+        order: 1;
+        padding: 8px 0;
+    }
+    .filter-button {
+        order: 3;
+        margin-left: auto;
+    }
+    .filter-nav {
+        order: 2;
+        padding: 0;
+        flex-grow: 0;
+        margin-left: 10px; 
+    }
+    .filter-nav a {
+        font-size: 16px;
+        padding: 8px 16px;
+    }
 }
