@@ -4,9 +4,9 @@ body {
   padding: 0;
   font-family: 'Cormorant', serif;
   background: url('../images/chocolat/orderbackground.jpg') no-repeat center center/cover;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column; /* Thay đổi từ justify-content: center */
   align-items: center;
 }
 
@@ -19,6 +19,8 @@ body {
   text-align: center;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
   max-width: 500px;
+  margin: auto; /* Thêm margin: auto để căn giữa theo chiều dọc */
+  margin-top: 20px; /* Thêm khoảng cách từ header */
 }
 
 /* Checkmark icon */
@@ -81,4 +83,17 @@ p {
 .btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .success-container {
+    padding: 30px 40px;
+    margin-top: 15px;
+  }
+  
+  .buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
 }

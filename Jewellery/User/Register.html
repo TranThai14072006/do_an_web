@@ -7,191 +7,45 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    /* ===== FONT & RESET ===== */
-    @font-face {
-      font-family: 'Hijrnotes';
-      src: url('../fonts/fonts/hijrnotes/Hijrnotes_PERSONAL_USE_ONLY.ttf') format('truetype');
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    /* ===== BODY ===== */
-    body {
-      font-family: 'Cormorant Garamond', serif;
-      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), 
-                  url('../images/User_login2.jpg') no-repeat center center/cover;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-top: 60px; /* tránh dính đầu */
-      padding-bottom: 60px;
-      animation: fadeIn 1.2s ease-in-out;
-    }
-
-    /* ===== BACK BUTTON ===== */
-    .back-btn {
-      position: fixed;
-      top: 20px;
-      left: 25px;
-      background: rgba(255, 215, 0, 0.1);
-      color: #f8ce86;
-      border: 1px solid rgba(255, 215, 0, 0.5);
-      border-radius: 50px;
-      padding: 8px 18px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(6px);
-      text-decoration: none;
-      z-index: 1000;
-    }
-
-    .back-btn:hover {
-      background: rgba(255, 215, 0, 0.3);
-      color: #fff;
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    }
-
-    /* ===== REGISTER CONTAINER ===== */
-    .register-container {
-      background: rgba(255, 255, 255, 0.07);
-      backdrop-filter: blur(12px);
-      padding: 50px 40px;
-      border-radius: 20px;
-      width: 360px;
-      text-align: center;
-      box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
-      border: 1px solid rgba(255, 215, 0, 0.2);
-      animation: slideUp 1s ease-out;
-      transition: all 0.4s ease;
-    }
-
-    .register-container:hover {
-      transform: scale(1.02);
-      box-shadow: 0 0 40px rgba(255, 215, 0, 0.25);
-    }
-
-    /* ===== TITLE ===== */
-    .register-title {
-      color: #f8ce86;
-      font-family: 'Hijrnotes', cursive;
-      font-size: 38px;
-      margin-bottom: 30px;
-      letter-spacing: 1px;
-      animation: glowGold 2s infinite alternate;
-    }
-
-    /* ===== INPUTS ===== */
-    .input-group {
-      margin-bottom: 20px;
-      text-align: left;
-      position: relative;
-    }
-
-    .input-group label {
-      display: block;
-      color: #f8ce86;
-      font-size: 16px;
-      margin-bottom: 6px;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 12px;
-      font-size: 15px;
-      color: #fff;
-      border: 1px solid rgba(255, 215, 0, 0.4);
-      border-radius: 10px !important;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(8px);
-      outline: none;
-      transition: all 0.4s ease;
-    }
-
-    .input-group input:focus {
-      background: rgba(255, 255, 255, 0.2);
-      border-color: #f8ce86;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-      transform: scale(1.02);
-    }
-
-    /* ===== BUTTON ===== */
-    .btn-register {
-      width: 100%;
-      padding: 12px 0;
-      background: linear-gradient(45deg, #f8ce86, #8e4b00);
-      color: #c8c0c0;
-      border: none;
-      border-radius: 50px;
-      font-weight: bold;
-      font-size: 18px;
-      cursor: pointer;
-      transition: all 0.5s ease;
-      box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-      position: relative;
-      overflow: hidden;
-      animation: pulseGold 2s infinite;
-    }
-
-    .btn-register::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(120deg, rgba(236, 221, 221, 0.867), transparent);
-      transition: all 0.6s ease;
-    }
-
-    .btn-register:hover::before { left: 100%; }
-
-    .btn-register:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
-      color: #8e4b00;
-      background: linear-gradient(45deg, #fff8dc, #f8ce86);
-    }
-
-    .btn-register:active { transform: scale(0.97); }
-
-    /* ===== EXTRA LINKS ===== */
-    .extra-links { margin-top: 20px; }
-    .extra-links a {
-      color: #f8ce86;
-      text-decoration: none;
-      margin: 0 10px;
-      font-size: 15px;
-      transition: color 0.3s;
-    }
-    .extra-links a:hover { color: #fff; text-shadow: 0 0 10px #f8ce86; }
-    #email::placeholder
-    {
-      color: #b6a988;
-    }
-
-    #fullname::placeholder{
-      color: #b6a988;
-    }
-    #password::placeholder{
-      color: #b6a988;
-    }
-    #confirmPassword::placeholder{
-      color:#b6a988;
-    }
-    /* ===== ANIMATIONS ===== */
-    @keyframes fadeIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
-    @keyframes slideUp { from {transform:translateY(30px);opacity:0;} to {transform:translateY(0);opacity:1;} }
-    @keyframes glowGold { from {text-shadow:0 0 10px #f8ce86,0 0 20px #8e4b00;} to {text-shadow:0 0 20px #fff8dc,0 0 35px #f8ce86;} }
-    @keyframes pulseGold { 0%,100%{box-shadow:0 0 10px #f8ce86,0 0 20px #8e4b00;}50%{box-shadow:0 0 25px #fff8dc,0 0 40px #f8ce86;} }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Link đến file CSS riêng -->
+  <link rel="stylesheet" href="Register.css">
 </head>
 
 <body>
 
+  <!-- HEADER FROM SEARCH -->
+  <header class="header-container">
+    <div class="search-bar">
+      <div class="left">
+        <a href="../index_profile.html" class="home-btn">
+          <i class="fas fa-home"></i> Home
+        </a>
+      </div>
+      <div class="center">
+        <a href="../index.html">
+          <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+        </a>
+        <div class="search-box">
+          <input type="text" placeholder="Search products...">
+          <button onclick="window.location.href='search.html'">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      <div class="right">
+        <a href="Jewelry-cart.html" class="icon-link">
+          <i class="fas fa-shopping-cart"></i>
+        </a>
+        <a href="profile.html" class="icon-link">
+          <i class="fas fa-user"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ORIGINAL REGISTER FORM -->
   <div class="register-container">
      <button onclick="window.history.back()" class="back-btn">←</button>
     <h2 class="register-title">Create Account</h2>
@@ -226,6 +80,23 @@
       if(pass !== confirm) {
         e.preventDefault();
         alert("Passwords do not match!");
+      }
+    });
+
+    // Thêm chức năng search
+    document.querySelector('.search-box button').addEventListener('click', function() {
+      const searchTerm = document.querySelector('.search-box input').value;
+      if(searchTerm.trim()) {
+        alert(`Searching for: ${searchTerm}`);
+        // Trong ứng dụng thực tế, bạn sẽ chuyển hướng đến trang kết quả tìm kiếm
+        // window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+      }
+    });
+
+    // Cho phép nhấn Enter để tìm kiếm
+    document.querySelector('.search-box input').addEventListener('keypress', function(e) {
+      if(e.key === 'Enter') {
+        document.querySelector('.search-box button').click();
       }
     });
   </script>

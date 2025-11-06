@@ -5,17 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shopping Cart | 36 Jewelry</title>
 <link rel="stylesheet" href="jewelry-cart.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-<header class="header">
-  <a href="../index_profile.html" class="logo-link"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
-  <nav>
-    <a href="../index_profile.html">Home</a>
-    <a href="Product.html">Product</a>
-    <a href="jewelry-cart.html" class="active">Cart</a>
-    <a href="view_orders.html">Orders</a>
-  </nav>
+<!-- HEADER ĐỒNG BỘ VỚI SEARCH -->
+<header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="../index_profile.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+    </div>
+    <div class="center">
+      <a href="../index.html">
+        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" placeholder="Search products...">
+        <button onclick="window.location.href='search.html'">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="right">
+      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
 </header>
 
 <main class="main-content">
@@ -31,7 +46,7 @@
       <tr>
         <th>Product</th>
         <th>Price</th>
-        <th>Qty</th>
+        <th>Quantity</th>
         <th>Total</th>
         <th>Action</th>
       </tr>
@@ -43,45 +58,37 @@
           <span>Ula Opal Teardrop Ring</span>
         </td>
         <td class="price">$59.96</td>
-        <td><input type="number" value="1" min="1"></td>
+        <td class="quantity-cell">
+          <input type="number" value="1" min="1" class="quantity-input">
+        </td>
         <td class="item-total">$59.96</td>
-        <td>
-          <button class="view-details-btn" onclick="location.href='product-detail1.html'">View</button>
+        <td class="action-cell">
+          <button class="view-details-btn" onclick="location.href='R01_for_index.html'">View</button>
           <button class="remove-btn">Remove</button>
         </td>
       </tr>
-      <!-- <tr>
-        <td class="product-info">
-          <img src="../images/R003.jpg" alt="Platinum Clover Charm Ring" class="product-thumb">
-          <span>Platinum Clover Charm Ring</span>
-        </td>
-        <td class="price">$1950</td>
-        <td><input type="number" value="1" min="1"></td>
-        <td class="item-total">$1950</td>
-        <td>
-          <button class="view-details-btn" onclick="location.href='product-detail2.html'">View</button>
-          <button class="remove-btn">Remove</button>
-        </td>
-      </tr> -->
       <tr>
         <td class="product-info">
           <img src="../images/R007.jpg" alt="Paisley Moissanite Ring" class="product-thumb">
           <span>Paisley Moissanite Ring</span>
         </td>
-        <td class="price">$1380</td>
-        <td><input type="number" value="1" min="1"></td>
-        <td class="item-total">$1380</td>
-        <td>
-          <button class="view-details-btn" onclick="location.href='product-detail1.html'">View</button>
+        <td class="price">$1,380.00</td>
+        <td class="quantity-cell">
+          <input type="number" value="1" min="1" class="quantity-input">
+        </td>
+        <td class="item-total">$1,380.00</td>
+        <td class="action-cell">
+          <button class="view-details-btn" onclick="location.href='R01_for_index.html'">View</button>
           <button class="remove-btn">Remove</button>
         </td>
       </tr>
     </tbody>
   </table>
 
-  <p class="total">Total: <strong id="cart-total">$3,389.96</strong></p>
-
-  <a href="order_confirm.html" class="checkout-btn">Proceed to Checkout</a>
+  <div class="cart-summary">
+    <p class="total">Total: <strong id="cart-total">$1,439.96</strong></p>
+    <a href="order_confirm.html" class="checkout-btn">Proceed to Checkout</a>
+  </div>
 </main>
 
 <footer class="footer">
@@ -93,12 +100,12 @@ function updateTotals() {
   let total = 0;
   document.querySelectorAll('#cart-body tr').forEach(row => {
     const price = parseFloat(row.querySelector('.price').textContent.replace('$', '').replace(',', ''));
-    const qty = parseInt(row.querySelector('input').value);
+    const qty = parseInt(row.querySelector('.quantity-input').value);
     const itemTotal = price * qty;
-    row.querySelector('.item-total').textContent = '$' + itemTotal.toLocaleString();
+    row.querySelector('.item-total').textContent = '$' + itemTotal.toFixed(2);
     total += itemTotal;
   });
-  document.getElementById('cart-total').textContent = '$' + total.toLocaleString();
+  document.getElementById('cart-total').textContent = '$' + total.toFixed(2);
 }
 
 // Hiện thông báo
@@ -114,16 +121,19 @@ function showAlert(message) {
 }
 
 // Cập nhật khi đổi số lượng
-document.querySelectorAll('#cart-body input').forEach(input => {
+document.querySelectorAll('.quantity-input').forEach(input => {
   input.addEventListener('input', updateTotals);
 });
 
 // Khi bấm Remove chỉ hiện thông báo, không xóa sản phẩm
 document.querySelectorAll('.remove-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    showAlert('🟢 Removed!');
+    showAlert('🟢 Item removed from cart!');
   });
 });
+
+// Khởi tạo tổng tiền
+updateTotals();
 </script>
 
 </body>

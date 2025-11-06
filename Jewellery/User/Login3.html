@@ -5,37 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Login</title>
   <link rel="stylesheet" href="Login.css">
+  <link rel="stylesheet" href="search.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-  <!-- Nút Back -->
-
-  <div class="login-container">
-    <button onclick="window.history.back()" class="back-btn">←</button>
-
-    <h2 class="title">User Login</h2>
-    
-    <form action="#" method="post" class="login-form">
-      <div class="input-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+<!-- Header đồng bộ với trang search -->
+<header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="../index_profile.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+    </div>
+    <div class="center">
+      <a href="../index.html">
+        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" placeholder="Search products...">
+        <button onclick="window.location.href='search.html'">
+          <i class="fas fa-search"></i>
+        </button>
       </div>
-
-      <div class="input-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Enter your password" required>
-      </div>
-
-      <button type="button" class="btn" onclick="window.location.href='../index_profile.html'">
-        Login
-      </button>
-    </form>
-
-    <div class="extra-links">
-      <a href="Register.html">Sign Up</a>
-      <a href="forgot-password.html">Forgot Password?</a>
+    </div>
+    <div class="right">
+      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
     </div>
   </div>
+</header>
+
+<!-- Nội dung login giữ nguyên -->
+<div class="login-container">
+  <button onclick="window.history.back()" class="back-btn">←</button>
+
+  <h2 class="title">User Login</h2>
+  
+  <form action="#" method="post" class="login-form">
+    <div class="input-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Enter your username" required>
+    </div>
+
+    <div class="input-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter your password" required>
+    </div>
+
+    <button type="button" class="btn" onclick="window.location.href='../index_profile.html'">
+      Login
+    </button>
+  </form>
+
+  <div class="extra-links">
+    <a href="Register.html">Sign Up</a>
+    <a href="forgot-password.html">Forgot Password?</a>
+  </div>
+</div>
+
+<script>
+  // Các hàm xử lý sự kiện cho header
+  document.querySelector('.search-box button').addEventListener('click', function() {
+    const searchTerm = document.querySelector('.search-box input').value;
+    if (searchTerm.trim() !== '') {
+      alert(`🔍 Searching for: ${searchTerm}`);
+      // Thực tế sẽ chuyển hướng đến trang search với tham số tìm kiếm
+      // window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+    }
+  });
+
+  // Cho phép tìm kiếm bằng phím Enter
+  document.querySelector('.search-box input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      document.querySelector('.search-box button').click();
+    }
+  });
+</script>
 
 </body>
 </html>

@@ -19,7 +19,15 @@
 
 /* RESET */
 * { box-sizing: border-box; margin:0; padding:0;}
-html, body { height: 100%; font-family: var(--body-font); color: var(--dark); background: transparent; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+html, body { 
+    height: 100%; 
+    font-family: var(--body-font); 
+    color: var(--dark); 
+    background: transparent; 
+    -webkit-font-smoothing: antialiased; 
+    -moz-osx-font-smoothing: grayscale; 
+    overflow-x: hidden; /* Đảm bảo không bị tràn ngang */
+}
 
 /* ================= Header ================= */
 
@@ -275,12 +283,15 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
 .product-title { font-size: 16px; font-weight: 600; padding: 12px 14px 6px; text-transform: capitalize; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .product-price { font-weight: 700; color: var(--primary); margin-bottom: 10px; font-size: 1.1em; display: block; }
 
-/* ================= Pagination & Footer (Giữ nguyên) ================= */
+/* ================= Pagination & Footer (FIXED) ================= */
 .pagination {
     display: flex;
     justify-content: center;
     gap: 10px;
     margin: 24px 0;
+    /* FIX: Thêm position: relative và z-index để nút luôn nằm trên các element khác */
+    position: relative;
+    z-index: 10;
 }
 .pagination a {
     display: inline-flex;
@@ -310,6 +321,76 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
 #footer a:hover { color: var(--primary); }
 #footer .widget-title { color: #fff; margin-bottom: 15px; font-weight: 700; }
 #footer img { max-width: 150px; margin-bottom: 10px; }
+
+/* ================= Notification Popup CSS ================= */
+
+/* Container of the notification */
+.cart-notification {
+    position: fixed;
+    bottom: 20px; /* Vị trí dưới cùng */
+    right: 20px; /* Vị trí bên phải */
+    z-index: 10000;
+    opacity: 0; /* Mặc định ẩn */
+    visibility: hidden; /* Mặc định ẩn */
+    transform: translateY(100%); /* Bắt đầu từ ngoài màn hình */
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    background-color: transparent; /* Đảm bảo nền trong suốt */
+    max-width: 350px;
+    width: 100%;
+    pointer-events: none; /* Không chặn click khi ẩn */
+}
+
+/* Kích hoạt hiển thị (popup sẽ trượt lên) */
+.cart-notification.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto; /* Cho phép click khi hiện */
+}
+
+.notification-content {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: var(--radius);
+    padding: 15px 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.notification-icon i {
+    color: var(--primary); /* Sử dụng màu vàng/primary */
+    font-size: 2em;
+}
+
+.notification-text h3 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: var(--fw-bold);
+    color: var(--primary);
+}
+
+.notification-text p {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--muted);
+}
+
+.close-notification {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 1.2em;
+    margin-left: auto;
+    transition: color 0.2s;
+}
+
+.close-notification:hover {
+    color: var(--dark);
+}
+
 
 /* ================= Responsive ================= */
 @media (max-width: 1200px) { .products-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -369,5 +450,13 @@ html, body { height: 100%; font-family: var(--body-font); color: var(--dark); ba
     .filter-nav a {
         font-size: 16px;
         padding: 8px 16px;
+    }
+    
+    /* Responsive cho màn hình nhỏ */
+    .cart-notification {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: calc(100% - 20px);
     }
 }

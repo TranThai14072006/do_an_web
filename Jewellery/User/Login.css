@@ -25,31 +25,14 @@ body {
     url('../images/User_login2.jpg') no-repeat center center/cover;
   height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   animation: fadeIn 1.2s ease-in-out;
   overflow: hidden;
 }
 
-/* Nút back nằm góc trên bên trái của box */
-.back-btn {
-  position: absolute; /* so với .login-container */
-  top: 15px;          /* canh cách trên */
-  left: 15px;         /* canh cách trái */
-  background: rgba(255, 215, 0, 0.1);
-  color: #f8ce86;
-  border: 1px solid rgba(255, 215, 0, 0.5);
-  border-radius: 50px;
-  padding: 6px 14px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(6px);
-}
-
 /* ===== LOGIN CONTAINER ===== */
 .login-container {
-  position: relative; /* thêm dòng này */
+  position: relative;
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(12px);
   padding: 45px 40px;
@@ -60,11 +43,28 @@ body {
   border: 1px solid rgba(255, 215, 0, 0.2);
   animation: slideUp 1s ease-out;
   transition: all 0.4s ease;
+  margin: auto; /* Đảm bảo căn giữa */
 }
 
 .login-container:hover {
   transform: scale(1.02);
   box-shadow: 0 0 40px rgba(255, 215, 0, 0.25);
+}
+
+/* Nút back nằm góc trên bên trái của box */
+.back-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(255, 215, 0, 0.1);
+  color: #f8ce86;
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(6px);
 }
 
 /* ===== TITLE ===== */
@@ -173,6 +173,14 @@ body {
   text-shadow: 0 0 10px #f8ce86;
 }
 
+/* Chỉnh màu chữ placeholder */
+#username::placeholder,
+#password::placeholder {
+  color: #b6a988;
+  opacity: 1;
+  font-style: italic;
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
@@ -193,16 +201,3 @@ body {
   0%, 100% { box-shadow: 0 0 10px #f8ce86, 0 0 20px #8e4b00; }
   50% { box-shadow: 0 0 25px #fff8dc, 0 0 40px #f8ce86; }
 }
-/* Chỉnh màu chữ placeholder */
-#username::placeholder {
-    color: #b6a988;  /* Màu vàng nâu giống theme của bạn */
-    opacity: 1;       /* opacity mặc định thường thấp, để hiển thị đúng màu */
-    font-style: italic; /* tùy chọn: chữ nghiêng */
-}
-/* Chỉnh màu chữ placeholder */
-#password::placeholder {
-    color: #b6a988;  /* Màu vàng nâu giống theme của bạn */
-    opacity: 1;       /* opacity mặc định thường thấp, để hiển thị đúng màu */
-    font-style: italic; /* tùy chọn: chữ nghiêng */
-}
-

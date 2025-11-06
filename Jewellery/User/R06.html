@@ -3,23 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Winston Anchor Ring</title>
+  <title>Ula Opal Teardrop Ring</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="pr_detail.css">
 </head>
 
 <body>
-  <!-- ICON GIỎ HÀNG -->
+<header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="../index_profile.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+    </div>
+    <div class="center">
+      <a href="../index.html">
+        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" placeholder="Search products...">
+        <button onclick="window.location.href='search.html'">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="right">
+      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
+</header>
+
+
+  <!-- ICON GIỎ HÀNG
   <div class="cart-icon">
     <a href="Jewelry-cart.html" class="cart has-count" data-count="1" id="cart-icon">
       <i class="fa-solid fa-cart-shopping"></i>
       <span class="count">1</span>
     </a>
-  </div>
+  </div> -->
 
   <!-- HACK CSS: checkbox để bật số lượng -->
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
-  <button class="back-btn" onclick="window.history.back()">←</button>
+  
 
   <!-- THÔNG BÁO THÊM VÀO GIỎ HÀNG -->
   <div class="cart-notification" id="cart-notification">
@@ -28,8 +52,9 @@
         <i class="fas fa-check-circle"></i>
       </div>
       <div class="notification-text">
-        <h3>Added to cart!</h3>
-        <p>The product has been added to your shopping cart.</p>
+      <h3>Added to cart!</h3>
+<p>The product has been added to your shopping cart.</p>
+
       </div>
       <button class="close-notification" onclick="closeNotification()">
         <i class="fas fa-times"></i>
@@ -38,37 +63,37 @@
   </div>
 
   <div class="product-detail">
+    
+    <button class="back-btn" onclick="window.history.back()">←</button>
     <div class="product-image">
-      <img src="../images/R006.jpg" alt="Winston Anchor Ring">
+      <img src="../images/R001.jpg" alt="Ula Opal Teardrop Ring">
     </div>
-
     <div class="product-info">
-      <h1>Winston Anchor Ring</h1>
-      <p class="price">$1.850</p>
+      <h1>Ula Opal Teardrop Ring</h1>
+      <p class="price">$59.96</p>
       <p class="description">
-        A stylish men's sterling silver ring featuring an anchor design, symbolizing strength and stability.
+        A refined sterling silver ring featuring a shimmering teardrop Opal stone, radiating elegance and feminine charm.   
       </p>
 
-      <!-- PHẦN CHỌN SIZE -->
+      <!-- PHẦN CHỌN SIZE MỚI (chuyển sang select) -->
       <div class="size-selection">
         <h3>Select Ring Size</h3>
         <select name="ring-size" id="ring-size">
-          <option value="8">Size 8 (15cm - 17cm)</option>
-          <option value="9">Size 9 (17cm - 19cm)</option>
-          <option value="10">Size 10 (19cm - 21cm)</option>
-          <option value="11">Size 11 (21cm - 23cm)</option>
+          <option value="5">Size 5 (12cm - 15cm)</option>
+          <option value="6">Size 6 (15cm - 18cm)</option>
+          <option value="7">Size 7 (18cm - 21cm)</option>
+          <option value="8">Size 8 (21cm - 24cm)</option>
         </select>
       </div>
 
-      <!-- THÔNG TIN CHI TIẾT -->
       <ul class="product-specs">
-        <li><span>Material:</span> <span>925 Sterling Silver, Platinum-Plated</span></li>
-        <li><span>Design:</span> <span>Anchor motif, masculine and elegant</span></li>
+        <li><span>Material:</span> <span>Sterling Silver</span></li>
+        <li><span>Design:</span> <span>Teardrop shape with delicate detailing</span></li>
+        <li><span>Stone:</span> <span>Synthetic Opal</span></li>
         <li><span>Color:</span> <span>Silver</span></li>
         <li><span>Brand:</span> <span>ThirtySix Jewellery</span></li>
       </ul>
 
-      <!-- NÚT HÀNH ĐỘNG -->
       <div class="action-buttons">
         <label for="add-cart-checkbox" class="add-to-cart" onclick="showNotification()">
           <i class="fas fa-shopping-cart"></i>
@@ -79,6 +104,7 @@
           Buy now
         </a>
       </div>
+
     </div>
   </div>
 
@@ -86,6 +112,8 @@
     function showNotification() {
       const notification = document.getElementById('cart-notification');
       notification.classList.add('show');
+      
+      // Tự động ẩn sau 3 giây
       setTimeout(() => {
         notification.classList.remove('show');
       }, 3000);
