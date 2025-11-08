@@ -38,9 +38,46 @@
 </header>
 
 <div class="container my-5">
-  <div class="section-header text-center">
+   <div class="section-header text-center">
     <h1 class="section-title text-uppercase">Search Results</h1>
   </div>
+
+  <!-- ===== FILTER BAR ===== -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label for="category">Category:</label>
+      <select id="category">
+        <option value="all">All</option>
+        <option value="rings">Rings</option>
+        <option value="necklaces">Necklaces</option>
+        <option value="bracelets">Bracelets</option>
+        <option value="earrings">Earrings</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="price">Price Range:</label>
+      <select id="price">
+        <option value="all">All</option>
+        <option value="0-10">$0 - $10</option>
+        <option value="10-15">$10 - $15</option>
+        <option value="15-20">$15 - $20</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="sort">Sort by:</label>
+      <select id="sort">
+        <option value="default">Default</option>
+        <option value="price-low-high">Price: Low → High</option>
+        <option value="price-high-low">Price: High → Low</option>
+        <option value="name">Name (A → Z)</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary filter-btn" onclick="window.location.href='search.html'"><i class="fas fa-filter"></i> Apply</button>
+  </div>
+  <!-- ===== END FILTER BAR ===== -->
   
   <div class="products-grid">
     <!-- Product 1 -->

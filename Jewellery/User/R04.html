@@ -3,25 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Platinum CZ Couple Rings</title>
+  <title>Ula Opal Teardrop Ring</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="pr_detail.css">
 </head>
-<body>
 
-  <!-- ICON GIỎ HÀNG -->
+<body>
+<header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="../index_profile.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+    </div>
+    <div class="center">
+      <a href="../index.html">
+        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" placeholder="Search products...">
+        <button onclick="window.location.href='search.html'">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="right">
+      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
+</header>
+
+
+  <!-- ICON GIỎ HÀNG
   <div class="cart-icon">
     <a href="Jewelry-cart.html" class="cart has-count" data-count="1" id="cart-icon">
       <i class="fa-solid fa-cart-shopping"></i>
       <span class="count">1</span>
     </a>
-  </div>
+  </div> -->
 
   <!-- HACK CSS: checkbox để bật số lượng -->
   <input type="checkbox" id="add-cart-checkbox" style="display:none;">
-
-  <!-- NÚT BACK -->
-  <button class="back-btn" onclick="window.history.back()">←</button>
+  
 
   <!-- THÔNG BÁO THÊM VÀO GIỎ HÀNG -->
   <div class="cart-notification" id="cart-notification">
@@ -30,8 +52,9 @@
         <i class="fas fa-check-circle"></i>
       </div>
       <div class="notification-text">
-        <h3>Added to cart!</h3>
-        <p>The product has been added to your shopping cart.</p>
+      <h3>Added to cart!</h3>
+<p>The product has been added to your shopping cart.</p>
+
       </div>
       <button class="close-notification" onclick="closeNotification()">
         <i class="fas fa-times"></i>
@@ -40,41 +63,34 @@
   </div>
 
   <div class="product-detail">
+    
+    <button class="back-btn" onclick="window.history.back()">←</button>
     <div class="product-image">
-      <img src="../images/R004.jpg" alt="Platinum CZ Couple Rings">
+      <img src="../images/R001.jpg" alt="Ula Opal Teardrop Ring">
     </div>
-
     <div class="product-info">
-      <h1>Platinum CZ Couple Rings</h1>
-      <p class="price">$44.99</p>
+      <h1>Ula Opal Teardrop Ring</h1>
+      <p class="price">$59.96</p>
       <p class="description">
-        A stylish platinum-plated silver couple ring set, featuring sparkling CZ stones — symbolizing love and commitment.
+        A refined sterling silver ring featuring a shimmering teardrop Opal stone, radiating elegance and feminine charm.   
       </p>
 
-      <!-- PHẦN CHỌN SIZE NAM & NỮ -->
+      <!-- PHẦN CHỌN SIZE MỚI (chuyển sang select) -->
       <div class="size-selection">
         <h3>Select Ring Size</h3>
-
-        <label for="ring-size-male">Men's Ring Size:</label>
-        <select name="ring-size-male" id="ring-size-male">
-          <option value="8">Size 8 (21cm - 24cm)</option>
-          <option value="9">Size 9 (24cm - 27cm)</option>
-          <option value="10">Size 10 (27cm - 30cm)</option>
-        </select>
-
-        <label for="ring-size-female">Women's Ring Size:</label>
-        <select name="ring-size-female" id="ring-size-female">
+        <select name="ring-size" id="ring-size">
           <option value="5">Size 5 (12cm - 15cm)</option>
           <option value="6">Size 6 (15cm - 18cm)</option>
           <option value="7">Size 7 (18cm - 21cm)</option>
+          <option value="8">Size 8 (21cm - 24cm)</option>
         </select>
       </div>
 
       <ul class="product-specs">
-        <li><span>Material:</span> <span>Platinum-Plated Sterling Silver</span></li>
-        <li><span>Design:</span> <span>Couple rings with elegant CZ stones</span></li>
-        <li><span>Stone:</span> <span>Sparkling CZ</span></li>
-        <li><span>Color:</span> <span>Shiny platinum, clear white stones</span></li>
+        <li><span>Material:</span> <span>Sterling Silver</span></li>
+        <li><span>Design:</span> <span>Teardrop shape with delicate detailing</span></li>
+        <li><span>Stone:</span> <span>Synthetic Opal</span></li>
+        <li><span>Color:</span> <span>Silver</span></li>
         <li><span>Brand:</span> <span>ThirtySix Jewellery</span></li>
       </ul>
 

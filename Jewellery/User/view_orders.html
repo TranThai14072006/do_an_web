@@ -5,17 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Orders | 36 Jewelry</title>
   <link rel="stylesheet" href="view_orders.css">
+  <link rel="stylesheet" href="search.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-<header class="header">
-  <a href="../index_profile.html" class="logo-link"><img src="../images/36-logo.png" alt="36 Jewelry Logo"></a>
-  <nav>
-    <a href="../index_profile.html">Home</a>
-    <a href="Product.html">Product</a>
-    <a href="Jewelry-cart.html">Cart</a>
-    <a href="view-orders.html" class="active">Orders</a>
-  </nav>
+<!-- Header giống với search.html -->
+<header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="../index_profile.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+    </div>
+    <div class="center">
+      <a href="../index.html">
+        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" placeholder="Search products...">
+        <button onclick="window.location.href='search.html'">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="right">
+      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
 </header>
 
   <!-- MAIN CONTENT -->
@@ -23,7 +39,7 @@
     <!-- Back button -->
   <button class="back-btn" onclick="window.location.href='order_success.html'">←</button>
     <h2>Your Recent Orders</h2>
-    <p class="subtitle">Here are the items you’ve recently purchased with 36 Jewelry.</p>
+    <p class="subtitle">Here are the items you've recently purchased with 36 Jewelry.</p>
     <!-- CUSTOMER INFORMATION -->
 <section class="customer-info">
   <h3>Customer Information</h3>
@@ -61,15 +77,6 @@
             <td>$59.96</td>
           </tr>
           <tr>
-            <!-- <td class="product-info">
-              <img src="../images/R003.jpg" alt="Platinum Clover Charm Ring">
-              <span>Platinum Clover Charm Ring</span>
-            </td>
-            <td>$1,950</td>
-            <td>1</td>
-            <td>$1,950</td>
-          </tr> -->
-          <tr>
             <td class="product-info">
               <img src="../images/R007.jpg" alt="Paisley Moissanite Ring">
               <span>Paisley Moissanite Ring</span>
@@ -82,36 +89,6 @@
       </table>
       <p class="order-total">Order Total: <strong>$3,389.96</strong></p>
     </div>
-
-    <!-- <div class="order-card">
-      <div class="order-header">
-        <span>Order ID: <strong>#ORD10230</strong></span>
-        <span>Date: <strong>Oct 28, 2025</strong></span>
-        <span>Status: <strong class="status pending">Pending</strong></span>
-      </div>
-      <table class="order-table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Qty</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="product-info">
-              <img src="../images/R008.jpg" alt="Golden Leaf Diamond Ring">
-              <span>Golden Leaf Diamond Ring</span>
-            </td>
-            <td>$2,120</td>
-            <td>1</td>
-            <td>$2,120</td>
-          </tr>
-        </tbody>
-      </table>
-      <p class="order-total">Order Total: <strong>$2,120.00</strong></p>
-    </div> -->
   </main>
 
   <footer class="footer">

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>View Orders | 36 Jewelry</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 * {
   margin:0; padding:0; box-sizing:border-box;
@@ -13,11 +14,174 @@
 body {
   min-height: 100vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   background: linear-gradient(rgba(255,255,255,0.1), rgba(0,0,0,0.6)),
               url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
-  overflow: hidden;
+  overflow-x: hidden;
+}
+
+/* ===== HEADER STYLING - ĐỒNG BỘ VỚI SEARCH ===== */
+.header-container {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.search-bar {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-top: 1px solid rgba(0,0,0,0.03);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.search-bar .left,
+.search-bar .center,
+.search-bar .right {
+  display: flex;
+  align-items: center;
+}
+
+.search-bar .left { 
+  width: auto; 
+  justify-content: flex-start;
+}
+
+.search-bar .right { 
+  justify-content: flex-end; 
+  width: auto; 
+}
+
+.search-bar .center { 
+  flex: 1 1 auto;
+  justify-content: center;
+  gap: 30px;
+  position: relative;
+}
+
+/* Style cho nút Home */
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #111111;
+  font-weight: 600;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.home-btn i {
+  margin-right: 5px;
+  font-size: 18px;
+}
+
+.home-btn:hover {
+  background: #f9f9f9;
+  color: #b8860b;
+}
+
+/* Căn giữa tuyệt đối cho logo */
+.search-bar .center a {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.search-bar .center .header-logo {
+  height: 55px;
+  max-width: 180px;
+  object-fit: contain;
+  transition: all 0.25s ease;
+}
+
+/* Search box */
+.search-box {
+  flex: 0 1 450px;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9f9f9;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+  height: 50px;
+  opacity: 1;
+}
+
+.search-box input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 2px 6px;
+  font-size: 15px;
+  color: #111111;
+  min-width: 100px;
+}
+
+.search-box input::placeholder {
+  color: #666666;
+}
+
+.search-box button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: #b8860b;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.search-box button:hover {
+  background: #996600;
+}
+
+.icons { 
+  display: flex; 
+  gap: 10px; 
+  align-items: center; 
+}
+
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #111111;
+  transition: all 0.18s;
+  font-size: 18px;
+}
+
+.icon-link:hover {
+  background: rgba(186,134,11,0.08);
+  color: #b8860b;
 }
 
 /* ===== BOX ===== */
@@ -30,6 +194,7 @@ body {
   border-radius: 20px;
   backdrop-filter: blur(8px);
   box-shadow: 0 0 35px rgba(255,215,0,0.25);
+  margin: 40px auto;
 }
 
 /* ===== BACK BUTTON ===== */
@@ -114,10 +279,71 @@ body {
   margin-top:30px;
   color:#f0e6b2;
   font-size:14px;
+  padding: 20px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .search-bar {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .search-bar .left,
+  .search-bar .right,
+  .search-bar .center {
+    flex: unset;
+  }
+  
+  .search-box {
+    flex: 1;
+    margin-left: 0;
+    max-width: 100%;
+  }
+  
+  .main-content {
+    width: 95%;
+    padding: 40px 20px 30px 20px;
+    margin: 20px auto;
+  }
+  
+  .orders-table {
+    font-size: 14px;
+  }
+  
+  .orders-table th, .orders-table td {
+    padding: 8px 6px;
+  }
 }
 </style>
 </head>
 <body>
+
+<!-- HEADER ĐỒNG BỘ VỚI SEARCH -->
+<header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="../index_profile.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+    </div>
+    <div class="center">
+      <a href="../index.html">
+        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" placeholder="Search products...">
+        <button onclick="window.location.href='search.html'">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="right">
+      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
+</header>
 
 <main class="main-content">
 
