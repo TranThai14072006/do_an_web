@@ -42,7 +42,7 @@
 
   /* Nút Back trong khung order */
   /* Nút Back tinh chỉnh */
-.back-btn {
+.back-button {
   position: absolute;
   top: 20px;
   left: 20px;
@@ -58,17 +58,20 @@
   text-decoration: none;
   box-shadow: 0 4px 10px rgba(184, 134, 11, 0.3);
   transition: all 0.3s ease;
+  border: none;              /* loại bỏ border mặc định */
+  outline: none;             /* bỏ viền focus đen khi click */
 }
 
-.back-btn i {
+.back-button i {
   font-size: 16px;
 }
 
-.back-btn:hover {
+.back-button:hover {
   transform: translateX(-3px) scale(1.05);
   box-shadow: 0 6px 15px rgba(184, 134, 11, 0.4);
   background: linear-gradient(135deg, #c89715, #e0b83f);
 }
+
 
 
   h2 { text-align:center; color:#b8860b; font-size:28px; margin-bottom:30px; }
@@ -122,7 +125,7 @@
 
 <main class="main-content">
   <!-- Nút Back trong khung order -->
-  <a href="History.html" class="back-btn"><i class="fas fa-arrow-left"></i> </a>
+  <button class="back-button" onclick="window.history.back();">&#8592;</button>
   
   <h2>Order #1001 Details</h2>
 
