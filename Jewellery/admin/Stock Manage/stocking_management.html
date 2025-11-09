@@ -196,7 +196,7 @@
     }
 
     th {
-      background: linear-gradient(195deg, #8e4b00, #a3670b);
+      background: linear-gradient(195deg, #8e4b00, #8e4b00);
       color: #f8ce86;
       font-weight: 600;
       letter-spacing: 0.3px;
@@ -297,95 +297,74 @@
           <th>Status</th>
         </tr>
         <tr>
-          <td>JW001</td>
-          <td>Diamond Ring</td>
+          <td>R001</td>
+          <td>Kane Moissanite Ring</td>
           <td>Ring</td>
           <td>25</td>
           <td><span class="status-badge status-normal">In Stock</span></td>
         </tr>
         <tr>
-          <td>JW002</td>
-          <td>Gold Necklace</td>
-          <td>Necklace</td>
+          <td>R002</td>
+          <td>Winston Anchor Ring</td>
+          <td>Ring</td>
           <td>5</td>
           <td><span class="status-badge status-warning">Low Stock</span></td>
         </tr>
         <tr>
-          <td>JW003</td>
-          <td>Silver Bracelet</td>
-          <td>Bracelet</td>
+          <td>R003</td>
+          <td>Ula Opal Teardrop Ring</td>
+          <td>Ring</td>
           <td>0</td>
           <td><span class="status-badge status-danger">Out of Stock</span></td>
         </tr>
 
         <tr>
-  <td>JW004</td>
-  <td>Pearl Earrings</td>
-  <td>Earrings</td>
+  <td>R004</td>
+  <td>Platinum Clover Charm Ring</td>
+  <td>Ring</td>
   <td>12</td>
   <td><span class="status-badge status-normal">In Stock</span></td>
 </tr>
 <tr>
-  <td>JW005</td>
-  <td>Platinum Ring</td>
+  <td>R005</td>
+  <td>Paisley Moissanite Ring</td>
   <td>Ring</td>
   <td>3</td>
   <td><span class="status-badge status-warning">Low Stock</span></td>
 </tr>
 <tr>
-  <td>JW006</td>
-  <td>Ruby Pendant</td>
-  <td>Necklace</td>
+  <td>R006</td>
+  <td>Arielle Princess CZ Ring</td>
+  <td>Ring</td>
   <td>0</td>
   <td><span class="status-badge status-danger">Out of Stock</span></td>
 </tr>
 <tr>
-  <td>JW007</td>
-  <td>Gold Anklet</td>
-  <td>Anklet</td>
+  <td>R007</td>
+  <td>Miracle Queen CZ Ring </td>
+  <td>Ring</td>
   <td>15</td>
   <td><span class="status-badge status-normal">In Stock</span></td>
 </tr>
 <tr>
-  <td>JW008</td>
-  <td>Sapphire Ring</td>
+  <td>R008</td>
+  <td>Niche Crown Stack Ring</td>
   <td>Ring</td>
   <td>8</td>
   <td><span class="status-badge status-warning">Low Stock</span></td>
 </tr>
 <tr>
-  <td>JW009</td>
-  <td>Emerald Bracelet</td>
-  <td>Bracelet</td>
+  <td>R009</td>
+  <td>Rosemary Topaz Ring</td>
+  <td>Ring</td>
   <td>20</td>
   <td><span class="status-badge status-normal">In Stock</span></td>
 </tr>
 <tr>
-  <td>JW010</td>
-  <td>Silver Chain</td>
-  <td>Necklace</td>
-  <td>2</td>
-  <td><span class="status-badge status-warning">Low Stock</span></td>
-</tr>
-<tr>
-  <td>JW011</td>
-  <td>Diamond Earrings</td>
-  <td>Earrings</td>
-  <td>0</td>
-  <td><span class="status-badge status-danger">Out of Stock</span></td>
-</tr>
-<tr>
-  <td>JW012</td>
-  <td>Gold Bracelet</td>
-  <td>Bracelet</td>
-  <td>18</td>
-  <td><span class="status-badge status-normal">In Stock</span></td>
-</tr>
-<tr>
-  <td>JW013</td>
-  <td>Rose Gold Ring</td>
+  <td>R010</td>
+  <td>Royal Moissanite Ring</td>
   <td>Ring</td>
-  <td>6</td>
+  <td>2</td>
   <td><span class="status-badge status-warning">Low Stock</span></td>
 </tr>
 
@@ -397,6 +376,30 @@
         Products below 10 in quantity are considered low stock.
       </div>
     </div>
+
+    <div class="pagination">
+  <input type="radio" name="page" id="page1" checked hidden>
+  <input type="radio" name="page" id="page2" hidden>
+  <input type="radio" name="page" id="page3" hidden>
+
+  <div class="page-buttons">
+    <label for="page1" class="pagination-btn">1</label>
+    <label for="page2" class="pagination-btn">2</label>
+    <label for="page3" class="pagination-btn">3</label>
+  </div>
+
+  <div class="pagination-content">
+    <div class="page page1">
+      <p>Showing customers 1–5</p>
+    </div>
+    <div class="page page2">
+      <p>Showing customers 6–10</p>
+    </div>
+    <div class="page page3">
+      <p>Page 3</p>
+    </div>
+  </div>
+</div>
 
     <!-- Tab 2 -->
     <div class="tab-content" id="stock-alert">
@@ -415,21 +418,53 @@
           <th>Status</th>
         </tr>
         <tr>
-          <td>JW002</td>
-          <td>Gold Necklace</td>
-          <td>Necklace</td>
+          <td>R002</td>
+          <td>Winston Anchor Ring</td>
+          <td>Ring</td>
           <td>5</td>
           <td>10</td>
           <td><span class="status-badge status-warning">Low Stock</span></td>
         </tr>
         <tr>
-          <td>JW003</td>
-          <td>Silver Bracelet</td>
-          <td>Bracelet</td>
+          <td>R003</td>
+          <td>Ula Opal Teardrop Ring</td>
+          <td>Ring</td>
           <td>0</td>
           <td>10</td>
           <td><span class="status-badge status-danger">Out of Stock</span></td>
         </tr>
+        <tr>
+  <td>R005</td>
+  <td>Paisley Moissanite Ring</td>
+  <td>Ring</td>
+  <td>3</td>
+            <td>10</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+<tr>
+  <td>R006</td>
+  <td>Arielle Princess CZ Ring</td>
+  <td>Ring</td>
+  <td>0</td>
+            <td>10</td>
+  <td><span class="status-badge status-danger">Out of Stock</span></td>
+</tr>
+<tr>
+  <td>R008</td>
+  <td>Niche Crown Stack Ring</td>
+  <td>Ring</td>
+  <td>8</td>
+            <td>10</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
+<tr>
+  <td>R010</td>
+  <td>Royal Moissanite Ring</td>
+  <td>Ring</td>
+  <td>2</td>
+            <td>10</td>
+  <td><span class="status-badge status-warning">Low Stock</span></td>
+</tr>
       </table>
     </div>
 

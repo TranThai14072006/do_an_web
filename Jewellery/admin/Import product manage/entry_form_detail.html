@@ -245,10 +245,34 @@
       border-radius: 6px;
       font-size: 14px;
     }
+    .popup{
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      display:none;justify-content:center;align-items:center;
+      background:rgba(0,0,0,0.5);z-index:3000;
+    }
+    .popup-box{
+      background:#fff;border-radius:10px;padding:25px 35px;width:400px;
+      text-align:center;box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    }
+    #resetPopup:checked ~ .popup-update{display:flex;}
+    #print_order:checked ~ .popup-print{display:flex;}
+    .overlay{position:absolute;width:100%;height:100%;top:0;left:0;}
 
   </style>
 </head>
 <body>
+
+
+  <input type="checkbox" id="print_order" hidden>
+  <div class="popup popup-print">
+    <label for="print_order" class="overlay"></label>
+    <div class="popup-box">
+      <h3>🖨 Print Order</h3>
+      <p>Order is printing, please wait...</p>
+      <label for="print_order" class="btn btn-primary">OK</label>
+    </div>
+  </div>
+
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="logo">
@@ -260,8 +284,8 @@
       <a href="../Administration_menu.html#products">Jewelry List</a>
       <a href="../Administration_menu.html#product-manage">Product Management</a>
       <a href="../Price Manage/pricing.html">Pricing Management</a>
-      <a href="entry_form_detail.html" class="active">Import Management</a>
-      <a href="../Order Manage/order_management.html" class="active">Order Management</a>
+      <a href="import_management.html" class="active">Import Management</a>
+      <a href="../Order Manage/order_management.html">Order Management</a>
       <a href="../Stock Manage/stocking_management.html">Stocking</a>
       <a href="../Administration_menu.html#setting">Settings</a>
     </div>
@@ -269,7 +293,7 @@
 
   <!-- MAIN -->
   <main>
-    <header><h1>Order Detail - #ORD001</h1></header>
+    <header><h1>Purchase Order - PO.001</h1></header>
 
     <div class="card">
       <div class="card-header">Order Information</div>
@@ -293,29 +317,32 @@
           </tr>
         </thead>
         <tbody>
-          <tr><td>1</td><td>PR001</td><td><img src="../../images/R001.jpg" class="product-image"></td><td>Diamond Ring</td><td>1</td><td class="text-right">25,000,000</td><td class="text-right">25,000,000</td></tr>
-          <tr><td>2</td><td>PR002</td><td><img src="../../images/R002.jpg" class="product-image"></td><td>Gold Necklace</td><td>2</td><td class="text-right">12,000,000</td><td class="text-right">24,000,000</td></tr>
-          <tr><td>3</td><td>PR003</td><td><img src="../../images/R003.jpg" class="product-image"></td><td>Platinum Earrings</td><td>1</td><td class="text-right">9,500,000</td><td class="text-right">9,500,000</td></tr>
-          <tr><td>4</td><td>PR004</td><td><img src="../../images/R004.jpg" class="product-image"></td><td>Emerald Bracelet</td><td>1</td><td class="text-right">7,000,000</td><td class="text-right">7,000,000</td></tr>
-          <tr><td>5</td><td>PR005</td><td><img src="../../images/R005.jpg" class="product-image"></td><td>Ruby Ring</td><td>2</td><td class="text-right">13,000,000</td><td class="text-right">26,000,000</td></tr>
-          <tr><td>6</td><td>PR006</td><td><img src="../../images/R006.jpg" class="product-image"></td><td>Pearl Necklace</td><td>1</td><td class="text-right">8,000,000</td><td class="text-right">8,000,000</td></tr>
-          <tr><td>7</td><td>PR007</td><td><img src="../../images/R007.jpg" class="product-image"></td><td>Silver Anklet</td><td>1</td><td class="text-right">3,000,000</td><td class="text-right">3,000,000</td></tr>
-          <tr><td>8</td><td>PR008</td><td><img src="../../images/R008.jpg" class="product-image"></td><td>Rose Gold Pendant</td><td>1</td><td class="text-right">5,500,000</td><td class="text-right">5,500,000</td></tr>
-          <tr><td>9</td><td>PR009</td><td><img src="../../images/R009.jpg" class="product-image"></td><td>Topaz Earrings</td><td>2</td><td class="text-right">6,500,000</td><td class="text-right">13,000,000</td></tr>
-          <tr><td>10</td><td>PR010</td><td><img src="../../images/R010.jpg" class="product-image"></td><td>Platinum Wedding Band</td><td>1</td><td class="text-right">14,000,000</td><td class="text-right">14,000,000</td></tr>
+          <tr><td>1</td><td>R001</td><td><img src="../../images/R001.jpg" class="product-image"></td><td>Ula Opal Teardrop Ring</td><td>1</td><td class="text-right">59.96</td><td class="text-right">59.96</td></tr>
+          <tr><td>2</td><td>R002</td><td><img src="../../images/R002.jpg" class="product-image"></td><td>Kane Moissanite Ring</td><td>2</td><td class="text-right">1.371</td><td class="text-right">2.742</td></tr>
+          <tr><td>3</td><td>R003</td><td><img src="../../images/R003.jpg" class="product-image"></td><td>Platinum Clover Charm Ring</td><td>1</td><td class="text-right">1.950</td><td class="text-right">1.950</td></tr>
+          <tr><td>4</td><td>R004</td><td><img src="../../images/R004.jpg" class="product-image"></td><td>Emerald Bracelet</td><td>1</td><td class="text-right">1.950</td><td class="text-right">1.950</td></tr>
+          <tr><td>5</td><td>R005</td><td><img src="../../images/R005.jpg" class="product-image"></td><td>Royal Moissanite Ring</td><td>2</td><td class="text-right">2.200</td><td class="text-right">4.400</td></tr>
+          <tr><td>6</td><td>R006</td><td><img src="../../images/R006.jpg" class="product-image"></td><td>Winston Anchor Ring</td><td>1</td><td class="text-right">1.850</td><td class="text-right">1.850</td></tr>
+          <tr><td>7</td><td>R007</td><td><img src="../../images/R007.jpg" class="product-image"></td><td>Paisley Moissanite Ring</td><td>1</td><td class="text-right">1.380</td><td class="text-right">1.380</td></tr>
+          <tr><td>8</td><td>R008</td><td><img src="../../images/R008.jpg" class="product-image"></td><td>Arielle Princess CZ Ring</td><td>1</td><td class="text-right">1.250</td><td class="text-right">1.250</td></tr>
+          <tr><td>9</td><td>R009</td><td><img src="../../images/R009.jpg" class="product-image"></td><td>Miracle Queen CZ Ring</td><td>2</td><td class="text-right">1.470</td><td class="text-right">2.940</td></tr>
+          <tr><td>10</td><td>R010</td><td><img src="../../images/R010.jpg" class="product-image"></td><td>Niche Crown Stack Ring</td><td>1</td><td class="text-right">1.490</td><td class="text-right">1.490</td></tr>
         </tbody>
       </table>
 
       <div class="summary-card">
         <div class="summary-row"><span>Total Products:</span><span>10</span></div>
         <div class="summary-row"><span>Total Quantity:</span><span>13</span></div>
-        <div class="summary-row summary-total"><span>Grand Total:</span><span>135,000,000 VNĐ</span></div>
+        <div class="summary-row summary-total"><span>Grand Total:</span><span>14.970 USD</span></div>
       </div>
     </div>
 
     <div class="action-buttons">
       <a href="import_management.html" class="btn btn-secondary">Back</a>
-      <a href="#" class="btn btn-primary">Print Order</a>
+      <button type="button" class="btn btn-primary"
+         onclick="document.getElementById('print_order').checked = true;">
+        Print Order
+      </button>
     </div>
   </main>
 </body>
