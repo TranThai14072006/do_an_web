@@ -6,6 +6,7 @@
   <title>Luxury Jewelry Admin Panel</title>
   <link rel="stylesheet" href="admin_function.css">
 </head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <body>
   <div class="sidebar">
     <div class="logo">
@@ -413,12 +414,16 @@
     </div>
   </div>
 </section>
+ <!-- Settings -->
+<section id="settings" class="section">
+  <header><h1>System Settings</h1></header>
+  <div class="user-actions">
+    <a href="admin_login.html" class="btn logout-btn">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </a>
+  </div>
+</section>
 
-    <!-- Settings -->
-    <section id="settings" class="section">
-      <header><h1>System Settings</h1></header>
-      <p>Adjust system configurations and store information here...</p>
-    </section>
 
      <!-- Inventory / Stock (merged from stock.html) -->
     <section id="stock" class="section">
@@ -431,6 +436,33 @@
     </section>
 
   </div>
-    <!-- SPA script removed to keep this page static. -->
-  </body>
-  </html>
+  <style>
+    /* CSS cho nút đăng xuất */
+    .logout-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #d9534f, #c9302c);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(217, 83, 79, 0.3);
+      border: none;
+      cursor: pointer;
+    }
+    
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(217, 83, 79, 0.4);
+      background: linear-gradient(135deg, #c9302c, #ac2925);
+    }
+    
+    .logout-btn i {
+      font-size: 18px;
+    }
+  </style>
+</body>
+</html>
