@@ -615,6 +615,38 @@ table img {
         document.getElementById(tab.dataset.tab).classList.add('active');
       });
     });
+
+
+  // Tabs switching + lưu tab
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Xóa trạng thái active hiện tại
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      // Kích hoạt tab được chọn
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+
+      // Lưu tên tab vào localStorage
+      localStorage.setItem('activeTab', tab.dataset.tab);
+    });
+  });
+
+  // Khi tải lại trang hoặc Back
+  window.addEventListener('load', () => {
+    const activeTab = localStorage.getItem('activeTab');
+    if (activeTab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      // Kích hoạt tab được lưu
+      document.querySelector(`.tab[data-tab="${activeTab}"]`).classList.add('active');
+      document.getElementById(activeTab).classList.add('active');
+    }
+  });
+
+
   </script>
 </body>
 </html>
