@@ -1121,6 +1121,7 @@ fieldset[disabled] a.btn {
 .btn.btn-outline-dark,
 .btn.btn-outline-light,
 .btn.btn-outline-accent {
+  color: black;
   background: transparent;
   text-shadow: none;
   box-shadow: none;
@@ -1143,7 +1144,7 @@ fieldset[disabled] a.btn {
 
 .btn.btn-outline-light {
   border-color: rgba(255, 255, 255, 0.5);
-  color: var(--light-color);
+  color: black;
 }
 
 .btn.btn-outline-light:hover {
