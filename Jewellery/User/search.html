@@ -75,125 +75,64 @@
         <option value="name">Name (A → Z)</option>
       </select>
     </div>
-
-    <button class="btn btn-primary filter-btn" onclick="window.location.href='search.html'"><i class="fas fa-filter"></i> Apply</button>
+    
+   <!-- 🔍 Thanh tìm kiếm -->
+  <div class="filter-group search-group">
+    <label for="search">Search:</label>
+    <input type="text" id="search" placeholder="Search product name..." />
   </div>
+
+  <button class="btn btn-primary filter-btn" onclick="window.location.href='search.html'">
+    <i class="fas fa-filter"></i> Find
+  </button>
+</div>
   <!-- ===== END FILTER BAR ===== -->
   
   <div class="products-grid">
-    <!-- Product 1 -->
-    <div class="product-item position-relative">
-      <div class="image-holder">
-        <img src="../images/R001.jpg" alt="product-item" class="product-image">
-      </div>
-      <div class="product-detail text-center">
-        <h3 class="product-title"><a href="R01.html">R001 - Gold Ring</a></h3>
-        <span class="item-price text-primary">$12.00</span>
-        <div class="product-actions">
-          <button class="btn btn-primary" onclick="showAddToCartMessage('R001 - Gold Ring')">
-            <i class="fas fa-shopping-cart"></i> Add to Cart
-          </button>
-          <a href="R01.html" class="btn btn-outline" onclick="showDetailMessage('R001 - Gold Ring', event)">
-            <i class="fas fa-info-circle"></i> Detail
-          </a>
-        </div>
-      </div>
-    </div>
+   <article class="product-card">
+        <a href="R01.html" class="product-card-link">
+          <div class="image-holder">
+            <img src="../images/R001.jpg" alt="Ula Opal Teardrop Ring" class="product-image">
+          </div>
+          <h3 class="product-title">Ula Opal Teardrop Ring</h3>
+          <span class="product-price">$59.96</span>
+        </a>
+        <button class="btn-add" onclick="showNotification('Ula Opal Teardrop Ring')">Add to Cart</button>
+      </article>
 
-    <!-- Product 2 -->
-    <div class="product-item position-relative">
-      <div class="image-holder">
-        <img src="../images/R002.jpg" alt="product-item" class="product-image">
-      </div>
-      <div class="product-detail text-center">
-        <h3 class="product-title"><a href="R01.html">R002 - Silver Necklace</a></h3>
-        <span class="item-price text-primary">$14.00</span>
-        <div class="product-actions">
-          <button class="btn btn-primary" onclick="showAddToCartMessage('R002 - Silver Necklace')">
-            <i class="fas fa-shopping-cart"></i> Add to Cart
-          </button>
-          <a href="R01.html" class="btn btn-outline" onclick="showDetailMessage('R002 - Silver Necklace', event)">
-            <i class="fas fa-info-circle"></i> Detail
-          </a>
-        </div>
-      </div>
-    </div>
+      <article class="product-card">
+        <a href="R01.html" class="product-card-link">
+          <div class="image-holder">
+            <img src="../images/R002.jpg" alt="Kane Moissanite Ring" class="product-image">
+          </div>
+          <h3 class="product-title">Kane Moissanite Ring</h3>
+          <span class="product-price">$1,371</span>
+        </a>
+        <button class="btn-add" onclick="showNotification('Kane Moissanite Ring')">Add to Cart</button>
+      </article>
 
-    <!-- Product 3 -->
-    <div class="product-item position-relative">
-      <div class="image-holder">
-        <img src="../images/R003.jpg" alt="product-item" class="product-image">
-      </div>
-      <div class="product-detail text-center">
-        <h3 class="product-title"><a href="R01.html">R003 - Diamond Earrings</a></h3>
-        <span class="item-price text-primary">$12.00</span>
-        <div class="product-actions">
-          <button class="btn btn-primary" onclick="showAddToCartMessage('R003 - Diamond Earrings')">
-            <i class="fas fa-shopping-cart"></i> Add to Cart
-          </button>
-          <a href="R01.html" class="btn btn-outline" onclick="showDetailMessage('R003 - Diamond Earrings', event)">
-            <i class="fas fa-info-circle"></i> Detail
-          </a>
-        </div>
-      </div>
-    </div>
+      <article class="product-card">
+        <a href="R01.html" class="product-card-link">
+          <div class="image-holder">
+            <img src="../images/R003.jpg" alt="Platinum Clover Charm Ring" class="product-image">
+          </div>
+          <h3 class="product-title">Platinum Clover Charm Ring</h3>
+          <span class="product-price">$1.950</span>
+        </a>
+        <button class="btn-add" onclick="showNotification('Platinum Clover Charm Ring')">Add to Cart</button>
+      </article>
 
-    <!-- Product 4 -->
-    <div class="product-item position-relative">
-      <div class="image-holder">
-        <img src="../images/R004.jpg" alt="product-item" class="product-image">
-      </div>
-      <div class="product-detail text-center">
-        <h3 class="product-title"><a href="R01.html">R004 - Pearl Bracelet</a></h3>
-        <span class="item-price text-primary">$14.00</span>
-        <div class="product-actions">
-          <button class="btn btn-primary" onclick="showAddToCartMessage('R004 - Pearl Bracelet')">
-            <i class="fas fa-shopping-cart"></i> Add to Cart
-          </button>
-          <a href="R01.html" class="btn btn-outline" onclick="showDetailMessage('R004 - Pearl Bracelet', event)">
-            <i class="fas fa-info-circle"></i> Detail
-          </a>
-        </div>
-      </div>
-    </div>
+      <article class="product-card">
+        <a href="R01.html" class="product-card-link">
+          <div class="image-holder">
+            <img src="../images/R007.jpg" alt="Paisley Moissanite Ring" class="product-image">
+          </div>
+          <h3 class="product-title">Paisley Moissanite Ring</h3>
+          <span class="product-price">$1.380</span>
+        </a>
+        <button class="btn-add" onclick="showNotification('Paisley Moissanite Ring')">Add to Cart</button>
+      </article>
 
-    <!-- Product 5 -->
-    <div class="product-item position-relative">
-      <div class="image-holder">
-        <img src="../images/R005.jpg" alt="product-item" class="product-image">
-      </div>
-      <div class="product-detail text-center">
-        <h3 class="product-title"><a href="R01.html">R005 - Ruby Pendant</a></h3>
-        <span class="item-price text-primary">$16.00</span>
-        <div class="product-actions">
-          <button class="btn btn-primary" onclick="showAddToCartMessage('R005 - Ruby Pendant')">
-            <i class="fas fa-shopping-cart"></i> Add to Cart
-          </button>
-          <a href="R01.html" class="btn btn-outline" onclick="showDetailMessage('R005 - Ruby Pendant', event)">
-            <i class="fas fa-info-circle"></i> Detail
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Product 6 -->
-    <div class="product-item position-relative">
-      <div class="image-holder">
-        <img src="../images/R006.jpg" alt="product-item" class="product-image">
-      </div>
-      <div class="product-detail text-center">
-        <h3 class="product-title"><a href="R01.html">R006 - Emerald Ring</a></h3>
-        <span class="item-price text-primary">$12.00</span>
-        <div class="product-actions">
-          <button class="btn btn-primary" onclick="showAddToCartMessage('R006 - Emerald Ring')">
-            <i class="fas fa-shopping-cart"></i> Add to Cart
-          </button>
-          <a href="R01.html" class="btn btn-outline" onclick="showDetailMessage('R006 - Emerald Ring', event)">
-            <i class="fas fa-info-circle"></i> Detail
-          </a>
-        </div>
-      </div>
-    </div>
 
   </div>
 
@@ -209,6 +148,7 @@
 <footer id="footer" class="overflow-hidden">
   <!-- Footer content giữ nguyên giống file cũ -->
 </footer>
+
 
 <div id="footer-bottom">
   <!-- Footer-bottom content giữ nguyên -->
