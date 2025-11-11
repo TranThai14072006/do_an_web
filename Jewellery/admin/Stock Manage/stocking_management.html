@@ -241,6 +241,36 @@ table img {
   border-radius: 6px;
 }
 
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.pagination .btn {
+  background-color: #8e4b00;
+  color: #f8ce86;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.pagination .btn:hover {
+  background-color: #f8ce86;
+  color: #8e4b00;
+}
+
+.pagination .btn.active {
+  background-color: #f8ce86;
+  color: #8e4b00;
+  font-weight: bold;
+}
+
+
   </style>
 </head>
 <body>
@@ -390,6 +420,13 @@ table img {
 
 
       </table>
+<div class="pagination">
+  <button class="btn small">Prev</button>
+  <button class="btn small active">1</button>
+  <button class="btn small">2</button>
+  <button class="btn small">3</button>
+  <button class="btn small">Next</button>
+</div>
 
       <div class="alert-section">
         <div class="alert-title">Note:</div>
@@ -402,23 +439,7 @@ table img {
   <input type="radio" name="page" id="page2" hidden>
   <input type="radio" name="page" id="page3" hidden>
 
-  <div class="page-buttons">
-    <label for="page1" class="pagination-btn">1</label>
-    <label for="page2" class="pagination-btn">2</label>
-    <label for="page3" class="pagination-btn">3</label>
-  </div>
 
-  <div class="pagination-content">
-    <div class="page page1">
-      <p>Showing customers 1–5</p>
-    </div>
-    <div class="page page2">
-      <p>Showing customers 6–10</p>
-    </div>
-    <div class="page page3">
-      <p>Page 3</p>
-    </div>
-  </div>
 </div>
 
     <!-- Tab 2 -->
@@ -601,6 +622,14 @@ table img {
 </tr>
 
       </table>
+      <div class="pagination">
+  <button class="btn small">Prev</button>
+  <button class="btn small active">1</button>
+  <button class="btn small">2</button>
+  <button class="btn small">3</button>
+  <button class="btn small">Next</button>
+</div>
+
     </div>
 
   </main>
