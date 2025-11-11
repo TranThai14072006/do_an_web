@@ -8,21 +8,17 @@
 body {background:#f5f5f5; display:flex; color:#333;}
 
 .btn {
-      background: linear-gradient(195deg, #8e4b00, #8e4b00);
-      color: #f8ce86;
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: 0.3s;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn:hover {
-      background: linear-gradient(195deg, #d8921b, #a3670b);
-      transform: translateY(-2px);
-    }
+  background: linear-gradient(195deg, #8e4b00, #8e4b00);
+  color: #f8ce86;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: 0.3s;
+  border: none;
+  cursor: pointer;
+}
+.btn:hover {background: linear-gradient(195deg, #d8921b, #a3670b); transform: translateY(-2px);}
 
 /* SIDEBAR */
 .sidebar {
@@ -41,21 +37,16 @@ body {background:#f5f5f5; display:flex; color:#333;}
 main {flex:1; padding:25px 40px; margin-left:220px;}
 header h1 {font-size:24px; color:#8e4b00; margin-bottom:20px;}
 
-/* TAB BUTTONS pricing style */
+/* TAB BUTTONS */
 input[name="tab"]{display:none;}
-
 label.tab-btn{
   padding:10px 18px; font-weight:600; color:#444; cursor:pointer;
   display:inline-block; margin-right:60px; position:relative;
 }
-
-input[name="tab"]:checked + label{
-  color:#8e4b00;
-}
+input[name="tab"]:checked + label{color:#8e4b00;}
 input[name="tab"]:checked + label::after{
   content:""; left:0; bottom:-2px; width:100%; height:3px;
-  background:#8e4b00; border-radius:2px;
-  position:absolute;
+  background:#8e4b00; border-radius:2px; position:absolute;
 }
 
 /* TAB CONTENT */
@@ -83,32 +74,44 @@ input[name="tab"]:checked + label::after{
 .btn-reset{background:#888; color:#fff;}
 
 /* TABLE */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+th, td {
+  padding: 14px 16px;
+  text-align: center;
+  font-size: 15px;
+  border-bottom: 1px solid #f0e2d0;
+}
+th {
+  background: linear-gradient(195deg, #8e4b00, #8e4b00);
+  color: #f8ce86;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+tr:hover td {background: #f9f2e7;}
+input[type="number"]{
+  width:80px; padding:6px; border:1px solid #ccc; border-radius:5px; text-align:center;
+}
 
-    th, td {
-      padding: 14px 16px;
-      text-align: center;
-      font-size: 15px;
-      border-bottom: 1px solid #f0e2d0;
-    }
-
-    th {
-      background: linear-gradient(195deg, #8e4b00, #8e4b00);
-      color: #f8ce86;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-    }
-
-    tr:hover td {
-      background: #f9f2e7;
-    }
+/* POPUP */
+.popup{
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  display:none; justify-content:center; align-items:center;
+  background:rgba(0,0,0,0.5); z-index:3000;
+}
+.popup-box{
+  background:#fff; border-radius:10px; padding:25px 35px; width:360px;
+  text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
+#savePopup:checked ~ .popup{display:flex;}
+.overlay{position:absolute;width:100%;height:100%;top:0;left:0;}
+.close-btn{margin-top:15px;display:inline-block;}
 </style>
 </head>
 <body>
@@ -142,6 +145,35 @@ input[name="tab"]:checked + label::after{
   <input type="radio" id="tab3" name="tab">
   <label for="tab3" class="tab-btn">Profit by Category</label>
 
+  <!-- POPUP -->
+  <input type="checkbox" id="savePopup" hidden>
+  <div class="popup">
+    <label for="savePopup" class="overlay"></label>
+    <div class="popup-box">
+      <h3>Change successfully!</h3>
+      <label for="savePopup" class="btn close-btn">OK</label>
+    </div>
+  </div>
+
+  <style>
+  .popup {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, 0.4); z-index: 1000;
+  }
+  .popup-box {
+    background: #fff; padding: 25px 40px;
+    border-radius: 10px; text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    animation: fadeIn .3s ease;
+  }
+  .popup-box h3 {color:#8e4b00; margin-bottom:20px;}
+  .overlay {position: absolute; top:0; left:0; right:0; bottom:0;}
+  .close-btn {background:#8e4b00; color:#fff; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;}
+  #savePopup:checked ~ .popup {display: flex;}
+  </style>
+
   <div class="contents">
 
     <!-- TAB1 -->
@@ -149,114 +181,51 @@ input[name="tab"]:checked + label::after{
       <div class="search-section">
         <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
         <div class="search-group"><label class="search-label">Category</label>
-        <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>free sex to night </option></select></div>
-        <button class="btn-search" onclick="window.location.href='search.html'">Search</button>
+        <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select></div>
+        <button class="btn-search">Search</button>
         <button class="btn-reset">Reset</button>
       </div>
 
       <table>
-        <thead><tr><th>No.</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit (%)</th><th>Selling Price</th><th>Action</th></tr></thead>
+        <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit (%)</th><th>Selling Price</th><th>Action</th></tr></thead>
         <tbody>
-        <tr>
+          <tr>
             <td>1</td>
+            <td><img src="../../images/R001.jpg" width="60"></td>
             <td>Kane Moissanite Ring</td>
             <td>Ring</td>
-            <td>1.020</td>
-            <td>30%</td>
-            <td>$1.371</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
+            <td>1.020</td><td>30%</td><td>$1.371</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr>
             <td>2</td>
-            <td>Winston Anchor Ring </td>
-            <td>Ring</td>
-            <td>1.220</td>
-            <td>40%</td>
-            <td>$1.850</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td>Ula Opal Teardrop Ring</td>
-            <td>Ring</td>
-            <td>39.50</td>
-            <td>25%</td>
-            <td>$59.96</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td>Platinum Clover Charm Ring</td>
-            <td>Ring</td>
-            <td>1.210</td>
-            <td>35%</td>
-            <td>$1.950</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>5</td>
-            <td>Paisley Moissanite Ring</td>
-            <td>Rings</td>
-            <td>980</td>
-            <td>20%</td>
-            <td>$1.380</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>6</td>
-            <td>Arielle Princess CZ Ring</td>
-            <td>Ring</td>
-            <td>950</td>
-            <td>25%</td>
-            <td>$1.250</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>7</td>
-            <td>Miracle Queen CZ Ring</td>
-            <td>Ring</td>
-            <td>1.000</td>
-            <td>30%</td>
-            <td>$1.470</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>8</td>
-            <td>Niche Crown Stack Ring</td>
-            <td>Ring</td>
-            <td>1.130</td>
-            <td>35%</td>
-            <td>$1.490</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>9</td>
-            <td>Rosemary Topaz Ring</td>
-            <td>Ring</td>
-            <td>1.030</td>
-            <td>25%</td>
-            <td>$1.430</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>10</td>
-            <td>Royal Moissanite Ring</td>
-            <td>Ring</td>
-            <td>1.400</td>
-            <td>40%</td>
-            <td>$2.200</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
+            <td><img src="../../images/R002.jpg" width="60"></td>
+            <td>Winston Anchor Ring</td><td>Ring</td><td>1.220</td><td>40%</td><td>$1.850</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>3</td><td><img src="../../images/R003.jpg" width="60"></td><td>Ula Opal Teardrop Ring</td><td>Ring</td><td>39.50</td><td>25%</td><td>$59.96</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>4</td><td><img src="../../images/R004.jpg" width="60"></td><td>Platinum Clover Charm Ring</td><td>Ring</td><td>1.210</td><td>35%</td><td>$1.950</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>5</td><td><img src="../../images/R005.jpg" width="60"></td><td>Paisley Moissanite Ring</td><td>Ring</td><td>980</td><td>20%</td><td>$1.380</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>6</td><td><img src="../../images/R006.jpg" width="60"></td><td>Arielle Princess CZ Ring</td><td>Ring</td><td>950</td><td>25%</td><td>$1.250</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>7</td><td><img src="../../images/R007.jpg" width="60"></td><td>Miracle Queen CZ Ring</td><td>Ring</td><td>1.000</td><td>30%</td><td>$1.470</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>8</td><td><img src="../../images/R008.jpg" width="60"></td><td>Niche Crown Stack Ring</td><td>Ring</td><td>1.130</td><td>35%</td><td>$1.490</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>9</td><td><img src="../../images/R009.jpg" width="60"></td><td>Rosemary Topaz Ring</td><td>Ring</td><td>1.030</td><td>25%</td><td>$1.430</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>10</td><td><img src="../../images/R010.jpg" width="60"></td><td>Royal Moissanite Ring</td><td>Ring</td><td>1.400</td><td>40%</td><td>$2.200</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
         </tbody>
       </table>
     </div>
 
-     <div id="content2" class="tab-content">
+    <!-- TAB2 -->
+    <div id="content2" class="tab-content">
       <table>
-        <thead><tr><th>No.</th><th>Product</th><th>Category</th><th>Pro   fit (%)</th><th>Action</th></tr></thead>
+        <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Profit (%)</th><th>Action</th></tr></thead>
         <tbody>
-          <tr><td>1</td><td>Diamond Ring</td><td>Ring</td><td>30%</td><td>Save</td></tr>
-          <tr><td>2</td><td>Gold Necklace</td><td>Ring</td><td>40%</td><td>Save</td></tr>
+          <tr><td>1</td><td><img src="../../images/R001.jpg" width="60"></td><td>Kane Moissanite Ring</td><td>Ring</td><td><input type="number" value="30" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>2</td><td><img src="../../images/R002.jpg" width="60"></td><td>Winston Anchor Ring</td><td>Ring</td><td><input type="number" value="40" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>3</td><td><img src="../../images/R003.jpg" width="60"></td><td>Ula Opal Teardrop Ring</td><td>Ring</td><td><input type="number" value="25" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>4</td><td><img src="../../images/R004.jpg" width="60"></td><td>Platinum Clover Charm Ring</td><td>Ring</td><td><input type="number" value="35" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>5</td><td><img src="../../images/R005.jpg" width="60"></td><td>Paisley Moissanite Ring</td><td>Ring</td><td><input type="number" value="20" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>6</td><td><img src="../../images/R006.jpg" width="60"></td><td>Arielle Princess CZ Ring</td><td>Ring</td><td><input type="number" value="25" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>7</td><td><img src="../../images/R007.jpg" width="60"></td><td>Miracle Queen CZ Ring</td><td>Ring</td><td><input type="number" value="30" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>8</td><td><img src="../../images/R008.jpg" width="60"></td><td>Niche Crown Stack Ring</td><td>Ring</td><td><input type="number" value="35" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>9</td><td><img src="../../images/R009.jpg" width="60"></td><td>Rosemary Topaz Ring</td><td>Ring</td><td><input type="number" value="25" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>10</td><td><img src="../../images/R010.jpg" width="60"></td><td>Royal Moissanite Ring</td><td>Ring</td><td><input type="number" value="40" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
         </tbody>
       </table>
     </div>
@@ -266,12 +235,14 @@ input[name="tab"]:checked + label::after{
       <table>
         <thead><tr><th>No.</th><th>Category</th><th>Profit (%)</th><th>Action</th></tr></thead>
         <tbody>
-          <tr><td>1</td><td>Rings</td><td>30%</td><td>Save</td></tr>
-          <tr><td>2</td><td>Necklaces</td><td>35%</td><td>Save</td></tr>
+          <tr><td>1</td><td>Male</td><td><input type="number" value="30" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>2</td><td>Female</td><td><input type="number" value="35" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>3</td><td>Unisex</td><td><input type="number" value="25" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </main>
+
 </body>
 </html>
