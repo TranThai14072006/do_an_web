@@ -139,7 +139,7 @@
             <td>13</td>
             <td>
               <a href="edit_product.html" class="btn small">Edit</a>
-              <a href="#" class="btn small">Delete</a>
+              <label for="deletePopup" class="btn small">Delete</label>
             </td>
           </tr>
           <tr>
@@ -150,7 +150,7 @@
             <td>7</td>
             <td>
               <a href="edit_product.html" class="btn small">Edit</a>
-              <a href="#" class="btn small">Delete</a>
+              <label for="deletePopup" class="btn small">Delete</label>
             </td>
           </tr>
           <tr>
@@ -161,7 +161,7 @@
             <td>6</td>
             <td>
               <a href="edit_product.html" class="btn small">Edit</a>
-              <a href="#" class="btn small">Delete</a>
+              <label for="deletePopup" class="btn small">Delete</label>
             </td>
           </tr>
           <tr>
@@ -172,7 +172,7 @@
             <td>22</td>
             <td>
               <a href="edit_product.html" class="btn small">Edit</a>
-              <a href="#" class="btn small">Delete</a>
+              <label for="deletePopup" class="btn small">Delete</label>
             </td>
           </tr>
           <tr>
@@ -183,7 +183,7 @@
             <td>8</td>
             <td>
               <a href="edit_product.html" class="btn small">Edit</a>
-              <a href="#" class="btn small">Delete</a>
+              <label for="deletePopup" class="btn small">Delete</label>
             </td>
           </tr>
         </table>
@@ -209,6 +209,15 @@
   Showing 1-5 of 25 products
 </div>
 
+<input type="checkbox" id="deletePopup" hidden>
+<div class="popup">
+  <label for="deletePopup" class="overlay"></label>
+  <div class="popup-box">
+    <h3>Delete Prduct</h3>
+    <p>The product has been delete successfully.</p>
+    <label for="deletePopup" class="btn close-btn">OK</label>
+  </div>
+</div>
 
     </section>
 
