@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Luxury Jewelry Admin Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      display: flex;
+      background-color: #f3f3f3;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 220px;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      height: 100vh;
+      position: fixed;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    .logo h2 {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .menu {
+      padding: 20px 0;
+    }
+
+    .menu a {
+      display: block;
+      padding: 12px;
+      color: #f8ce86;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .menu a:hover,
+    .menu a.active {
+      background-color: #f8ce86;
+      color: #8e4b00;
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      margin-left: 220px;
+      padding: 25px;
+      width: calc(100% - 220px);
+    }
+
+    .section {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      color: #8e4b00;
+      margin-bottom: 20px;
+      font-size: 22px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    /* Search Section */
+    .search-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f9f2e7;
+      border-radius: 8px;
+    }
+
+    .search-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #8e4b00;
+    }
+
+    .search-input {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #8e4b00;
+      outline: none;
+    }
+
+    .btn-search, .btn-reset {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      align-self: flex-end;
+    }
+
+    .btn-search {
+      background: linear-gradient(195deg, #a3670b, #8e4b00);
+      color: white;
+      box-shadow: 0 2px 5px rgba(142, 75, 0, 0.3);
+    }
+
+    .btn-search:hover {
+      background: linear-gradient(195deg, #c17a0d, #8e4b00);
+      transform: translateY(-2px);
+    }
+
+    .btn-reset {
+      background: #e0e0e0;
+      color: #333;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-reset:hover {
+      background: #bcbcbc;
+      transform: translateY(-2px);
+    }
+
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #8e4b00;
+      color: #f8ce86;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #f9f2e7;
+    }
+
+    td img {
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 20px;
+    }
+
+    .page-link {
+      padding: 8px 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #8e4b00;
+      transition: all 0.3s;
+      background: white;
+    }
+
+    .page-link:hover {
+      background: #f8ce86;
+      color: #5a2d00;
+    }
+
+    .page-link.active {
+      background: linear-gradient(195deg, #8e4b00, #b87127);
+      color: white;
+      border-color: #8e4b00;
+    }
+
+    /* Logout Button */
+    .logout-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 28px;
+      background: linear-gradient(195deg, #a3670b, #8e4b00);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 8px rgba(142, 75, 0, 0.3);
+      border: none;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    
+    .logout-btn:hover {
+      background: linear-gradient(195deg, #c17a0d, #a3670b);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(142, 75, 0, 0.4);
+    }
+    
+    .logout-btn i {
+      font-size: 18px;
+    }
+
+    /* Button Styles */
+    .btn {
+      display: inline-block;
+      padding: 10px 16px;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      text-align: center;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #f8ce86;
+      color: #8e4b00;
+    }
+
+    .btn.small {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      
+      .main-content {
+        margin-left: 0;
+        width: 100%;
+      }
+      
+      .search-section {
+        flex-direction: column;
+      }
+      
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">
+      <img src="../images/Admin_login.jpg" alt="Admin Logo">
+      <h2>Luxury Jewelry Admin</h2>
+    </div>
+
+    <div class="menu">
+      <a href="#products">Jewelry List</a>
+      <a href="#product-manage">Product Management</a>
+      <a href="Price Manage/pricing.html">Pricing Management</a>
+      <a href="#users">Customers</a>
+      <a href="Order Manage/order_management.html">Order Management</a>
+      <a href="Import product manage/import_management.html">Import Management</a>
+      <a href="Stock Manage/stocking_management.html">Stocking Management</a>
+      <a href="#settings">Settings</a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- Jewelry List -->
+    <section id="products" class="section">
+      <header><h1>Search Results</h1></header>
+
+      <div class="product-list">
+        <div class="tab-content active" id="tab1">
+          <div class="search-section">
+            <div class="search-group">
+              <label class="search-label">Product Name</label>
+              <input type="text" class="search-input">
+            </div>
+            <div class="search-group">
+              <label class="search-label">Category</label>
+              <select class="search-input">
+                <option>All</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Unisex</option>
+              </select>
+            </div>
+            <button class="btn-search" onclick="window.location.href='search.html'">Search</button>
+            <button class="btn-reset" onclick="window.location.href='search.html'">Reset</button>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Image</th>
+                <th>Product Name</th>
+                <th>Category</th>
+              </tr>
+            </thead>
+            <tbody>  
+              <tr>
+                <td>2</td>
+                <td><img src="../images/R002.jpg" width="60"></td>
+                <td>Winston Anchor Ring</td>
+                <td>Ring</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td><img src="../images/R006.jpg" width="60"></td>
+                <td>Arielle Princess CZ Ring</td>
+                <td>Ring</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><img src="../images/R005.jpg" width="60"></td>
+                <td>Ula Opal Teardrop Ring</td>
+                <td>Ring</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <!-- Pagination -->
+          <div class="pagination">
+            <a href="#" class="page-link prev">← Previous</a>
+            <a href="#" class="page-link active">1</a>
+            <a href="#" class="page-link">2</a>
+            <a href="#" class="page-link">3</a>
+            <a href="#" class="page-link next">Next →</a>
+          </div>
+        </div> 
+      </div>
+      
+      <button class="logout-btn"onclick="window.location.href='Administration_menu.html#product-manage'"> Back
+      </button>
+    </section>
+  </div>
+
+  <script>
+    // Xử lý click + lưu tab
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Reset active
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        // Set active
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+        // Lưu tab hiện tại
+        localStorage.setItem('activeTabProducts', tab.dataset.tab);
+      });
+    });
+
+    // Khi tải lại trang
+    window.addEventListener('load', () => {
+      const activeTab = localStorage.getItem('activeTabProducts');
+      if (activeTab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelector(`.tab[data-tab="${activeTab}"]`).classList.add('active');
+        document.getElementById(activeTab).classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>
