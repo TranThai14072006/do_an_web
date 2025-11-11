@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Search Results </title>
+  <title>Search Results</title>
   <style>
     * {
       margin: 0;
@@ -73,42 +73,6 @@
       font-size: 24px;
     }
 
-    /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #ddd;
-    }
-
-    .tab {
-      padding: 10px 18px;
-      font-weight: 600;
-      color: #555;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.3s;
-    }
-
-    .tab.active {
-      color: #8e4b00;
-      border-bottom-color: #8e4b00;
-    }
-
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(10px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-
     /* Search form */
     .search-form {
       background: white;
@@ -120,32 +84,6 @@
       flex-wrap: wrap;
       gap: 1rem;
       align-items: flex-end;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-width: 180px;
-    }
-
-    label {
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 6px;
-    }
-
-    input, select {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 15px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    input:focus, select:focus {
-      border-color: #8e4b00;
     }
 
     .btn {
@@ -174,7 +112,7 @@
       background: #aaa;
     }
 
-    /* Full-width table */
+    /* Table */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -202,78 +140,81 @@
       background: #f9f2e7;
     }
 
-    /* Status badges */
-    .status-badge {
-      display: inline-block;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 13px;
+    /* ================= POPUP ================= */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .popup.active {
+      display: flex;
+    }
+
+    .popup-content {
+      background: white;
+      border-radius: 10px;
+      padding: 25px 30px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      text-align: center;
+      transform: translateY(-20px);
+      opacity: 0;
+      animation: slideIn 0.3s forwards;
+    }
+
+    @keyframes slideIn {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .close-btn {
+      margin-top: 15px;
+      background: #ccc;
+      color: #333;
+    }
+    .close-btn:hover {
+      background: #aaa;
+    }
+
+    /* ================= TOAST ================= */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      padding: 14px 22px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px);
+      transition: all 0.4s ease;
+      z-index: 1000;
       font-weight: 600;
     }
-    .status-normal { background-color: #e8f5e9; color: #2e7d32; }
-    .status-warning { background-color: #fff8e1; color: #f57c00; }
-    .status-danger { background-color: #ffebee; color: #c62828; }
 
-    /* Alert section */
-    .alert-section {
-      background: #fffbe6;
-      border-left: 4px solid #8e4b00;
-      padding: 1rem;
-      margin-top: 1.5rem;
-      border-radius: 6px;
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
-
-    .alert-title {
-      font-weight: 600;
-      color: #8e4b00;
-      margin-bottom: 0.5rem;
-    }
-
-    /* -------------------- PHÂN TRANG -------------------- */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 1.5rem;
-  gap: 8px;
-}
-
-.pagination-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  background-color: white;
-  color: #344767;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.pagination-btn:hover {
-  background-color: #f5f5f5;
-}
-
-.pagination-btn.active {
-  background: linear-gradient(195deg, #8e4b00, #8e4b00);
-  color: white;
-  border-color: #8e4b00;
-}
-
-.pagination-info {
-  margin-top: 10px;
-  text-align: center;
-  font-size: 14px;
-  color: #666;
-}
-
   </style>
 </head>
-<body>
 
+<body>
   <div class="sidebar">
     <div class="logo">
       <img src="../images/Admin_login.jpg" alt="Admin Logo">
@@ -293,73 +234,96 @@
 
   <main>
     <h1>Search Results</h1>
+    <form class="search-form">
+      <button type="button" class="btn btn-back-fixed" onclick="window.location.href='Administration_menu.html#users'">Back</button>
+    </form>
 
-    <!-- Tab 1 -->
-    <div class="user-list">
-          <form class="search-form">
-  <button type="button" class="btn btn-back-fixed" onclick="window.location.href='Administration_menu.html#users'">Back</button>
-</form>
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Customer Name</th>
-      <th>Email</th>
-      <th>Status</th>
-      <th>Action</th>
-    </tr>
-
-    <tr><td>1</td><td>Emma Tran</td><td>emma@example.com</td><td>Locked</td>
-      <td>
-        <label for="view" class="btn small">View</label>
-        <label for="resetPopup" class="btn small">Reset</label>
-        <label for="unlockPopup" class="btn small">Unlock</label>
-      </td>
-    </tr>
-
-    <tr><td>2</td><td>Lucas Hoang</td><td>lucas@example.com</td><td>Locked</td>
-      <td>
-        <label for="view" class="btn small">View</label>
-        <label for="resetPopup" class="btn small">Reset</label>
-        <label for="unlockPopup" class="btn small">Unlock</label>
-      </td>
-    </tr>
-
-    <tr><td>3</td><td>Henry Bui</td><td>henry@example.com</td><td>Locked</td>
-      <td>
-        <label for="view" class="btn small">View</label>
-        <label for="resetPopup" class="btn small">Reset</label>
-        <label for="unlockPopup" class="btn small">Unlock</label>
-      </td>
-    </tr>
-
-    <tr><td>4</td><td>Chloe Nguyen</td><td>chloe@example.com</td><td>Locked</td>
-      <td>
-        <label for="view" class="btn small">View</label>
-        <label for="resetPopup" class="btn small">Reset</label>
-        <label for="unlockPopup" class="btn small">Unlock</label>
-      </td>
-    </tr>
-  </table>
-
-  <!-- Pagination -->
-<div class="pagination">
-  <input type="radio" name="page" id="page1" checked hidden>
-  <input type="radio" name="page" id="page2" hidden>
-  <input type="radio" name="page" id="page3" hidden>
- 
-
-
-</div>
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Customer Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+      <tr>
+        <td>1</td><td>Emma Tran</td><td>emma@example.com</td><td>Locked</td>
+        <td>
+          <button class="btn small">View</button>
+          <button class="btn small">Reset</button>
+          <button class="btn small">Unlock</button>
+        </td>
+      </tr>
+    </table>
   </main>
 
+  <!-- ================= POPUPS ================= -->
+  <div class="popup" id="viewPopup">
+    <div class="popup-content">
+      <h2>Customer Details</h2>
+      <p><strong>Name:</strong> Emma Tran</p>
+      <p><strong>Email:</strong> emma@example.com</p>
+      <p><strong>Status:</strong> Locked</p>
+      <button class="btn close-btn" onclick="closePopup('viewPopup')">Close</button>
+    </div>
+  </div>
+
+  <div class="popup" id="resetPopup">
+    <div class="popup-content">
+      <h2>Reset Password</h2>
+      <p>Are you sure you want to reset this customer’s password?</p>
+      <button class="btn confirm-btn">Confirm</button>
+      <button class="btn secondary" onclick="closePopup('resetPopup')">Cancel</button>
+    </div>
+  </div>
+
+  <div class="popup" id="unlockPopup">
+    <div class="popup-content">
+      <h2>Unlock Account</h2>
+      <p>Are you sure you want to unlock this account?</p>
+      <button class="btn unlock-btn">Unlock</button>
+      <button class="btn secondary" onclick="closePopup('unlockPopup')">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">Action completed successfully!</div>
+
   <script>
-    // Tabs switching
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.tab).classList.add('active');
+    function openPopup(id) {
+      document.getElementById(id).classList.add('active');
+    }
+
+    function closePopup(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function showToast(message = "Action completed successfully!") {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // Khi trang load xong mới gán sự kiện
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll('.btn.small').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const action = e.target.textContent.trim().toLowerCase();
+          if (action === 'view') openPopup('viewPopup');
+          if (action === 'reset') openPopup('resetPopup');
+          if (action === 'unlock') openPopup('unlockPopup');
+        });
+      });
+
+      document.querySelector('.confirm-btn').addEventListener('click', () => {
+        showToast("Password has been reset!");
+        setTimeout(() => closePopup('resetPopup'), 1500);
+      });
+
+      document.querySelector('.unlock-btn').addEventListener('click', () => {
+        showToast("Account unlocked successfully!");
+        setTimeout(() => closePopup('unlockPopup'), 1500);
       });
     });
   </script>
