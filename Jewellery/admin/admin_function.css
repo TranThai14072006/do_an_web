@@ -1,4 +1,6 @@
-/* -------------------- RESET CƠ BẢN -------------------- */
+/* =============================
+   RESET CƠ BẢN
+============================= */
 * {
   margin: 0;
   padding: 0;
@@ -6,14 +8,18 @@
   font-family: "Segoe UI", sans-serif;
 }
 
-/* -------------------- BỐ CỤC CHÍNH -------------------- */
+/* =============================
+   BỐ CỤC CHÍNH
+============================= */
 body {
   display: flex;
   min-height: 100vh;
   background-color: #f3f3f3;
 }
 
-/* -------------------- THANH BÊN TRÁI -------------------- */
+/* =============================
+   SIDEBAR
+============================= */
 .sidebar {
   width: 220px;
   background-color: #8e4b00; /* Nâu đồng đậm */
@@ -38,7 +44,9 @@ body {
   margin-top: 10px;
 }
 
-/* -------------------- MENU -------------------- */
+/* =============================
+   MENU
+============================= */
 .menu a {
   display: block;
   padding: 12px;
@@ -57,34 +65,31 @@ body {
   color: #8e4b00;
 }
 
-/* -------------------- NỘI DUNG CHÍNH -------------------- */
+/* =============================
+   PHẦN NỘI DUNG
+============================= */
 .content {
   flex: 1;
   padding: 30px;
 }
 
-/* Mỗi phần nội dung (section) */
 .section {
   display: none;
   animation: fadeIn 0.4s ease;
 }
-
-.section:target {
-  display: block;
-}
-
-/* Hiển thị mặc định phần đầu tiên */
+.section:target,
 .section:first-of-type {
   display: block;
 }
 
-/* -------------------- HEADER -------------------- */
 header h1 {
   color: #8e4b00;
   margin-bottom: 20px;
 }
 
-/* -------------------- DASHBOARD -------------------- */
+/* =============================
+   DASHBOARD
+============================= */
 .dashboard {
   display: flex;
   gap: 20px;
@@ -102,23 +107,13 @@ header h1 {
   text-align: center;
   transition: transform 0.3s;
 }
+.card:hover { transform: translateY(-5px); }
+.card h3 { color: #8e4b00; margin-bottom: 10px; }
+.card p { font-size: 20px; font-weight: bold; color: #333; }
 
-.card:hover {
-  transform: translateY(-5px);
-}
-
-.card h3 {
-  color: #8e4b00;
-  margin-bottom: 10px;
-}
-
-.card p {
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-}
-
-/* -------------------- BẢNG DỮ LIỆU -------------------- */
+/* =============================
+   BẢNG DỮ LIỆU
+============================= */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -143,15 +138,9 @@ tr:hover {
   background-color: #f9f2e7;
 }
 
-/* -------------------- NÚT CHỨC NĂNG -------------------- */
-.user-actions {
-  margin: 20px 0 18px 0;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
+/* =============================
+   NÚT CHỨC NĂNG
+============================= */
 .btn {
   display: inline-block;
   padding: 10px 16px;
@@ -162,6 +151,7 @@ tr:hover {
   font-weight: bold;
   text-align: center;
   transition: all 0.3s;
+  border: none;
 }
 
 .btn:hover {
@@ -174,24 +164,9 @@ tr:hover {
   font-size: 14px;
 }
 
-/* -------------------- DANH SÁCH NGƯỜI DÙNG -------------------- */
-.user-list {
-  margin-top: 20px;
-}
-
-#toggleCustomerList ~ .user-list {
-  display: none;
-}
-
-#toggleCustomerList:checked ~ .user-list {
-  display: block;
-}
-
-label.btn {
-  cursor: pointer;
-}
-
-/* -------------------- PHẦN TÌM KIẾM -------------------- */
+/* =============================
+   PHẦN TÌM KIẾM
+============================= */
 .search-section {
   display: flex;
   align-items: center;
@@ -211,7 +186,7 @@ label.btn {
   margin-bottom: 5px;
 }
 
-.search-input, .search-select {
+.search-input, select {
   padding: 8px 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -220,12 +195,12 @@ label.btn {
   transition: all 0.3s ease;
 }
 
-.search-input:focus, .search-select:focus {
+.search-input:focus, select:focus {
   border-color: #8e4b00;
   box-shadow: 0 0 5px rgba(142, 75, 0, 0.4);
 }
 
-.btn-search {
+.btn-search, .btn-reset {
   background-color: #8e4b00;
   color: #f8ce86;
   border: none;
@@ -237,280 +212,91 @@ label.btn {
   align-items: center;
   justify-content: center;
   margin-top: 26px;
-  gap: 6px;
 }
 
-.btn-search:hover {
+.btn-search:hover, .btn-reset:hover {
   background-color: #f8ce86;
   color: #8e4b00;
 }
 
-/* -------------------- PHÂN TRANG -------------------- */
-.pagination {
+/* ============================
+   TAB LAYOUT (THEO STOCKING)
+============================ */
+.tabs {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 1.5rem;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ddd;
 }
 
-.pagination-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  background-color: white;
-  color: #344767;
-  font-size: 14px;
+.tab {
+  padding: 10px 18px;
+  font-weight: 600;
+  color: #555;
   cursor: pointer;
-  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
 }
 
-.pagination-btn:hover {
-  background-color: #f5f5f5;
-}
-
-.pagination-btn.active {
-  background: linear-gradient(195deg, #8e4b00, #8e4b00);
-  color: white;
-  border-color: #8e4b00;
-}
-
-.pagination-info {
-  margin-top: 10px;
-  text-align: center;
-  font-size: 14px;
-  color: #666;
-}
-
-/* -------------------- ICON MATERIAL LOCAL -------------------- */
-@font-face {
-  font-family: 'Material Icons';
-  font-style: normal;
-  font-weight: 400;
-  src: url('fonts/MaterialIcons-Regular.woff2') format('woff2'),
-       url('fonts/MaterialIcons-Regular.woff') format('woff'),
-       url('fonts/MaterialIcons-Regular.ttf') format('truetype');
-}
-
-.material-icons {
-  font-family: 'Material Icons';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 18px;
-  display: inline-block;
-  line-height: 1;
-  text-transform: none;
-  letter-spacing: normal;
-  -webkit-font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-}
-
-/* -------------------- POPUP XEM THÔNG TIN NGƯỜI DÙNG -------------------- */
-.user-detail {
-  position: fixed;
-  inset: 0;
-  display: none;
-}
-
-.user-detail .overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-}
-
-.user-detail .detail-box {
-  position: relative;
-  background: #fffaf0;
-  color: #5a3200;
-  width: 400px;
-  margin: 10% auto;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  z-index: 2;
-}
-
-.user-detail .detail-box h3 {
-  margin-top: 0;
+.tab.active {
   color: #8e4b00;
-  border-bottom: 2px solid #f8ce86;
-  padding-bottom: 8px;
+  border-bottom-color: #8e4b00;
 }
 
-.user-detail .close-btn {
-  display: block;
-  text-align: center;
-  margin-top: 15px;
-  width: 100%;
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
 }
 
-/* #view1:checked + .user-detail {
+.tab-content.active {
   display: block;
 }
 
-#view2:checked + .user-detail {
-  display: block;
-} */
-input[type="checkbox"]:checked + .user-detail {
-  display: block;
-}
-
-
-/* -------------------- HIỆU ỨNG -------------------- */
 @keyframes fadeIn {
   from {opacity: 0; transform: translateY(10px);}
   to {opacity: 1; transform: translateY(0);}
 }
 
-.popup {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+
+/* =============================
+   PHÂN TRANG (#products)
+============================= */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 24px 0;
+  gap: 10px;
+}
+
+.page-link {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-input[type="checkbox"]:checked + .popup {
-  display: flex;
-}
-
-.popup-box {
-  background: #fff;
-  padding: 25px 30px;
-  border-radius: 12px;
-  text-align: center;
-  width: 320px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  animation: fadeIn 0.3s ease;
-}
-
-.popup-box h3 {
+  padding: 8px 14px;
+  background-color: white;
   color: #8e4b00;
-  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: 0.2s;
 }
 
-.popup-box p {
-  margin-bottom: 20px;
-  color: #333;
+.page-link:hover {
+  background-color: #f8ce86;
+  color: #5a2d00;
 }
 
-.overlay {
-  position: fixed;
-  inset: 0;
+.page-link.active {
+  background: linear-gradient(195deg, #8e4b00, #b87127);
+  color: #fff;
+  border-color: #8e4b00;
 }
 
+/* =============================
+   HIỆU ỨNG
+============================= */
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-/* Phân trang cho danh sách khách hàng */
-.pagination {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.page-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.pagination-btn {
-  background-color: #8e4b00;
-  color: #f8ce86;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.pagination-btn:hover {
-  background-color: #b87127;
-}
-
-input[name="page"]:checked + .page-buttons label[for="page1"],
-input#page1:checked ~ .page-buttons label[for="page1"],
-input#page2:checked ~ .page-buttons label[for="page2"],
-input#page3:checked ~ .page-buttons label[for="page3"] {
-  background-color: #f8ce86;
-  color: #5a2d00;
-  font-weight: bold;
-}
-
-.pagination-content .page {
-  display: none;
-  margin-top: 10px;
-  font-size: 14px;
-  color: #333;
-}
-
-#page1:checked ~ .pagination-content .page1,
-#page2:checked ~ .pagination-content .page2,
-#page3:checked ~ .pagination-content .page3 {
-  display: block;
-}
-/* ===============================
-   PHÂN TRANG RIÊNG CHO #PRODUCTS
-================================= */
-#products .pagination {
-  margin-top: 20px;
-  text-align: center;
-}
-
-#products .page-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-#products .pagination-btn {
-  background-color: #8e4b00;
-  color: #f8ce86;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-  border: none;
-}
-
-#products .pagination-btn:hover {
-  background-color: #b87127;
-}
-
-/* Nút được chọn */
-input#prodPage1:checked ~ .page-buttons label[for="prodPage1"],
-input#prodPage2:checked ~ .page-buttons label[for="prodPage2"] {
-  background-color: #f8ce86;
-  color: #5a2d00;
-  font-weight: bold;
-}
-
-/* Ẩn/hiện dữ liệu trong bảng */
-#products table .page1,
-#products table .page2 {
-  display: none;
-}
-
-#prodPage1:checked ~ table .page1 { display: table-row-group; }
-#prodPage2:checked ~ table .page2 { display: table-row-group; }
-
-/* Nội dung mô tả trang */
-#products .pagination-content .page {
-  display: none;
-  font-size: 14px;
-  color: #333;
-}
-
-#prodPage1:checked ~ .pagination-content .page1,
-#prodPage2:checked ~ .pagination-content .page2 {
-  display: block;
-}
-

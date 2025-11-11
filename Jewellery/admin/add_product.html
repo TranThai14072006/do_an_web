@@ -2,103 +2,308 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Add New Product</title>
-  <link rel="stylesheet" href="admin_function.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Price</title>
+
   <style>
-    body { font-family: "Segoe UI", sans-serif; background: #fafafa; margin: 0; }
-    .container {
-      width: 80%;
-      max-width: 700px;
-      background: #fff;
-      margin: 50px auto;
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f3f3f3;
+      color: #333;
+      margin: 0;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background-color: #8e4b00;
+      color: #f8ce86;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 80px;
+      border-radius: 50%;
+    }
+
+    .logo h2 {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .menu a {
+      display: block;
+      padding: 12px;
+      color: #f8ce86;
+      text-decoration: none;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      padding: 30px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      transition: background 0.3s, color 0.3s;
     }
-    h2 { text-align: center; color: #b8942d; margin-bottom: 25px; }
-    .form-group { margin-bottom: 15px; }
-    label { font-weight: bold; display: block; margin-bottom: 6px; }
-    input, select, textarea {
-      width: 100%; padding: 8px 10px; border: 1px solid #ccc;
-      border-radius: 5px; font-size: 15px;
+
+    .menu a:hover,
+    .menu a.active,
+    .menu a:target {
+      background-color: #f8ce86;
+      color: #8e4b00;
     }
-    textarea { resize: vertical; }
-    .form-actions { text-align: center; margin-top: 20px; }
+
+    /* Main layout */
+    main {
+      margin-left: 220px;
+      flex: 1;
+      padding: 25px;
+    }
+
+    h1 {
+      color: #8e4b00;
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      padding: 25px;
+      margin-top: 20px;
+      max-width: 1100px;
+    }
+
+    .card h3 {
+      color: #8e4b00;
+      margin-bottom: 15px;
+    }
+
+    .form-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+    }
+
+    .form-column {
+      flex: 2;
+      min-width: 400px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    input, textarea {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #8e4b00;
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* Right column (image) */
+    .image-column {
+      flex: 1;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .image-preview {
+      width: 220px;
+      height: 220px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+    }
+
+    .image-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* Button chọn ảnh */
+    .btn-change-image {
+      background: linear-gradient(195deg, #a3670b, #8e4b00);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: 0.25s;
+    }
+
+    .btn-change-image:hover {
+      background: linear-gradient(195deg, #c17a0d, #a3670b);
+      transform: translateY(-2px);
+    }
+
+    /* Action Buttons Layout */
+    .form-actions {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin-top: 35px;
+      padding-top: 25px;
+      border-top: 1px solid #ddd;
+    }
+
     .btn {
-      text-decoration: none; background: #d4af37; color: white;
-      padding: 10px 20px; border-radius: 5px; margin: 0 5px;
-      transition: 0.3s;
+      text-decoration: none;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      min-width: 160px;
+      text-align: center;
     }
-    .btn:hover { background: #b8962f; }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-secondary:hover {
+      background: #bcbcbc;
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(195deg, #c17a0d, #8e4b00);
+      color: white;
+      box-shadow: 0 3px 8px rgba(142, 75, 0, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(195deg, #d8921b, #a3670b);
+      transform: translateY(-2px);
+    }
+
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>Add New Jewelry Product</h2>
-    <form>
-      <div class="form-group">
-        <label>Jewelry Type:</label>
-        <select>
-          <option>Ring</option>
-          <option>Necklace</option>
-          <option>Earring</option>
-          <option>Bracelet</option>
-        </select>
-      </div>
+  <div class="sidebar">
+    <div class="logo">
+      <img src="../../images/Admin_login.jpg" alt="Admin Logo">
+      <h2>Luxury Jewelry Admin</h2>
+    </div>
 
-      <div class="form-group">
-        <label>Product Code:</label>
-        <input type="text" placeholder="VD: JW003">
-      </div>
-
-      <div class="form-group">
-        <label>Product Name:</label>
-        <input type="text" placeholder="VD: Dây chuyền bạc Ý">
-      </div>
-
-      <div class="form-group">
-        <label>COGS (VNĐ):</label>
-        <input type="number" id="cogs" placeholder="VD: 800000" oninput="updatePrice()">
-      </div>
-
-      <div class="form-group">
-        <label>% Profit:</label>
-        <input type="number" id="profit" placeholder="VD: 25" oninput="updatePrice()">
-      </div>
-
-      <div class="form-group">
-        <label>Price (VNĐ):</label>
-        <input type="number" id="price">
-      </div>
-
-      <div class="form-group">
-        <label>Import Quantity:</label>
-        <input type="number" placeholder="VD: 10">
-      </div>
-
-      <div class="form-group">
-        <label>Image File Name:</label>
-        <input type="text" placeholder="VD: necklace.jpg">
-      </div>
-
-      <div class="form-group">
-        <label>Description:</label>
-        <textarea rows="4" placeholder="Product Description..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Status:</label>
-        <select>
-          <option>Visible</option>
-          <option>Hidden</option>
-        </select>
-      </div>
-
-      <div class="form-actions">
-        <a href="Administration_menu.html#product-manage" class="btn">Save</a>
-        <a href="Administration_menu.html#product-manage" class="btn">Cancel</a>
-      </div>
-    </form>
+    <div class="menu">
+      <a href="Administration_menu.html#products">Jewelry List</a>
+      <a href="Administration_menu.html#product-manage">Product Management</a>
+      <a href="Price Manage/pricing.html">Pricing Management</a>
+      <a href="Administration_menu.html#users">Customers</a>
+      <a href="Order Manage/order_management.html">Order Management</a>
+      <a href="Stock Manage/stocking_management.html">Stocking Management</a>
+      <a href="Administration_menu.html#settings">Settings</a>
+    </div>
   </div>
+
+  <main>
+    <h1>Add Product</h1>
+
+    <div class="card">
+      <h3>Product Information</h3>
+
+      <form>
+        <div class="form-layout">
+          <!-- Left column -->
+          <div class="form-column">
+            <div class="form-group">
+              <label>Product Code:</label>
+              <input type="text" value="">
+            </div>
+
+            <div class="form-group">
+              <label>Product Name:</label>
+              <input type="text" value="">
+            </div>
+
+            <div class="form-group">
+              <label>Description:</label>
+              <textarea ></textarea>
+            </div>
+          </div>
+
+          <!-- Right column (image) -->
+          <div class="image-column">
+            <label style="font-weight:bold; margin-bottom:10px;">Product Image</label>
+            <div class="image-preview">
+              <img id="previewImage" src="" alt="Product Image">
+            </div>
+
+            <!-- Upload button -->
+            <input type="file" id="uploadImage" accept="image/*" hidden>
+            <label for="uploadImage" class="btn-change-image"> Choose Image</label>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="window.location.href='pricing.html'">← Back</button>
+          <button type="button" class="btn btn-primary" onclick="window.location.href='Administration_menu.html#product-manage'"> Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // Hiển thị ảnh mới khi chọn file
+    const upload = document.getElementById('uploadImage');
+    const preview = document.getElementById('previewImage');
+
+    upload.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+  </script>
 </body>
 </html>
