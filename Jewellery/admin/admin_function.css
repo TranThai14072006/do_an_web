@@ -456,4 +456,61 @@ input#page3:checked ~ .page-buttons label[for="page3"] {
 #page3:checked ~ .pagination-content .page3 {
   display: block;
 }
+/* ===============================
+   PHÂN TRANG RIÊNG CHO #PRODUCTS
+================================= */
+#products .pagination {
+  margin-top: 20px;
+  text-align: center;
+}
+
+#products .page-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+#products .pagination-btn {
+  background-color: #8e4b00;
+  color: #f8ce86;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+  border: none;
+}
+
+#products .pagination-btn:hover {
+  background-color: #b87127;
+}
+
+/* Nút được chọn */
+input#prodPage1:checked ~ .page-buttons label[for="prodPage1"],
+input#prodPage2:checked ~ .page-buttons label[for="prodPage2"] {
+  background-color: #f8ce86;
+  color: #5a2d00;
+  font-weight: bold;
+}
+
+/* Ẩn/hiện dữ liệu trong bảng */
+#products table .page1,
+#products table .page2 {
+  display: none;
+}
+
+#prodPage1:checked ~ table .page1 { display: table-row-group; }
+#prodPage2:checked ~ table .page2 { display: table-row-group; }
+
+/* Nội dung mô tả trang */
+#products .pagination-content .page {
+  display: none;
+  font-size: 14px;
+  color: #333;
+}
+
+#prodPage1:checked ~ .pagination-content .page1,
+#prodPage2:checked ~ .pagination-content .page2 {
+  display: block;
+}
 

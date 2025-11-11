@@ -99,6 +99,42 @@ input[type="number"]{
   width:80px; padding:6px; border:1px solid #ccc; border-radius:5px; text-align:center;
 }
 
+/* PAGINATION */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 25px;
+  gap: 8px;
+}
+
+.page-link {
+  padding: 8px 15px;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  color: #8e4b00;
+  font-weight: 500;
+  transition: all 0.3s;
+  background: white;
+}
+
+.page-link:hover {
+  background: #f8ce86;
+  border-color: #8e4b00;
+}
+
+.page-link.active {
+  background: #8e4b00;
+  color: #f8ce86;
+  border-color: #8e4b00;
+}
+
+.page-link.prev, .page-link.next {
+  background: #f0e2d0;
+  font-weight: 600;
+}
+
 /* POPUP */
 .popup{
   position:fixed; top:0; left:0; width:100%; height:100%;
@@ -155,25 +191,6 @@ input[type="number"]{
     </div>
   </div>
 
-  <style>
-  .popup {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    display: none; align-items: center; justify-content: center;
-    background: rgba(0, 0, 0, 0.4); z-index: 1000;
-  }
-  .popup-box {
-    background: #fff; padding: 25px 40px;
-    border-radius: 10px; text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    animation: fadeIn .3s ease;
-  }
-  .popup-box h3 {color:#8e4b00; margin-bottom:20px;}
-  .overlay {position: absolute; top:0; left:0; right:0; bottom:0;}
-  .close-btn {background:#8e4b00; color:#fff; padding:10px 20px; border:none; border-radius:8px; cursor:pointer;}
-  #savePopup:checked ~ .popup {display: flex;}
-  </style>
-
   <div class="contents">
 
     <!-- TAB1 -->
@@ -209,6 +226,15 @@ input[type="number"]{
           <tr><td>10</td><td><img src="../../images/R010.jpg" width="60"></td><td>Royal Moissanite Ring</td><td>Ring</td><td>1.400</td><td>40%</td><td>$2.200</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
         </tbody>
       </table>
+      
+      <!-- Pagination -->
+      <div class="pagination">
+        <a href="#" class="page-link prev">← Previous</a>
+        <a href="#" class="page-link active">1</a>
+        <a href="#" class="page-link">2</a>
+        <a href="#" class="page-link">3</a>
+        <a href="#" class="page-link next">Next →</a>
+      </div>
     </div>
 
     <!-- TAB2 -->
@@ -228,6 +254,15 @@ input[type="number"]{
           <tr><td>10</td><td><img src="../../images/R010.jpg" width="60"></td><td>Royal Moissanite Ring</td><td>Ring</td><td><input type="number" value="40" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
         </tbody>
       </table>
+      
+      <!-- Pagination -->
+      <div class="pagination">
+        <a href="#" class="page-link prev">← Previous</a>
+        <a href="#" class="page-link active">1</a>
+        <a href="#" class="page-link">2</a>
+        <a href="#" class="page-link">3</a>
+        <a href="#" class="page-link next">Next →</a>
+      </div>
     </div>
 
     <!-- TAB3 -->
@@ -240,6 +275,15 @@ input[type="number"]{
           <tr><td>3</td><td>Unisex</td><td><input type="number" value="25" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
         </tbody>
       </table>
+      
+      <!-- Pagination -->
+      <div class="pagination">
+        <a href="#" class="page-link prev">← Previous</a>
+        <a href="#" class="page-link active">1</a>
+        <a href="#" class="page-link">2</a>
+        <a href="#" class="page-link">3</a>
+        <a href="#" class="page-link next">Next →</a>
+      </div>
     </div>
   </div>
 </main>
