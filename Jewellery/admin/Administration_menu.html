@@ -21,6 +21,7 @@
       <a href="#product-manage">Product Management</a>
       <a href="Price Manage/pricing.html">Pricing Management</a>
       <a href="#users">Customers</a>
+      <a href="Order Manage/order_management.html">Order Management</a>
       <a href="Import product manage/import_management.html">Import Management</a>
       <a href="Stock Manage/stocking_management.html">Stocking Management</a>
       <a href="#settings">Settings</a>
@@ -40,106 +41,132 @@
 
     <!-- Jewelry List -->
     <section id="products" class="section">
-  <header><h1>Jewelry Inventory</h1></header>
+
+     <header><h1>Jewelry Inventory</h1></header>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" data-tab="tab1">Male</div>
+  <div class="tab" data-tab="tab2">Female</div>
+  <div class="tab" data-tab="tab3">Unisex</div>
+</div>
+
+
+
   <div class="product-list">
-    <table>
-      <tr>
-        <th>Product Code</th>
-        <th>Product Name</th>
-        <th>Product Image</th>
-        <th>Category</th>
-      </tr>
-
-      <tr>
-        <td>R001</td>
-        <td>Kane Moissanite Ring</td>
-        <td><img src="../images/R001.jpg" alt="Kane Moissanite Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-
-      <tr>
-        <td>R002</td>
-        <td>Winston Anchor Ring</td>
-        <td><img src="../images/R002.jpg" alt="Winston Anchor Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-
-      <tr>
-        <td>R003</td>
-        <td>Ula Opal Teardrop Ring</td>
-        <td><img src="../images/R003.jpg" alt="Ula Opal Teardrop Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-
-      <tr>
-        <td>R004</td>
-        <td>Platinum Clover Charm Ring</td>
-        <td><img src="../images/R004.jpg" alt="Platinum Clover Charm Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-
-      <tr>
-        <td>R005</td>
-        <td>Paisley Moissanite Ring</td>
-        <td><img src="../images/R005.jpg" alt="Paisley Moissanite Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-
-      <tr>
-        <td>R006</td>
-        <td>Arielle Princess CZ Ring</td>
-        <td><img src="../images/R006.jpg" alt="Arielle Princess CZ Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-
-      <tr>
-        <td>R007</td>
-        <td>Miracle Queen CZ Ring</td>
-        <td><img src="../images/R007.jpg" alt="Miracle Queen CZ Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-
-      <tr>
-        <td>R008</td>
-        <td>Niche Crown Stack Ring</td>
-        <td><img src="../images/R008.jpg" alt="Niche Crown Stack Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-
-      <tr>
-        <td>R009</td>
-        <td>Rosemary Topaz Ring</td>
-        <td><img src="../images/R009.jpg" alt="Rosemary Topaz Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-
-      <tr>
-        <td>R010</td>
-        <td>Royal Moissanite Ring</td>
-        <td><img src="../images/R010.jpg" alt="Royal Moissanite Ring" width="60"></td>
-        <td>Ring</td>
-      </tr>
-    </table>
-
-     <div class="pagination">
-        <input type="radio" name="product-page" id="prodPage1" checked hidden>
-        <input type="radio" name="product-page" id="prodPage2" hidden>
-
-        <div class="page-buttons">
-          <label for="prodPage1" class="pagination-btn">1</label>
-          <label for="prodPage2" class="pagination-btn">2</label>
-        </div>
-
-        <div class="pagination-content">
-          <div class="page page1">
-            <!-- <p>Showing products 1–5</p> -->
-          </div>
-          <div class="page page2">
-            <!-- <p>Showing products 6–10</p> -->
-          </div>
-        </div>
+    <!-- TAB1 -->
+    <div class="tab-content active" id="tab1">
+      <div class="search-section">
+        <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
+        <div class="search-group"><label class="search-label">Category</label>
+        <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select></div>
+        <button class="btn-search" onclick="window.location.href='search.html'">Search</button>
+        <button class="btn-reset" onclick="window.location.href='search.html'">Reset</button>
       </div>
 
+      <table>
+        <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit (%)</th><th>Selling Price</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><img src="../images/R001.jpg" width="60"></td>
+            <td>Kane Moissanite Ring</td>
+            <td>Ring</td>
+            <td>1.020</td><td>30%</td><td>$1.371</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr>
+            <td>2</td>
+            <td><img src="../images/R002.jpg" width="60"></td>
+            <td>Winston Anchor Ring</td><td>Ring</td><td>1.220</td><td>40%</td><td>$1.850</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>3</td><td><img src="../images/R003.jpg" width="60"></td><td>Ula Opal Teardrop Ring</td><td>Ring</td><td>39.50</td><td>25%</td><td>$59.96</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>4</td><td><img src="../images/R004.jpg" width="60"></td><td>Platinum Clover Charm Ring</td><td>Ring</td><td>1.210</td><td>35%</td><td>$1.950</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>5</td><td><img src="../images/R005.jpg" width="60"></td><td>Paisley Moissanite Ring</td><td>Ring</td><td>980</td><td>20%</td><td>$1.380</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>6</td><td><img src="../images/R006.jpg" width="60"></td><td>Arielle Princess CZ Ring</td><td>Ring</td><td>950</td><td>25%</td><td>$1.250</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>7</td><td><img src="../images/R007.jpg" width="60"></td><td>Miracle Queen CZ Ring</td><td>Ring</td><td>1.000</td><td>30%</td><td>$1.470</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>8</td><td><img src="../images/R008.jpg" width="60"></td><td>Niche Crown Stack Ring</td><td>Ring</td><td>1.130</td><td>35%</td><td>$1.490</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>9</td><td><img src="../images/R009.jpg" width="60"></td><td>Rosemary Topaz Ring</td><td>Ring</td><td>1.030</td><td>25%</td><td>$1.430</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>10</td><td><img src="../images/R010.jpg" width="60"></td><td>Royal Moissanite Ring</td><td>Ring</td><td>1.400</td><td>40%</td><td>$2.200</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+        </tbody>
+      </table>
+      
+      <!-- Pagination -->
+      <div class="pagination">
+        <a href="#" class="page-link prev">← Previous</a>
+        <a href="#" class="page-link active">1</a>
+        <a href="#" class="page-link">2</a>
+        <a href="#" class="page-link">3</a>
+        <a href="#" class="page-link next">Next →</a>
+      </div>
+    </div>
+
+    <!-- TAB2 -->
+    <div class="tab-content" id="tab2">
+      <div class="search-section">
+        <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
+        <div class="search-group"><label class="search-label">Category</label>
+        <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select></div>
+        <button class="btn-search" onclick="window.location.href='search.html'">Search</button>
+        <button class="btn-reset" onclick="window.location.href='search.html'">Reset</button>
+      </div>
+
+      <table>
+        <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Profit (%)</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><img src="../images/R001.jpg" width="60"></td><td>Kane Moissanite Ring</td><td>Ring</td><td><input type="number" value="30" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>2</td><td><img src="../images/R002.jpg" width="60"></td><td>Winston Anchor Ring</td><td>Ring</td><td><input type="number" value="40" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>3</td><td><img src="../images/R003.jpg" width="60"></td><td>Ula Opal Teardrop Ring</td><td>Ring</td><td><input type="number" value="25" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>4</td><td><img src="../images/R004.jpg" width="60"></td><td>Platinum Clover Charm Ring</td><td>Ring</td><td><input type="number" value="35" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>5</td><td><img src="../images/R005.jpg" width="60"></td><td>Paisley Moissanite Ring</td><td>Ring</td><td><input type="number" value="20" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>6</td><td><img src="../images/R006.jpg" width="60"></td><td>Arielle Princess CZ Ring</td><td>Ring</td><td><input type="number" value="25" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>7</td><td><img src="../images/R007.jpg" width="60"></td><td>Miracle Queen CZ Ring</td><td>Ring</td><td><input type="number" value="30" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>8</td><td><img src="../images/R008.jpg" width="60"></td><td>Niche Crown Stack Ring</td><td>Ring</td><td><input type="number" value="35" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>9</td><td><img src="../images/R009.jpg" width="60"></td><td>Rosemary Topaz Ring</td><td>Ring</td><td><input type="number" value="25" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+          <tr><td>10</td><td><img src="../images/R010.jpg" width="60"></td><td>Royal Moissanite Ring</td><td>Ring</td><td><input type="number" value="40" min="0" max="100" style="width:60px;text-align:center;"></td><td><label for="savePopup" class="btn">Save</label></td></tr>
+        </tbody>
+      </table>
+      
+      <!-- Pagination -->
+      <div class="pagination">
+        <a href="#" class="page-link prev">← Previous</a>
+        <a href="#" class="page-link active">1</a>
+        <a href="#" class="page-link">2</a>
+        <a href="#" class="page-link">3</a>
+        <a href="#" class="page-link next">Next →</a>
+      </div>
+    </div>
+
+    <!-- TAB3 -->
+    <div class="tab-content" id="tab3">
+        <div class="search-section">
+        <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
+        <div class="search-group"><label class="search-label">Category</label>
+        <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select></div>
+        <button class="btn-search" onclick="window.location.href='search.html'">Search</button>
+        <button class="btn-reset" onclick="window.location.href='search.html'">Reset</button>
+      </div>
+
+      <table>
+        <thead><tr><th>No.</th><th>Category</th><th>Profit (%)</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>3</td><td><img src="../images/R003.jpg" width="60"></td><td>Ula Opal Teardrop Ring</td><td>Ring</td><td>39.50</td><td>25%</td><td>$59.96</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>4</td><td><img src="../images/R004.jpg" width="60"></td><td>Platinum Clover Charm Ring</td><td>Ring</td><td>1.210</td><td>35%</td><td>$1.950</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>5</td><td><img src="../images/R005.jpg" width="60"></td><td>Paisley Moissanite Ring</td><td>Ring</td><td>980</td><td>20%</td><td>$1.380</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>6</td><td><img src="../images/R006.jpg" width="60"></td><td>Arielle Princess CZ Ring</td><td>Ring</td><td>950</td><td>25%</td><td>$1.250</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>7</td><td><img src="../images/R007.jpg" width="60"></td><td>Miracle Queen CZ Ring</td><td>Ring</td><td>1.000</td><td>30%</td><td>$1.470</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>8</td><td><img src="../images/R008.jpg" width="60"></td><td>Niche Crown Stack Ring</td><td>Ring</td><td>1.130</td><td>35%</td><td>$1.490</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+          <tr><td>9</td><td><img src="../images/R009.jpg" width="60"></td><td>Rosemary Topaz Ring</td><td>Ring</td><td>1.030</td><td>25%</td><td>$1.430</td><td><a href="edit_price.html" class="btn small">Edit</a></td></tr>
+        </tbody>
+      </table>
+      
+      <!-- Pagination -->
+      <div class="pagination">
+        <a href="#" class="page-link prev">← Previous</a>
+        <a href="#" class="page-link active">1</a>
+        <a href="#" class="page-link">2</a>
+        <a href="#" class="page-link">3</a>
+        <a href="#" class="page-link next">Next →</a>
+      </div>
+    </div>
+  </div>
   
 </section>
 
@@ -567,5 +594,33 @@
       font-size: 18px;
     }
   </style>
+
+  <script>
+  // Xử lý click + lưu tab
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Reset active
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      // Set active
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+      // Lưu tab hiện tại
+      localStorage.setItem('activeTabProducts', tab.dataset.tab);
+    });
+  });
+
+  // Khi tải lại trang
+  window.addEventListener('load', () => {
+    const activeTab = localStorage.getItem('activeTabProducts');
+    if (activeTab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`.tab[data-tab="${activeTab}"]`).classList.add('active');
+      document.getElementById(activeTab).classList.add('active');
+    }
+  });
+</script>
+
 </body>
 </html>
