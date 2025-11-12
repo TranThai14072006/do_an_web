@@ -219,43 +219,88 @@ tr:hover {
   color: #8e4b00;
 }
 
-/* ============================
-   TAB LAYOUT (THEO STOCKING)
-============================ */
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #ddd;
-}
+    /* ============================
+       TAB LAYOUT
+    ============================= */
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
 
-.tab {
-  padding: 10px 18px;
-  font-weight: 600;
-  color: #555;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s ease;
-}
+    .tab {
+      padding: 10px 18px;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+    }
 
-.tab.active {
-  color: #8e4b00;
-  border-bottom-color: #8e4b00;
-}
+    .tab.active {
+      color: #8e4b00;
+      border-bottom-color: #8e4b00;
+    }
 
-.tab-content {
-  display: none;
-  animation: fadeIn 0.3s ease;
-}
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
 
-.tab-content.active {
-  display: block;
-}
+    .tab-content.active {
+      display: block;
+    }
 
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(10px);}
-  to {opacity: 1; transform: translateY(0);}
-}
+    /* =============================
+       PHÂN TRANG MỚI - GIỐNG BỐ CỤC
+    ============================= */
+    .pagination-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding: 15px 0;
+      border-top: 1px solid #ddd;
+    }
+
+    .pagination-info {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 5px;
+    }
+
+    .pagination-btn {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      background: white;
+      color: #8e4b00;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .pagination-btn:hover {
+      background: #f8ce86;
+      color: #5a2d00;
+      border-color: #8e4b00;
+    }
+
+    .pagination-btn.active {
+      background: linear-gradient(195deg, #8e4b00, #b87127);
+      color: white;
+      border-color: #8e4b00;
+    }
+
+    .arrow-icon {
+      font-weight: bold;
+    }
+
 
 
 /* =============================
@@ -300,3 +345,4 @@ tr:hover {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
