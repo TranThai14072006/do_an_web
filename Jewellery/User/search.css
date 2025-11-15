@@ -316,27 +316,30 @@ html, body {
     font-size: 1.1em;
     display: block;
 }
-
 .btn-add {
     background-color: #111; /* nền đen */
     color: #fff; /* chữ trắng */
     border: none;
-    padding: 10px 15px;
-   
+    width: 146.76px; /* width cố định */
+    height: 43.3px;  /* height cố định */
+    line-height: 43.3px; /* canh chữ giữa theo chiều cao */
+    text-align: center; /* căn chữ giữa ngang */
     cursor: pointer;
     font-weight: 600;
+    text-transform: uppercase; /* CHỮ IN HOA */
     transition: all 0.25s ease;
-    width: 50%;
     margin-top: 10px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    padding: 0; /* bỏ padding để dùng line-height */
 }
 
 .btn-add:hover {
-    background-color: var(--primary); /* khi hover -> chuyển sang vàng ánh kim */
+    
     color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.25);
 }
+
 
 
 /* ================= Pagination ================= */
@@ -575,3 +578,4 @@ html, body {
         max-width: calc(100% - 20px);
     }
 }
+

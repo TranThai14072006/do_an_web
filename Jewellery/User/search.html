@@ -111,17 +111,16 @@
         <button class="btn-add" onclick="showNotification('Kane Moissanite Ring')">Add to Cart</button>
       </article>
 
-      <article class="product-card">
+     <article class="product-card">
         <a href="R01.html" class="product-card-link">
           <div class="image-holder">
-            <img src="../images/R003.jpg" alt="Platinum Clover Charm Ring" class="product-image">
+            <img src="../images/R006.jpg" alt="Winston Anchor Ring" class="product-image">
           </div>
-          <h3 class="product-title">Platinum Clover Charm Ring</h3>
-          <span class="product-price">$1.950</span>
+          <h3 class="product-title">Winston Anchor Ring</h3>
+          <span class="product-price">$1.850</span>
         </a>
-        <button class="btn-add" onclick="showNotification('Platinum Clover Charm Ring')">Add to Cart</button>
+        <button class="btn-add" onclick="showNotification('Winston Anchor Ring')">Add to Cart</button>
       </article>
-
       <article class="product-card">
         <a href="R01.html" class="product-card-link">
           <div class="image-holder">
@@ -153,63 +152,56 @@
 <div id="footer-bottom">
   <!-- Footer-bottom content giữ nguyên -->
 </div>
+<div id="cart-notification" class="cart-notification">
+  <div class="notification-content">
+    <div class="notification-icon"><i class="fas fa-check-circle"></i></div>
+    <div class="notification-text">
+      <h3></h3>
+      <p>The product has been added to your shopping cart.</p>
+    </div>
+    <button class="close-notification" onclick="closeNotification()">&times;</button>
+  </div>
+</div>
 
 <script>
-  // Các hàm alert và chuyển trang
-  function showAddToCartMessage(productName) {
-      alert(`🛒 "${productName}" has been added to your cart!`);
-  }
+function showNotification(productName) {
+  const notification = document.getElementById('cart-notification');
+  const textEl = notification.querySelector('.notification-text h3');
+  textEl.textContent = `"${productName}" added to cart!`;
 
-  // function showDetailMessage(productName, e) {
-  //     e.preventDefault();
-  //     alert(`ℹ️ Redirecting to product details page for "${productName}"`);
-  //     window.location.href = e.currentTarget.href;
-  // }
+  notification.classList.add('show');
 
-  // function showSearchMessage() {
-  //     alert(`🔍 Searching for products...`);
-  // }
+  clearTimeout(notification.timeout);
+  notification.timeout = setTimeout(() => {
+    notification.classList.remove('show');
+  }, 3000);
+}
 
-  // function showCartMessage(e) {
-  //     e.preventDefault();
-  //     alert(`🛍️ Redirecting to shopping cart...`);
-  //     window.location.href = e.currentTarget.href;
-  // }
+function closeNotification() {
+  const notification = document.getElementById('cart-notification');
+  notification.classList.remove('show');
+  clearTimeout(notification.timeout);
+}
 
-  // function showProfileMessage(e) {
-  //     e.preventDefault();
-  //     alert(`👤 Redirecting to profile page...`);
-  //     window.location.href = e.currentTarget.href;
-  // }
+  // Khi người dùng click vào nút phân trang
+  document.querySelectorAll('.pagination a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
 
-  // function showHomeMessage(e) {
-  //     e.preventDefault();
-  //     alert(`🏠 Redirecting to home page...`);
-  //     window.location.href = e.currentTarget.href;
-  // }
+      // Nếu nút bị disabled thì bỏ qua
+      if (this.classList.contains('disabled')) return;
 
-  // function showNewsletterMessage() {
-  //     alert(`📧 Thank you for subscribing to our newsletter!`);
-  // }
+      // Xóa class 'active' khỏi tất cả các nút
+      document.querySelectorAll('.pagination a').forEach(a => a.classList.remove('active'));
 
-  // function showSocialMessage(platform) {
-  //     alert(`🌐 Redirecting to our ${platform} page...`);
-  // }
-
-  // function showHelpMessage(topic) {
-  //     alert(`❓ Loading information about: ${topic}`);
-  // }
-
-  // // Pagination
-  // document.querySelectorAll('.pagination a').forEach(link => {
-  //   link.addEventListener('click', function(e) {
-  //     if (!this.classList.contains('disabled') && !this.classList.contains('active')) {
-  //       e.preventDefault();
-  //       alert('📄 Loading next page...');
-  //     }
-  //   });
-  // });
+      // Thêm class 'active' cho nút được click
+      this.classList.add('active');
+    });
+  });
 </script>
+
+
+
 
 </body>
 </html>
