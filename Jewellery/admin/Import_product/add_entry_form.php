@@ -6,13 +6,12 @@
 <title>Add Entry Form</title>
 
 <style>
+/* GIỮ NGUYÊN TOÀN BỘ CSS CỦA BẠN */
 body {
   font-family: sans-serif;
   background: #f0f2f5;
   margin: 0;
 }
-
-/* SIDEBAR */
 .sidebar {
   width: 220px;
   background-color: #8e4b00;
@@ -227,20 +226,14 @@ main {
 </head>
 
 <body>
+
+<!-- ✅ THÊM FORM -->
+<form action="save_receipt.php" method="POST">
+
 <div class="sidebar">
   <div class="logo">
-    <img src="../../images/Admin_login.jpg" alt="Admin Logo">
+    <img src="../../images/Admin_login.jpg">
     <h2>Luxury Jewelry Admin</h2>
-  </div>
-  <div class="menu">
-    <a href="../Administration_menu.html#products">Jewelry List</a>
-    <a href="../Administration_menu.html#product-manage">Product Management</a>
-    <a href="../Price Manage/pricing.html">Pricing Management</a>
-    <a href="../Administration_menu.htm#users">Customers</a>
-    <a href="../Order Manage/order_management.html">Order Management</a>
-    <a href="#" class="active">Import Management</a>
-    <a href="../Stock Manage/stocking_management.html">Stocking Management</a>
-    <a href="../Administration_menu.html#setting">Settings</a>
   </div>
 </div>
 
@@ -250,101 +243,140 @@ main {
   <div class="card">
     <div class="card-header">Information</div>
     <div class="card-body">
+
       <div class="form-row">
         <div class="form-col">
           <label class="form-label">Date *</label>
-          <input type="date" class="form-control form-control-with-margin">
+
+          <!-- ✅ THÊM id + name -->
+          <input type="date" id="dateInput" name="date" class="form-control form-control-with-margin" required>
+
         </div>
+
         <div class="form-col">
           <label class="form-label">Order Number</label>
-          <input type="text" class="form-control form-control-with-margin" id="orderInput" placeholder="Enter code only">
+
+          <!-- ✅ THÊM name -->
+          <input type="text" id="orderInput" name="order_number"
+            class="form-control form-control-with-margin" required>
         </div>
       </div>
 
       <div class="form-label">Product list</div>
 
-      <div class="product-row">
+      <!-- ✅ THÊM id container -->
+      <div id="product-container">
+
+      <div class="product-row product-item">
+
         <div class="product-select">
-          <select class="form-control productSelect">
+          <!-- ✅ THÊM name -->
+          <select class="form-control product-select" name="product_code[]">
             <option value="">Select Product</option>
-            <option value="R001" data-image="../../images/R001.jpg">R001 - Kane Moissanite Ring</option>
-            <option value="R002" data-image="../../images/R002.jpg">R002 - Winston Anchor Ring</option>
-            <option value="R003" data-image="../../images/R003.jpg">R003 - Ula Opal Teardrop Ring</option>
-            <option value="R004" data-image="../../images/R004.jpg">R004 - Platinum Clover Charm Ring</option>
-            <option value="R005" data-image="../../images/R005.jpg">R005 - Paisley Moissanite Ring</option>
-            <option value="R006" data-image="../../images/R006.jpg">R006 - Arielle Princess CZ Ring</option>
-            <option value="R007" data-image="../../images/R007.jpg">R007 - Miracle Queen CZ Ring</option>
-            <option value="R008" data-image="../../images/R008.jpg">R008 - Niche Crown Stack Ring</option>
-            <option value="R009" data-image="../../images/R009.jpg">R009 - Rosemary Topaz Ring</option>
-            <option value="R010" data-image="../../images/R010.jpg">R010 - Royal Moissanite Ring</option>
+            <option value="R001">R001 - Kane Moissanite Ring</option>
+            <option value="R002">R002 - Winston Anchor Ring</option>
           </select>
         </div>
+
         <div class="product-price input-with-usd">
-          <input type="text" class="form-control" placeholder="Price" oninput="formatPrice(this)">
+          <!-- ✅ THÊM name + class -->
+          <input type="text" name="price[]" class="form-control price-input" oninput="formatPrice(this)">
           <span class="input-usd-label">USD</span>
         </div>
+
         <div class="product-quantity">
-          <input type="number" class="form-control" value="1" min="1">
+          <!-- ✅ THÊM name + class -->
+          <input type="number" name="quantity[]" class="form-control qty-input" value="1" min="1">
         </div>
+
         <div class="product-total">0 USD</div>
+
         <div class="product-actions">
-          <button class="btn btn-secondary" onclick="this.closest('.product-row').remove()">✖</button>
+          <button type="button" class="btn btn-secondary"
+            onclick="this.closest('.product-row').remove()">✖</button>
         </div>
+
       </div>
 
-      <button class="btn btn-primary btn-add-product">Add Product</button>
-
-      <div class="summary-card">
-        <div class="summary-row"><span>Number of products:</span><span>1</span></div>
-        <div class="summary-row"><span>Amount:</span><span>1</span></div>
-        <div class="summary-row summary-total"><span>Total Value:</span><span>0 USD</span></div>
       </div>
+
+      <button type="button" class="btn btn-primary btn-add-product">Add Product</button>
 
       <div class="form-actions">
         <a href="import_management.html" class="btn btn-secondary">Cancel</a>
-        <a href="import_management.html" class="btn btn-primary">Draft</a>
-        <a href="import_management.html" class="btn btn-primary">Save</a>
+
+        <!-- ✅ SỬA BUTTON -->
+        <button type="submit" name="status" value="Draft" class="btn">Save Draft</button>
+
+        <button type="submit" name="status" value="Completed" class="btn btn-primary">Save</button>
       </div>
+
     </div>
   </div>
 </main>
 
-<script>
-// Mảng dữ liệu sản phẩm
-const products = [
-  {code:"R001", name:"Kane Moissanite Ring", image:"../../images/R001.jpg"},
-  {code:"R002", name:"Winston Anchor Ring", image:"../../images/R002.jpg"},
-  {code:"R003", name:"Ula Opal Teardrop Ring", image:"../../images/R003.jpg"},
-  {code:"R004", name:"Platinum Clover Charm Ring", image:"../../images/R004.jpg"},
-  {code:"R005", name:"Paisley Moissanite Ring", image:"../../images/R005.jpg"},
-  {code:"R006", name:"Arielle Princess CZ Ring", image:"../../images/R006.jpg"},
-  {code:"R007", name:"Miracle Queen CZ Ring", image:"../../images/R007.jpg"},
-  {code:"R008", name:"Niche Crown Stack Ring", image:"../../images/R008.jpg"},
-  {code:"R009", name:"Rosemary Topaz Ring", image:"../../images/R009.jpg"},
-  {code:"R010", name:"Royal Moissanite Ring", image:"../../images/R010.jpg"}
-];
+</form>
 
-// Thêm ORD. tự động
+<script>
+// GIỮ NGUYÊN CODE CỦA BẠN + CHỈ SỬA NHẸ
+
 const orderInput = document.getElementById('orderInput');
 orderInput.addEventListener('input', () => {
   orderInput.value = orderInput.value.replace(/[^0-9]/g,''); 
   orderInput.value = orderInput.value ? 'ORD.' + orderInput.value : '';
 });
 
-// Định dạng giá nhập kiểu 1.000
+// format price
 function formatPrice(input) {
   let value = input.value.replace(/\D/g, '');
   input.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-// Thêm dòng sản phẩm mới
+// ✅ SỬA ADD PRODUCT
 document.querySelector(".btn-add-product").addEventListener("click", function(){
   const firstRow = document.querySelector(".product-row");
   const clone = firstRow.cloneNode(true);
-  clone.querySelectorAll('input').forEach(input => input.value = input.type === 'number' ? 1 : '');
+
+  clone.querySelectorAll('input').forEach(input => {
+    input.value = input.type === 'number' ? 1 : '';
+  });
+
   clone.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-  document.querySelector(".card-body").insertBefore(clone, document.querySelector(".btn-add-product"));
+
+  document.getElementById("product-container").appendChild(clone);
 });
+
+document.querySelector("form").addEventListener("submit", function(){
+  document.querySelectorAll(".price-input").forEach(input => {
+    input.value = input.value.replace(/\./g, '');
+  });
+});
+
+document.querySelector("form").addEventListener("submit", function(e){
+  const products = document.querySelectorAll(".product-item");
+  let valid = false;
+
+  products.forEach(p => {
+    if(p.querySelector(".product-select").value !== ""){
+      valid = true;
+    }
+  });
+
+  if(!valid){
+    alert("Phải chọn ít nhất 1 sản phẩm!");
+    e.preventDefault();
+  }
+});
+
+document.addEventListener("input", function(){
+  document.querySelectorAll(".product-row").forEach(row=>{
+    let price = row.querySelector(".price-input").value.replace(/\./g,'') || 0;
+    let qty = row.querySelector(".qty-input").value || 0;
+    let total = price * qty;
+    row.querySelector(".product-total").innerText = total.toLocaleString() + " USD";
+  });
+});
+
 </script>
 
 </body>

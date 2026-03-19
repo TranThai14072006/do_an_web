@@ -172,6 +172,32 @@
       font-size: 16px;
     }
 
+    .summary-card {
+  background: #fff8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #f1e4e1;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-total {
+  font-weight: bold;
+  font-size: 18px;
+  color: #8e4b00;
+}
+
     /* ====== BUTTONS ====== */
     .btn {
       display: inline-block;
@@ -284,7 +310,7 @@
       <a href="../Administration_menu.html#products">Jewelry List</a>
       <a href="../Administration_menu.html#product-manage">Product Management</a>
       <a href="../Price Manage/pricing.html">Pricing Management</a>
-      <a href="import_management.html" class="active">Import Management</a>
+      <a href="import_management.php" class="active">Import Management</a>
       <a href="../Order Manage/order_management.html">Order Management</a>
       <a href="../Stock Manage/stocking_management.html">Stocking</a>
       <a href="../Administration_menu.html#setting">Settings</a>
@@ -316,29 +342,60 @@
             <th>Total (USD)</th>
           </tr>
         </thead>
+        <?php
+        include __DIR__ . "/../../config/config.php";
+        $id = $_GET['id'];
+
+        $form = $conn->query("SELECT * FROM goods_receipt WHERE id=$id")->fetch_assoc();
+        ?>
+
+        <h1>Purchase Order - <?= $form['order_number'] ?></h1>
+        <?php
+        $details = $conn->query("
+        SELECT d.*, p.image
+        FROM goods_receipt_items d
+        LEFT JOIN products p ON d.product_id = p.id
+        WHERE d.receipt_id = $id
+        ");
+
+        $i=1;
+        ?>
+
         <tbody>
-          <tr><td>1</td><td>R001</td><td><img src="../../images/R001.jpg" class="product-image"></td><td>Ula Opal Teardrop Ring</td><td>1</td><td class="text-right">59.96</td><td class="text-right">59.96</td></tr>
-          <tr><td>2</td><td>R002</td><td><img src="../../images/R002.jpg" class="product-image"></td><td>Kane Moissanite Ring</td><td>2</td><td class="text-right">1.371</td><td class="text-right">2.742</td></tr>
-          <tr><td>3</td><td>R003</td><td><img src="../../images/R003.jpg" class="product-image"></td><td>Platinum Clover Charm Ring</td><td>1</td><td class="text-right">1.950</td><td class="text-right">1.950</td></tr>
-          <tr><td>4</td><td>R004</td><td><img src="../../images/R004.jpg" class="product-image"></td><td>Emerald Bracelet</td><td>1</td><td class="text-right">1.950</td><td class="text-right">1.950</td></tr>
-          <tr><td>5</td><td>R005</td><td><img src="../../images/R005.jpg" class="product-image"></td><td>Royal Moissanite Ring</td><td>2</td><td class="text-right">2.200</td><td class="text-right">4.400</td></tr>
-          <tr><td>6</td><td>R006</td><td><img src="../../images/R006.jpg" class="product-image"></td><td>Winston Anchor Ring</td><td>1</td><td class="text-right">1.850</td><td class="text-right">1.850</td></tr>
-          <tr><td>7</td><td>R007</td><td><img src="../../images/R007.jpg" class="product-image"></td><td>Paisley Moissanite Ring</td><td>1</td><td class="text-right">1.380</td><td class="text-right">1.380</td></tr>
-          <tr><td>8</td><td>R008</td><td><img src="../../images/R008.jpg" class="product-image"></td><td>Arielle Princess CZ Ring</td><td>1</td><td class="text-right">1.250</td><td class="text-right">1.250</td></tr>
-          <tr><td>9</td><td>R009</td><td><img src="../../images/R009.jpg" class="product-image"></td><td>Miracle Queen CZ Ring</td><td>2</td><td class="text-right">1.470</td><td class="text-right">2.940</td></tr>
-          <tr><td>10</td><td>R010</td><td><img src="../../images/R010.jpg" class="product-image"></td><td>Niche Crown Stack Ring</td><td>1</td><td class="text-right">1.490</td><td class="text-right">1.490</td></tr>
+        <?php while($row = $details->fetch_assoc()): ?>
+        <tr>
+        <td><?= $i++ ?></td>
+        <td><?= $row['product_id'] ?></td>
+        <td><img src="../../images/<?= $row['image'] ?>" class="product-image"></td>
+        <td><?= $row['product_name'] ?></td>
+        <td><?= $row['quantity'] ?></td>
+        <td><?= $row['unit_price'] ?></td>
+        <td><?= $row['total_price'] ?></td>
+        </tr>
+        <?php endwhile; ?>
         </tbody>
       </table>
 
-      <div class="summary-card">
-        <div class="summary-row"><span>Total Products:</span><span>10</span></div>
-        <div class="summary-row"><span>Total Quantity:</span><span>13</span></div>
-        <div class="summary-row summary-total"><span>Grand Total:</span><span>14.970 USD</span></div>
-      </div>
+        <div class="summary-card">
+        <div class="summary-row">
+            <span>Total Quantity</span>
+            <span><?= $form['total_quantity'] ?></span>
+        </div>
+
+        <div class="summary-row">
+            <span>Total Value</span>
+            <span><?= number_format($form['total_value'], 2) ?> USD</span>
+        </div>
+
+        <div class="summary-row summary-total">
+            <span>Grand Total</span>
+            <span><?= number_format($form['total_value'], 2) ?> USD</span>
+        </div>
+        </div>
     </div>
 
     <div class="action-buttons">
-      <a href="import_management.html" class="btn btn-secondary">Back</a>
+      <a href="import_management.php" class="btn btn-secondary">Back</a>
       <button type="button" class="btn btn-primary"
          onclick="document.getElementById('print_order').checked = true;">
         Print Order
@@ -347,3 +404,4 @@
   </main>
 </body>
 </html>
+

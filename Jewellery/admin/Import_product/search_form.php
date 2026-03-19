@@ -230,6 +230,10 @@
       color: #666;
       margin-top: 10px;
     }
+.back-button-container {
+ 
+  margin-bottom: 0.5cm;    /* cách phần nội dung bên dưới 1 cm */
+}
 
   </style>
 </head>
@@ -255,13 +259,10 @@
 
   <!-- MAIN -->
   <main>
-    <header><h1>Import Management</h1></header>
-
-    <div class="user-actions">
-      <a href="add_entry_form.html" class="btn">Add entry form</a>
-      <a href="draft_list.html" class="btn">Edit entry form</a>
-    </div>
-
+    <header><h1>Import Management</h1></header> 
+<div class="back-button-container">
+  <button type="button" class="btn" onclick="window.location.href='import_management.html'">Back</button>
+</div>
     <!-- SEARCH -->
     <div class="search-section">
       <div class="search-group">
@@ -291,47 +292,32 @@
             <th>Action</th>
           </tr>
         </thead>
+        <?php
+        include __DIR__ . "/../../config/config.php";
+
+        $from = $_GET['from'] ?? '';
+        $to = $_GET['to'] ?? '';
+
+        $sql = "SELECT * FROM goods_receipt WHERE 1";
+
+        if($from && $to){
+        $sql .= " AND entry_date BETWEEN '$from' AND '$to'";
+        }
+
+        $result = $conn->query($sql);
+        $i=1;
+        ?>
+
         <tbody>
-          <tr>
-            <td>1</td>
-            <td>IMP.001</td>
-            <td>01-10-2025</td>
-            <td>15</td>
-            <td>12.500 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>IMP.002</td>
-            <td>25-09-2025</td>
-            <td>8</td>
-            <td>8.750 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>IMP.003</td>
-            <td>15-09-2025</td>
-            <td>12</td>
-            <td>15.200 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>IMP.004</td>
-            <td>10-09-2025</td>
-            <td>20</td>
-            <td>18.500 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>5</td>
-            <td>IMP.005</td>
-            <td>05-09-2025</td>
-            <td>6</td>
-            <td>7.800 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
+            <?php while($row = $result->fetch_assoc()): ?>
+            <tr>
+            <td><?= $i++ ?></td>
+            <td><?= $row['order_number'] ?></td>
+            <td><?= $row['entry_date'] ?></td>
+            <td><?= $row['total_quantity'] ?></td>
+            <td><?= $row['total_value'] ?></td>
+            </tr>
+        <?php endwhile; ?>
         </tbody>
       </table>
     </div>
@@ -347,7 +333,7 @@
       <button class="pagination-btn">&#10095;</button>
     </div>
 
-    <div class="pagination-info">Showing 1-5 of 25 Entry form</div>
+    <div class="pagination-info">Showing 1-5 of Search Results</div>
   </main>
 </body>
 </html>

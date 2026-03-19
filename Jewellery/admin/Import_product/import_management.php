@@ -230,16 +230,15 @@
       color: #666;
       margin-top: 10px;
     }
-.back-button-container {
- 
-  margin-bottom: 0.5cm;    /* cách phần nội dung bên dưới 1 cm */
-}
 
   </style>
 </head>
-<body>
-  <!-- SIDEBAR -->
-  <div class="sidebar">
+
+
+<!-- SIDEBAR -->
+
+
+ <div class="sidebar">
     <div class="logo">
       <img src="../../images/Admin_login.jpg" alt="Admin Logo">
       <h2>Luxury Jewelry Admin</h2>
@@ -249,91 +248,59 @@
       <a href="../Administration_menu.html#products">Jewelry List</a>
       <a href="../Administration_menu.html#product-manage">Product Management</a>
       <a href="../Price Manage/pricing.html">Pricing Management</a>
-      <a href="../Administration_menu.html#users">Customers</a>
+      <a href="import_management.php" class="active">Import Management</a>
       <a href="../Order Manage/order_management.html">Order Management</a>
-      <a href="import_management.html">Import Management</a>
-      <a href="../Stock Manage/stocking_management.html">Stocking Management</a>
+      <a href="../Stock Manage/stocking_management.html">Stocking</a>
       <a href="../Administration_menu.html#setting">Settings</a>
     </div>
   </div>
 
-  <!-- MAIN -->
-  <main>
-    <header><h1>Import Management</h1></header> 
-<div class="back-button-container">
-  <button type="button" class="btn" onclick="window.location.href='import_management.html'">Back</button>
+
+<!-- MAIN -->
+<main>
+
+<h1>Entry Form Management</h1>
+
+<div class="user-actions">
+  <a href="add_entry_form.php" class="btn">+ New</a>
+  <button class="btn" onclick="goToEdit()">Change</button>
 </div>
-    <!-- SEARCH -->
-    <div class="search-section">
-      <div class="search-group">
-        <label class="search-label">From date</label>
-        <input type="date" class="search-input">
-      </div>
 
-      <div class="search-group">
-        <label class="search-label">To date</label>
-        <input type="date" class="search-input">
-      </div>
+<table>
+<thead>
+<tr>
+<th>No.</th>
+<th>Order No.</th>
+<th>Date</th>
+<th>Quantity</th>
+<th>Total</th>
+<th>Action</th>
+</tr>
+</thead>
 
-      <button class="btn-search" onclick="window.location.href='search_form.html'">Search</button>
-      <button class="btn-reset">Reset</button>
-    </div>
+<?php
+include __DIR__ . "/../../config/config.php";
+$sql = "SELECT * FROM goods_receipt ORDER BY id DESC";
+$result = $conn->query($sql);
+$i = 1;
+?>
 
-    <!-- TABLE -->
-    <div class="user-list">
-      <table>
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>Order No.</th>
-            <th>Date</th>
-            <th>Quantity of products</th>
-            <th>Total value</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>IMP.001</td>
-            <td>01-10-2025</td>
-            <td>15</td>
-            <td>12.500 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>IMP.002</td>
-            <td>25-09-2025</td>
-            <td>8</td>
-            <td>8.750 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>IMP.003</td>
-            <td>15-09-2025</td>
-            <td>12</td>
-            <td>15.200 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>IMP.004</td>
-            <td>10-09-2025</td>
-            <td>20</td>
-            <td>18.500 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-          <tr>
-            <td>5</td>
-            <td>IMP.005</td>
-            <td>05-09-2025</td>
-            <td>6</td>
-            <td>7.800 USD</td>
-            <td><a href="entry_form_detail.html" class="btn small">View</a></td>
-          </tr>
-        </tbody>
+<tbody>
+<?php while($row = $result->fetch_assoc()): ?>
+<tr>
+  <td><?= $i++ ?></td>
+  <td><?= $row['order_number'] ?></td>
+  <td><?= $row['entry_date'] ?></td>
+  <td><?= $row['total_quantity'] ?></td>
+  <td><?= $row['total_value'] ?> USD</td>
+  <td>  
+    <a href="entry_form_detail.php?id=<?= $row['id'] ?>">View</a> |
+    <a href="edit_entry_form.php?id=<?= $row['id'] ?>">Edit</a>
+  </td>
+</tr>
+<?php endwhile; ?>
+</tbody>
+</table>
       </table>
     </div>
 
@@ -348,7 +315,7 @@
       <button class="pagination-btn">&#10095;</button>
     </div>
 
-    <div class="pagination-info">Showing 1-5 of Search Results</div>
+    <div class="pagination-info">Showing 1-5 of Entry form</div>
   </main>
 </body>
 </html>
