@@ -1,38 +1,57 @@
 <?php
 session_start();
-include "../php/config.php";
+require __DIR__ . "/../../config/config.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $fullname = $_POST['fullname'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $confirm = $_POST['confirmPassword'];
+    $fullname = trim($_POST['fullname'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $confirm = trim($_POST['confirmPassword'] ?? '');
 
+    // kiểm tra rỗng
+    if ($fullname === '' || $email === '' || $password === '') {
+        $error = "Vui lòng nhập đầy đủ thông tin!";
+    }
     // kiểm tra password
-    if ($password != $confirm) {
+    elseif ($password != $confirm) {
         $error = "Mật khẩu không khớp!";
     } else {
 
-        // kiểm tra email tồn tại
-        $check = $conn->query("SELECT * FROM users WHERE username='$email'");
-        
-        if ($check->num_rows > 0) {
+        // ✅ check email đúng cột
+        $stmt = $conn_user->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
             $error = "Email đã tồn tại!";
         } else {
 
-            // lưu vào DB
-            $conn->query("INSERT INTO users(username, password)
-                          VALUES('$email', '$password')");
+            // ✅ mã hóa password
+            $hash = password_hash($password, PASSWORD_DEFAULT);
 
-            // tự login luôn
-            $_SESSION['user'] = [
-                'username' => $email
-            ];
+            // ✅ INSERT đúng
+            $stmt = $conn_user->prepare(
+                "INSERT INTO users(username, email, password) VALUES (?, ?, ?)"
+            );
 
-            header("Location: login.php");
-            exit();
+            $stmt->bind_param("sss", $fullname, $email, $hash);
+
+            if ($stmt->execute()) {
+
+                $_SESSION['user_id'] = $stmt->insert_id;
+                $_SESSION['username'] = $fullname;
+
+                header("Location: login.php");
+                exit();
+
+            } else {
+                $error = "Lỗi đăng ký!";
+            }
         }
+
+        $stmt->close();
     }
 }
 ?>
