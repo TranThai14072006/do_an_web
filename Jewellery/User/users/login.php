@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once $_SERVER['DOCUMENT_ROOT'] . "/do_an_web/Jewellery/config/config.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/web project/do_an_web/Jewellery/config/config.php";
 
 // 🔒 Nếu đã đăng nhập thì chuyển trang
 if (isset($_SESSION['user_id'])) {
@@ -65,7 +65,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>User Login</title>
   <link rel="stylesheet" href="../search.css">
+<<<<<<< HEAD
   <link rel="stylesheet" href="../Login.css">
+=======
+  <link rel="stylesheet" href="../users/Login.css">
+>>>>>>> 20c30713bb7f17e62962791f50a9a7c6f5680e3d
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
