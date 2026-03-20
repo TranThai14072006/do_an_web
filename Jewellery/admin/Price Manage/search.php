@@ -1,3 +1,22 @@
+<?php
+require_once "../config.php";
+
+$name = $_GET['name'] ?? '';
+$category = $_GET['category'] ?? '';
+
+$sql = "SELECT * FROM products WHERE 1";
+
+if ($name != '') {
+    $sql .= " AND name LIKE '%$name%'";
+}
+
+if ($category != '' && $category != 'All') {
+    $sql .= " AND category='$category'";
+}
+
+$result = $conn->query($sql);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -141,51 +160,23 @@ tr:nth-child(even) td{background:#faf6f2;}
       <table>
         <thead><tr><th>No.</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit (%)</th><th>Selling Price</th><th>Action</th></tr></thead>
         <tbody>
+        <?php
+        $i = 1;
+        while($row = $result->fetch_assoc()):
+        $price = $row['cost_price'] + ($row['cost_price']*$row['profit_percent']/100);
+        ?>
         <tr>
-            <td>1</td>
-            <td>Kane Moissanite Ring</td>
-            <td>Ring</td>
-            <td>25,000,000</td>
-            <td>30%</td>
-            <td>$1.371</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
+          <td><?= $i++ ?></td>
+          <td><?= $row['name'] ?></td>
+          <td><?= $row['category'] ?></td>
+          <td><?= $row['cost_price'] ?></td>
+          <td><?= $row['profit_percent'] ?>%</td>
+          <td>$<?= number_format($price,2) ?></td>
+          <td>
+            <a href="edit_price.php?id=<?= $row['id'] ?>" class="btn small">Edit</a>
+          </td>
         </tr>
-        <tr>
-            <td>2</td>
-            <td>Platinum Clover Charm Ring</td>
-            <td>Ring</td>
-            <td>6,000,000</td>
-            <td>35%</td>
-            <td>$1.950</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td>Arielle Princess CZ Ring</td>
-            <td>Ring</td>
-            <td>35,000,000</td>
-            <td>25%</td>
-            <td>$1.250</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td>Miracle Queen CZ Ring</td>
-            <td>Ring</td>
-            <td>15,000,000</td>
-            <td>30%</td>
-            <td>$1.470</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
-        <tr>
-            <td>5</td>
-            <td>Royal Moissanite Ring</td>
-            <td>Ring</td>
-            <td>50,000,000</td>
-            <td>40%</td>
-            <td>$2.200</td>
-            <td><a href="edit_price.html" class="btn small">Edit</a></td>
-        </tr>
+        <?php endwhile; ?>
         </tbody>
       </table>
     </div>

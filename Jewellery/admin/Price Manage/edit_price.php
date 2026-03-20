@@ -1,3 +1,29 @@
+<?php
+require_once "../config.php";
+
+$id = $_GET['id'];
+$sql = "SELECT * FROM products WHERE id='$id'";
+$result = $conn->query($sql);
+$product = $result->fetch_assoc();
+
+// SAVE
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $cost = $_POST['cost_price'];
+    $profit = $_POST['profit_percent'];
+
+    $update = "UPDATE products 
+               SET cost_price='$cost', profit_percent='$profit'
+               WHERE id='$id'";
+
+    if ($conn->query($update)) {
+        echo "<script>
+          alert('Update success');
+          window.location.href='pricing.php';
+        </script>";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -242,62 +268,63 @@
     <div class="card">
       <h3>Product Information</h3>
 
-      <form>
+     <form method="POST">
   <div class="form-layout">
-    <!-- Left column -->
+
     <div class="form-column">
+
       <div class="form-group">
         <label>Product Code:</label>
-        <input type="text" value="R002" readonly>
+        <input type="text" value="<?= $product['id'] ?>" readonly>
       </div>
 
       <div class="form-group">
         <label>Product Name:</label>
-        <input type="text" value="Winston Anchor Ring" readonly>
+        <input type="text" value="<?= $product['name'] ?>" readonly>
       </div>
 
       <div class="form-group">
         <label>Description:</label>
-        <textarea readonly>Made from 18K gold with a diamond heart pendant.</textarea>
+        <textarea readonly><?= $product['description'] ?? '' ?></textarea>
       </div>
 
       <div class="form-group">
         <label>COGS (USD):</label>
-        <input type="number">
+        <input type="number" name="cost_price" value="<?= $product['cost_price'] ?>">
       </div>
 
       <div class="form-group">
         <label>%Profit:</label>
-        <input type="number">
+        <input type="number" name="profit_percent" value="<?= $product['profit_percent'] ?>">
       </div>
 
       <div class="form-group">
         <label>Price (USD):</label>
-        <input type="number">
+        <input type="number" 
+          value="<?= $product['cost_price'] + ($product['cost_price']*$product['profit_percent']/100) ?>" 
+          readonly>
       </div>
 
       <div class="form-group">
         <label>Quantity in stock:</label>
-        <input type="number" value="5" readonly>
+        <input type="number" value="<?= $product['stock'] ?>" readonly>
+      </div>
+
+    </div>
+
+    <!-- IMAGE -->
+    <div class="image-column">
+      <label style="font-weight:bold;">Product Image</label>
+      <div class="image-preview">
+        <img src="../../images/<?= $product['image'] ?>">
       </div>
     </div>
 
-    <!-- Right column -->
-    <div class="image-column">
-      <label style="font-weight:bold; margin-bottom:10px;">Product Image</label>
-      <div class="image-preview">
-        <img id="previewImage" src="../../images/R003.jpg" alt="Product Image">
-      </div>
-    
-    </div>
   </div>
 
   <div class="form-actions">
-    <button type="button" class="btn btn-secondary" onclick="window.location.href='pricing.html'">Back</button>
-    <button type="button" class="btn btn-primary" style="padding: 0.75rem 2rem; font-weight: 600;" onclick="alert('Product update successful!'); window.location.href='pricing.html';">
-      <i class="material-icons" style="font-size: 1rem; margin-right: 0.5rem; vertical-align: middle;"></i>
-      Save change
-    </button>
+    <a href="pricing.php" class="btn btn-secondary">Back</a>
+    <button type="submit" class="btn btn-primary">Save change</button>
   </div>
 </form>
 
