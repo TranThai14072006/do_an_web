@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once $_SERVER['DOCUMENT_ROOT'] . "/do_an_web/Jewellery/config/config.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/web project/do_an_web/Jewellery/config/config.php";
 
 // 🔒 Nếu đã đăng nhập thì chuyển trang
 if (isset($_SESSION['user_id'])) {
