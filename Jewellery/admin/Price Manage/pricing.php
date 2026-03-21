@@ -1,5 +1,5 @@
 <?php
-require_once "../config.php";
+require_once "../../config/config.php";
 
 $sql = "SELECT * FROM products";
 $result = $conn->query($sql);
@@ -133,7 +133,8 @@ input[type="number"]{
     <a href="../Administration_menu.html#product-manage">Product Management</a>
     <a href="#" class="active">Pricing Management</a>
     <a href="../Administration_menu.html#users">Customers</a>
-    <a href="../Import product manage/import_management.html">Import Management</a>
+    <a href="../Order Manage/order_management.php">Order Management</a>
+    <a href="../Import_product/import_management.php">Import Management</a>
     <a href="../Stock Manage/stocking_management.html">Stocking Management</a>
     <a href="../Administration_menu.html#settings">Settings</a>
   </div>

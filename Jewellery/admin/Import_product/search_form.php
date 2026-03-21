@@ -248,7 +248,7 @@
     <div class="menu">
       <a href="../Administration_menu.html#products">Jewelry List</a>
       <a href="../Administration_menu.html#product-manage">Product Management</a>
-      <a href="../Price Manage/pricing.html">Pricing Management</a>
+      <a href="../Price Manage/pricing.php">Pricing Management</a>
       <a href="../Administration_menu.html#users">Customers</a>
       <a href="../Order Manage/order_management.html">Order Management</a>
       <a href="import_management.html">Import Management</a>

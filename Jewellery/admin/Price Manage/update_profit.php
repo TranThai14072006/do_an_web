@@ -1,5 +1,5 @@
 <?php
-require_once "../config.php";
+require_once "../../config/config.php";
 
 $id = $_POST['id'];
 $profit = $_POST['profit'];

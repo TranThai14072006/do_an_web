@@ -247,9 +247,9 @@
     <div class="menu">
       <a href="../Administration_menu.html#products">Jewelry List</a>
       <a href="../Administration_menu.html#product-manage">Product Management</a>
-      <a href="../Price Manage/pricing.html">Pricing Management</a>
+      <a href="../Price Manage/pricing.php">Pricing Management</a>
       <a href="import_management.php" class="active">Import Management</a>
-      <a href="../Order Manage/order_management.html">Order Management</a>
+      <a href="../Order Manage/order_management.php">Order Management</a>
       <a href="../Stock Manage/stocking_management.html">Stocking</a>
       <a href="../Administration_menu.html#setting">Settings</a>
     </div>
@@ -279,7 +279,7 @@
 </thead>
 
 <?php
-include __DIR__ . "/../../config/config.php";
+require_once "../../config/config.php";
 $sql = "SELECT * FROM goods_receipt ORDER BY id DESC";
 $result = $conn->query($sql);
 $i = 1;
