@@ -302,7 +302,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <label>Price (USD):</label>
         <input type="number" 
           value="<?= $product['cost_price'] + ($product['cost_price']*$product['profit_percent']/100) ?>" 
-          readonly>
+          >
       </div>
 
       <div class="form-group">
