@@ -77,8 +77,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     <div class="center">
       <a href="../index.php">
-        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
-      </a>
+<img src="/do_an_web/Jewellery/images/36-logo.png">     
+ </a>
       <div class="search-box">
         <input type="text" placeholder="Search products...">
         <button onclick="window.location.href='search.php'">
