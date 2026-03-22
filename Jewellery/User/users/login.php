@@ -1,7 +1,6 @@
 <?php
 session_start();
-require_once $_SERVER['DOCUMENT_ROOT'] . "/web project/do_an_web/Jewellery/config/config.php";
-
+require_once $_SERVER['DOCUMENT_ROOT'] . "/do_an_web/Jewellery/config/config.php";
 // 🔒 Nếu đã đăng nhập thì chuyển trang
 if (isset($_SESSION['user_id'])) {
     header("Location: ../index_profile.php");
@@ -78,8 +77,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     <div class="center">
       <a href="../index.php">
-        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
-      </a>
+<img src="/do_an_web/Jewellery/images/36-logo.png">     
+ </a>
       <div class="search-box">
         <input type="text" placeholder="Search products...">
         <button onclick="window.location.href='search.php'">
@@ -98,7 +97,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="login-container">
 
   <h2 class="title">User Login</h2>
-
   <!-- Hiển thị thông báo lỗi nếu có -->
   <?php if(isset($error)): ?>
     <p style="color:red; text-align:center; margin-bottom: 15px;"><?= htmlspecialchars($error) ?></p>
@@ -147,3 +145,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 </body>
 </html>
+
