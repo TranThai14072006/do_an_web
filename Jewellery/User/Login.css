@@ -201,3 +201,34 @@ body {
   0%, 100% { box-shadow: 0 0 10px #f8ce86, 0 0 20px #8e4b00; }
   50% { box-shadow: 0 0 25px #fff8dc, 0 0 40px #f8ce86; }
 }
+
+
+/* ===== FIX: Logo header quá to ===== */
+/* Thêm đoạn này vào cuối file search.css */
+
+.header-container .center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Giới hạn logo */
+.header-container .center a img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Đảm bảo header không bị đẩy cao do ảnh lớn */
+.header-container .search-bar {
+  display: flex;
+  align-items: center;
+  height: 80px;
+}
+
+.header-container .left,
+.header-container .right {
+  display: flex;
+  align-items: center;
+}
