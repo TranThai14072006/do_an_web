@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 21, 2026 at 02:03 PM
+-- Generation Time: Mar 23, 2026 at 04:25 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -52,7 +52,9 @@ INSERT INTO `goods_receipt` (`id`, `order_number`, `entry_date`, `supplier`, `to
 (7, 'ORD006', '2026-03-13', 'Pearl Store', 5, 1000.00, 'Draft', '2026-03-18 13:02:02'),
 (8, 'ORD007', '2026-03-12', 'Gold & Silver Co.', 2, 300.00, 'Completed', '2026-03-18 13:02:02'),
 (9, 'ORD008', '2026-03-11', 'Fine Jewelry Ltd.', 7, 1500.00, 'Draft', '2026-03-18 13:02:02'),
-(10, 'ORD.546', '2026-12-24', NULL, 11, 2900000.00, 'Completed', '2026-03-19 06:00:03');
+(10, 'ORD.546', '2026-12-24', NULL, 11, 2900000.00, 'Completed', '2026-03-19 06:00:03'),
+(11, 'ORD.888', '2025-12-22', NULL, 10, 10000.00, 'Completed', '2026-03-22 04:20:51'),
+(12, '444', '2026-03-22', 'nemchua', 12, 10800.00, 'Completed', '2026-03-22 04:25:59');
 
 -- --------------------------------------------------------
 
@@ -76,7 +78,9 @@ CREATE TABLE `goods_receipt_items` (
 
 INSERT INTO `goods_receipt_items` (`id`, `receipt_id`, `product_id`, `product_name`, `quantity`, `unit_price`, `total_price`) VALUES
 (3, 10, 'R001', 'Unknown', 9, 100000.00, 900000.00),
-(4, 10, 'R002', 'Unknown', 2, 1000000.00, 2000000.00);
+(4, 10, 'R002', 'Unknown', 2, 1000000.00, 2000000.00),
+(5, 11, 'R001', 'Kane Moissanite Ring', 10, 1000.00, 10000.00),
+(6, 12, 'R003', 'Ula Opal Teardrop Ring', 12, 900.00, 10800.00);
 
 -- --------------------------------------------------------
 
@@ -100,16 +104,16 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `price`, `image`, `cost_price`, `profit_percent`, `stock`, `category`) VALUES
-('B001', 'Luxury Gold Bracelet', 0.00, 'B001.jpg', 2000.00, 50, 4, 'Bracelet'),
-('E001', 'Pearl Drop Earrings', 0.00, 'E001.jpg', 500.00, 40, 20, 'Earring'),
-('E002', 'Crystal Stud Earrings', 0.00, 'E002.jpg', 300.00, 35, 25, 'Earring'),
-('N001', 'Diamond Heart Necklace', 0.00, 'N001.jpg', 1500.00, 30, 6, 'Necklace'),
-('N002', 'Gold Chain Necklace', 0.00, 'N002.jpg', 1100.00, 25, 9, 'Necklace'),
-('R001', 'Kane Moissanite Ring', 0.00, 'R001.jpg', 1020.00, 30, 10, 'Ring'),
-('R002', 'Winston Anchor Ring', 0.00, 'R002.jpg', 1220.00, 40, 5, 'Ring'),
-('R003', 'Ula Opal Teardrop Ring', 0.00, 'R003.jpg', 39.50, 25, 15, 'Ring'),
-('R004', 'Platinum Clover Charm Ring', 0.00, 'R004.jpg', 1210.00, 35, 8, 'Ring'),
-('R005', 'Paisley Moissanite Ring', 0.00, 'R005.jpg', 980.00, 20, 12, 'Ring');
+('B001', 'Luxury Gold Bracelet', 0.00, 'B001.jpg', 2000.00, 50, 0, 'Bracelet'),
+('E001', 'Pearl Drop Earrings', 0.00, 'E001.jpg', 500.00, 40, 0, 'Earring'),
+('E002', 'Crystal Stud Earrings', 0.00, 'E002.jpg', 300.00, 35, 0, 'Earring'),
+('N001', 'Diamond Heart Necklace', 0.00, 'N001.jpg', 1500.00, 30, 0, 'Necklace'),
+('N002', 'Gold Chain Necklace', 0.00, 'N002.jpg', 1100.00, 25, 0, 'Necklace'),
+('R001', 'Kane Moissanite Ring', 0.00, 'R001.jpg', 1020.00, 20, 18, 'Ring'),
+('R002', 'Winston Anchor Ring', 0.00, 'R002.jpg', 1220.00, 40, 0, 'Ring'),
+('R003', 'Ula Opal Teardrop Ring', 0.00, 'R003.jpg', 39.50, 25, 11, 'Ring'),
+('R004', 'Platinum Clover Charm Ring', 0.00, 'R004.jpg', 1210.00, 35, -1, 'Ring'),
+('R005', 'Paisley Moissanite Ring', 0.00, 'R005.jpg', 980.00, 20, -2, 'Ring');
 
 -- --------------------------------------------------------
 
@@ -164,13 +168,13 @@ ALTER TABLE `receipt_details`
 -- AUTO_INCREMENT for table `goods_receipt`
 --
 ALTER TABLE `goods_receipt`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `goods_receipt_items`
 --
 ALTER TABLE `goods_receipt_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `receipt_details`

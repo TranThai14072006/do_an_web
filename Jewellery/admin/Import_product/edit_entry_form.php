@@ -1,103 +1,465 @@
 <?php
 require __DIR__ . "/../../config/config.php";
 
-$id = (int)$_GET['id'];
+$id = (int)($_GET['id'] ?? 0);
+if (!$id) { header("Location: import_management.php"); exit; }
 
 // Lấy phiếu
 $form = $conn->query("SELECT * FROM goods_receipt WHERE id=$id")->fetch_assoc();
+if (!$form) { header("Location: import_management.php"); exit; }
 
-// Lấy sản phẩm
-$details = $conn->query("
-SELECT * FROM goods_receipt_items WHERE receipt_id=$id
-");
+// ── BẮT BUỘC: Chỉ được sửa phiếu Draft ──────────────────
+$is_completed = ($form['status'] === 'Completed');
+
+// Lấy items
+$details_result = $conn->query("SELECT * FROM goods_receipt_items WHERE receipt_id=$id");
+$details = $details_result->fetch_all(MYSQLI_ASSOC);
+
+// Lấy danh sách sản phẩm cho dropdown
+$products_result = $conn->query("SELECT id, name, cost_price FROM products ORDER BY id ASC");
+$products_list   = $products_result->fetch_all(MYSQLI_ASSOC);
+
+$conn->close();
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Edit Goods Receipt</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Entry Form</title>
 <style>
-body { font-family: "Segoe UI"; background:#fafafa; }
-.container {
-  width: 80%; max-width: 700px;
-  background:#fff; margin:50px auto;
-  padding:30px; border-radius:10px;
+body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
+.sidebar { width: 220px; background-color: #8e4b00; color: #f8ce86; display: flex; flex-direction: column; padding: 20px; height: 100vh; position: fixed; left: 0; top: 0; overflow-y: auto; }
+.logo { text-align: center; margin-bottom: 30px; }
+.logo img { width: 80px; border-radius: 50%; }
+.logo h2 { font-size: 18px; margin-top: 10px; }
+.menu a { display: block; padding: 12px; color: #f8ce86; text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: bold; }
+.menu a:hover, .menu a.active { background: #f8ce86; color: #8e4b00; }
+main { margin-left: 250px; padding: 0; box-sizing: border-box; }
+.top-nav { background: white; padding: 18px 22px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: 700; color: #8e4b00; font-size: 18px; }
+.card { background: white; border-radius: 10px; margin: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.card-header { background: #8e4b00; color: #f8ce86; padding: 18px 22px; font-weight: 700; font-size: 17px; border-radius: 10px 10px 0 0; display: flex; align-items: center; gap: 12px; }
+.card-body { padding: 22px; }
+.form-row { display: flex; gap: 22px; margin-bottom: 22px; flex-wrap: wrap; }
+.form-col { flex: 1; min-width: 180px; }
+.form-label { display: block; font-weight: 600; margin-bottom: 8px; }
+.form-control { width: 100%; border: 1px solid #8e4b00; border-radius: 6px; padding: 10px; font-size: 14px; box-sizing: border-box; }
+.form-control:disabled { background: #f5f5f5; color: #888; cursor: not-allowed; border-color: #ccc; }
+.product-row { display: flex; gap: 14px; margin-bottom: 14px; background: #f8f9fa; padding: 14px; border-radius: 8px; align-items: flex-start; flex-wrap: wrap; }
+.product-select-wrap { flex: 2; min-width: 160px; position: relative; }
+.product-price { flex: 1; min-width: 120px; }
+.product-quantity { flex: 1; min-width: 80px; }
+.product-total { flex: 1; color: #8e4b00; font-weight: 700; text-align: right; padding-right: 10px; min-width: 100px; padding-top: 10px; }
+.product-actions { flex: 0.3; display: flex; justify-content: center; padding-top: 4px; }
+.btn { padding: 10px 22px; border-radius: 8px; border: none; font-weight: 600; color: white; cursor: pointer; text-decoration: none; display: inline-block; }
+.btn-secondary { background: #6c757d; }
+.btn-primary { background: #8e4b00; }
+.btn-danger { background: #dc3545; width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 6px; }
+.btn-add-product { margin-bottom: 10px; padding: 8px 18px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+.summary-card { background: #f8f9fa; border-radius: 8px; padding: 14px; margin-top: 28px; }
+.summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #dee2e6; }
+.summary-row:last-child { border-bottom: none; }
+.summary-total { font-weight: 700; color: #8e4b00; font-size: 18px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 14px; margin-top: 32px; flex-wrap: wrap; }
+.input-with-usd { position: relative; }
+.input-with-usd .form-control { padding-right: 50px; }
+.input-usd-label { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #8e4b00; font-weight: 700; font-size: 14px; }
+.col-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+
+/* ── Readonly overlay for Completed status ── */
+.readonly-overlay {
+  background: #fff8ee; border: 2px solid #f8ce86; border-radius: 8px;
+  padding: 16px 20px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px;
 }
-.form-group { margin-bottom:15px; }
-label { font-weight:bold; }
-input, select { width:100%; padding:8px; }
-.btn { background:#d4af37; color:#fff; padding:10px 20px; border:none; }
+.readonly-overlay .icon { font-size: 24px; }
+.readonly-overlay strong { color: #8e4b00; display: block; }
+.readonly-overlay span { color: #666; font-size: 14px; }
+
+/* Status badge */
+.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+.status-draft { background: #fff3cd; color: #856404; }
+.status-completed { background: #d4edda; color: #155724; }
+
+/* ── Searchable dropdown ── */
+.custom-select-wrapper { position: relative; }
+.custom-select-display {
+  width: 100%; border: 1px solid #8e4b00; border-radius: 6px;
+  padding: 10px 36px 10px 10px; font-size: 14px; box-sizing: border-box;
+  background: white; cursor: pointer; user-select: none;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #555;
+}
+.custom-select-display.disabled {
+  background: #f5f5f5; color: #888; cursor: not-allowed; border-color: #ccc;
+}
+.custom-select-dropdown {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: white; border: 1px solid #8e4b00; border-radius: 6px;
+  z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 260px;
+  overflow: hidden; flex-direction: column;
+}
+.custom-select-dropdown.open { display: flex; }
+.custom-select-search {
+  padding: 8px 10px; border: none; border-bottom: 1px solid #eee;
+  font-size: 14px; outline: none; width: 100%; box-sizing: border-box;
+}
+.custom-select-list { overflow-y: auto; max-height: 200px; }
+.custom-select-option { padding: 10px 12px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f5f5f5; }
+.custom-select-option:hover, .custom-select-option.highlighted { background: #f8ce86; color: #8e4b00; }
+.custom-select-option.selected { background: #8e4b00; color: #f8ce86; }
+.custom-select-empty { padding: 10px 12px; color: #aaa; font-size: 14px; }
+.hidden-select { display: none; }
 </style>
 </head>
-
 <body>
-<div class="container">
-<h2>Edit Goods Receipt</h2>
 
-<form action="save_edit_receipt.php" method="POST">
+<div class="sidebar">
+  <div class="logo">
+    <img src="../../images/Admin_login.jpg" alt="Admin">
+    <h2>Luxury Jewelry Admin</h2>
+  </div>
+  <div class="menu">
+    <a href="../Administration_menu.html#products">Jewelry List</a>
+    <a href="../Administration_menu.html#product-manage">Product Management</a>
+    <a href="../Price Manage/pricing.php">Pricing Management</a>
+    <a href="../Administration_menu.html#users">Customers</a>
+    <a href="../Order Manage/order_management.php">Order Management</a>
+    <a href="import_management.php" class="active">Import Management</a>
+    <a href="../Stock Manage/stocking_management.php">Stocking</a>
+  </div>
+</div>
 
+<form action="save_edit_receipt.php" method="POST" id="edit-form">
 <input type="hidden" name="id" value="<?= $form['id'] ?>">
 
-<!-- ORDER -->
-<div class="form-group">
-<label>Order Number:</label>
-<input type="text" name="order_number" value="<?= $form['order_number'] ?>">
-</div>
+<main>
+  <div class="top-nav">Edit Entry Form — <?= htmlspecialchars($form['order_number']) ?></div>
 
-<!-- DATE -->
-<div class="form-group">
-<label>Date:</label>
-<input type="date" name="date" value="<?= $form['entry_date'] ?>">
-</div>
+  <div class="card">
+    <div class="card-header">
+      Receipt Information
+      <span class="status-badge <?= $form['status'] === 'Completed' ? 'status-completed' : 'status-draft' ?>">
+        <?= $form['status'] ?>
+      </span>
+    </div>
+    <div class="card-body">
 
-<!-- STATUS -->
-<div class="form-group">
-<label>Status:</label>
-<select name="status">
-  <option value="Draft" <?= $form['status']=='Draft'?'selected':'' ?>>Draft</option>
-  <option value="Completed" <?= $form['status']=='Completed'?'selected':'' ?>>Completed</option>
-</select>
-</div>
+      <?php if ($is_completed): ?>
+        <!-- ── BLOCK: Completed không thể sửa ── -->
+        <div class="readonly-overlay">
+          <span class="icon">🔒</span>
+          <div>
+            <strong>Phiếu đã hoàn thành — không thể chỉnh sửa</strong>
+            <span>Chỉ có thể sửa các phiếu ở trạng thái <b>Draft</b>. Phiếu Completed đã được cập nhật vào kho.</span>
+          </div>
+        </div>
+      <?php endif; ?>
 
-<hr>
+      <div class="form-row">
+        <div class="form-col">
+          <label class="form-label">Date *</label>
+          <input type="date" name="date" class="form-control"
+                 value="<?= htmlspecialchars($form['entry_date']) ?>"
+                 <?= $is_completed ? 'disabled' : 'required' ?>>
+        </div>
+        <div class="form-col">
+          <label class="form-label">Order Number *</label>
+          <input type="text" name="order_number" class="form-control"
+                 value="<?= htmlspecialchars($form['order_number']) ?>"
+                 <?= $is_completed ? 'disabled' : 'required' ?>>
+        </div>
+        <div class="form-col">
+          <label class="form-label">Supplier</label>
+          <input type="text" name="supplier" class="form-control"
+                 value="<?= htmlspecialchars($form['supplier'] ?? '') ?>"
+                 <?= $is_completed ? 'disabled' : '' ?>>
+        </div>
+        <?php if (!$is_completed): ?>
+        <div class="form-col">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-control">
+            <option value="Draft" <?= $form['status']==='Draft' ? 'selected' : '' ?>>Draft</option>
+            <option value="Completed" <?= $form['status']==='Completed' ? 'selected' : '' ?>>Completed</option>
+          </select>
+        </div>
+        <?php endif; ?>
+      </div>
 
-<h3>Products</h3>
+      <!-- Column headers -->
+      <div style="display:flex;gap:14px;padding:0 14px;margin-bottom:4px;flex-wrap:wrap;">
+        <div style="flex:2;min-width:160px;" class="col-label">Product</div>
+        <div style="flex:1;min-width:120px;" class="col-label">Unit Price (USD)</div>
+        <div style="flex:1;min-width:80px;"  class="col-label">Quantity</div>
+        <div style="flex:1;min-width:100px;" class="col-label">Total</div>
+        <?php if (!$is_completed): ?><div style="flex:0.3;" class="col-label"></div><?php endif; ?>
+      </div>
 
-<?php if ($details->num_rows == 0): ?>
-  <p>Chưa có sản phẩm</p>
-<?php endif; ?>
+      <div id="product-container">
+        <?php foreach ($details as $item):
+          $matched_product = null;
+          foreach ($products_list as $p) {
+            if ($p['id'] == $item['product_id']) { $matched_product = $p; break; }
+          }
+          $item_total = $item['unit_price'] * $item['quantity'];
+        ?>
+        <div class="product-row product-item">
+          <div class="product-select-wrap">
+            <select class="hidden-select prod-select" name="product_code[]" <?= $is_completed ? 'disabled' : '' ?>>
+              <option value="">— Chọn sản phẩm —</option>
+              <?php foreach ($products_list as $p): ?>
+                <option value="<?= htmlspecialchars($p['id']) ?>"
+                        data-cost="<?= $p['cost_price'] ?>"
+                        <?= $p['id'] == $item['product_id'] ? 'selected' : '' ?>>
+                  <?= htmlspecialchars($p['id']) ?> — <?= htmlspecialchars($p['name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <div class="custom-select-wrapper">
+              <div class="custom-select-display <?= $is_completed ? 'disabled' : '' ?>" tabindex="<?= $is_completed ? '-1' : '0' ?>">
+                <?php if ($matched_product): ?>
+                  <?= htmlspecialchars($matched_product['id']) ?> — <?= htmlspecialchars($matched_product['name']) ?>
+                <?php elseif ($item['product_id']): ?>
+                  <?= htmlspecialchars($item['product_id']) ?> — <?= htmlspecialchars($item['product_name']) ?>
+                <?php else: ?>
+                  — Chọn sản phẩm —
+                <?php endif; ?>
+              </div>
+              <?php if (!$is_completed): ?>
+              <div class="custom-select-dropdown">
+                <input type="text" class="custom-select-search" placeholder="🔍 Tìm theo mã hoặc tên...">
+                <div class="custom-select-list">
+                  <div class="custom-select-option" data-value="" data-cost="">— Chọn sản phẩm —</div>
+                  <?php foreach ($products_list as $p): ?>
+                    <div class="custom-select-option"
+                         data-value="<?= htmlspecialchars($p['id']) ?>"
+                         data-cost="<?= $p['cost_price'] ?>"
+                         <?= $p['id'] == $item['product_id'] ? 'class="selected"' : '' ?>>
+                      <?= htmlspecialchars($p['id']) ?> — <?= htmlspecialchars($p['name']) ?>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+              <?php endif; ?>
+            </div>
+          </div>
 
-<?php while($item = $details->fetch_assoc()): ?>
-  
-  <!-- Giữ ID item để update -->
-  <input type="hidden" name="item_id[]" value="<?= $item['id'] ?>">
+          <div class="product-price input-with-usd">
+            <input type="text" name="price[]" class="form-control price-input"
+                   value="<?= number_format($item['unit_price'], 0, '.', '.') ?>"
+                   <?= $is_completed ? 'disabled' : '' ?>
+                   oninput="formatPrice(this); calcRow(this)">
+            <span class="input-usd-label">USD</span>
+          </div>
 
-  <div class="form-group">
-    <label>Product ID:</label>
-    <input type="text" name="product_code[]" value="<?= $item['product_id'] ?>">
+          <div class="product-quantity">
+            <input type="number" name="quantity[]" class="form-control qty-input"
+                   value="<?= intval($item['quantity']) ?>" min="1"
+                   <?= $is_completed ? 'disabled' : '' ?>
+                   oninput="calcRow(this)">
+          </div>
+
+          <div class="product-total"><?= number_format($item_total, 0, '.', '.') ?> USD</div>
+
+          <?php if (!$is_completed): ?>
+          <div class="product-actions">
+            <button type="button" class="btn btn-danger" onclick="removeRow(this)">✖</button>
+          </div>
+          <?php endif; ?>
+        </div>
+        <?php endforeach; ?>
+
+        <?php if (empty($details)): ?>
+        <!-- Empty row if no items -->
+        <div class="product-row product-item">
+          <div class="product-select-wrap">
+            <select class="hidden-select prod-select" name="product_code[]">
+              <option value="">— Chọn sản phẩm —</option>
+              <?php foreach ($products_list as $p): ?>
+                <option value="<?= htmlspecialchars($p['id']) ?>" data-cost="<?= $p['cost_price'] ?>">
+                  <?= htmlspecialchars($p['id']) ?> — <?= htmlspecialchars($p['name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <div class="custom-select-wrapper">
+              <div class="custom-select-display" tabindex="0">— Chọn sản phẩm —</div>
+              <div class="custom-select-dropdown">
+                <input type="text" class="custom-select-search" placeholder="🔍 Tìm theo mã hoặc tên...">
+                <div class="custom-select-list">
+                  <div class="custom-select-option" data-value="" data-cost="">— Chọn sản phẩm —</div>
+                  <?php foreach ($products_list as $p): ?>
+                    <div class="custom-select-option" data-value="<?= htmlspecialchars($p['id']) ?>" data-cost="<?= $p['cost_price'] ?>">
+                      <?= htmlspecialchars($p['id']) ?> — <?= htmlspecialchars($p['name']) ?>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="product-price input-with-usd">
+            <input type="text" name="price[]" class="form-control price-input" placeholder="0" oninput="formatPrice(this); calcRow(this)">
+            <span class="input-usd-label">USD</span>
+          </div>
+          <div class="product-quantity">
+            <input type="number" name="quantity[]" class="form-control qty-input" value="1" min="1" oninput="calcRow(this)">
+          </div>
+          <div class="product-total">0 USD</div>
+          <div class="product-actions">
+            <button type="button" class="btn btn-danger" onclick="removeRow(this)">✖</button>
+          </div>
+        </div>
+        <?php endif; ?>
+      </div>
+
+      <?php if (!$is_completed): ?>
+      <button type="button" class="btn btn-primary btn-add-product" onclick="addRow()">+ Add Product</button>
+      <?php endif; ?>
+
+      <div class="summary-card">
+        <div class="summary-row"><span>Total Products:</span><span id="sum-products">0</span></div>
+        <div class="summary-row"><span>Total Quantity:</span><span id="sum-qty">0</span></div>
+        <div class="summary-row summary-total"><span>Grand Total:</span><span id="sum-total">0 USD</span></div>
+      </div>
+
+      <div class="form-actions">
+        <a href="import_management.php" class="btn btn-secondary">← Back</a>
+        <?php if (!$is_completed): ?>
+          <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+        <?php else: ?>
+          <a href="entry_form_detail.php?id=<?= $id ?>" class="btn btn-primary">👁 View Detail</a>
+        <?php endif; ?>
+      </div>
+
+    </div>
   </div>
-
-  <div class="form-group">
-    <label>Unit Price:</label>
-    <input type="number" name="price[]" value="<?= $item['unit_price'] ?>">
-  </div>
-
-  <div class="form-group">
-    <label>Quantity:</label>
-    <input type="number" name="quantity[]" value="<?= $item['quantity'] ?>">
-  </div>
-
-  <hr>
-
-<?php endwhile; ?>
-
-<div class="form-actions">
-  <button type="submit" class="btn">Save Changes</button>
-  <a href="import_management.php" class="btn">Cancel</a>
-</div>
-
+</main>
 </form>
-</div>
+
+<script>
+const IS_COMPLETED = <?= $is_completed ? 'true' : 'false' ?>;
+const ALL_PRODUCTS = <?= json_encode($products_list) ?>;
+
+function formatNum(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function formatPrice(input) {
+  const raw = input.value.replace(/\D/g, '');
+  input.value = raw ? formatNum(parseInt(raw)) : '';
+}
+
+function calcRow(el) {
+  const row   = el.closest('.product-row');
+  const price = parseInt((row.querySelector('.price-input').value || '0').replace(/\./g, '')) || 0;
+  const qty   = parseInt(row.querySelector('.qty-input').value) || 0;
+  row.querySelector('.product-total').textContent = formatNum(price * qty) + ' USD';
+  updateSummary();
+}
+
+function updateSummary() {
+  let totalQty = 0, totalVal = 0, productCount = 0;
+  document.querySelectorAll('.product-item').forEach(row => {
+    const pid   = row.querySelector('.prod-select')?.value;
+    const price = parseInt((row.querySelector('.price-input').value || '0').replace(/\./g, '')) || 0;
+    const qty   = parseInt(row.querySelector('.qty-input').value) || 0;
+    if (pid) { productCount++; totalQty += qty; totalVal += price * qty; }
+  });
+  document.getElementById('sum-products').textContent = productCount;
+  document.getElementById('sum-qty').textContent      = totalQty;
+  document.getElementById('sum-total').textContent    = formatNum(totalVal) + ' USD';
+}
+
+function initCustomSelect(wrapper) {
+  if (IS_COMPLETED) return; // No interaction when completed
+  const display  = wrapper.querySelector('.custom-select-display');
+  const dropdown = wrapper.querySelector('.custom-select-dropdown');
+  if (!display || !dropdown) return;
+  const search   = wrapper.querySelector('.custom-select-search');
+  const list     = wrapper.querySelector('.custom-select-list');
+  const hiddenSel = wrapper.closest('.product-select-wrap').querySelector('.prod-select');
+
+  display.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.classList.contains('open');
+    closeAllDropdowns();
+    if (!isOpen) { dropdown.classList.add('open'); search.value = ''; filterOptions(list, ''); search.focus(); }
+  });
+  display.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { display.click(); e.preventDefault(); } });
+  search.addEventListener('input', () => filterOptions(list, search.value));
+  search.addEventListener('click', e => e.stopPropagation());
+  list.addEventListener('click', (e) => {
+    const opt = e.target.closest('.custom-select-option');
+    if (!opt) return;
+    selectOption(wrapper, opt, hiddenSel);
+  });
+}
+
+function filterOptions(list, query) {
+  const q = query.toLowerCase().trim();
+  let hasVisible = false;
+  list.querySelectorAll('.custom-select-option').forEach(opt => {
+    const match = !q || opt.textContent.toLowerCase().includes(q);
+    opt.style.display = match ? '' : 'none';
+    if (match) hasVisible = true;
+  });
+  let empty = list.querySelector('.custom-select-empty');
+  if (!hasVisible) {
+    if (!empty) { empty = document.createElement('div'); empty.className = 'custom-select-empty'; empty.textContent = 'Không tìm thấy sản phẩm'; list.appendChild(empty); }
+    empty.style.display = '';
+  } else if (empty) { empty.style.display = 'none'; }
+}
+
+function selectOption(wrapper, opt, hiddenSel) {
+  const value = opt.dataset.value || '';
+  const cost  = opt.dataset.cost  || '';
+  wrapper.querySelector('.custom-select-display').textContent = opt.textContent.trim();
+  hiddenSel.value = value;
+  wrapper.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
+  opt.classList.add('selected');
+  wrapper.querySelector('.custom-select-dropdown').classList.remove('open');
+  if (cost && parseFloat(cost) > 0) {
+    const row = wrapper.closest('.product-row');
+    const priceInput = row.querySelector('.price-input');
+    priceInput.value = formatNum(Math.round(parseFloat(cost)));
+    calcRow(priceInput);
+  } else { updateSummary(); }
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.custom-select-dropdown.open').forEach(d => d.classList.remove('open'));
+}
+document.addEventListener('click', closeAllDropdowns);
+
+function addRow() {
+  if (IS_COMPLETED) return;
+  const first = document.querySelector('.product-row');
+  const clone = first.cloneNode(true);
+  clone.querySelectorAll('input').forEach(i => { i.value = i.type === 'number' ? 1 : ''; });
+  clone.querySelector('.prod-select').value = '';
+  clone.querySelector('.product-total').textContent = '0 USD';
+  const display = clone.querySelector('.custom-select-display');
+  if (display) display.textContent = '— Chọn sản phẩm —';
+  clone.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
+  const dd = clone.querySelector('.custom-select-dropdown');
+  if (dd) dd.classList.remove('open');
+  document.getElementById('product-container').appendChild(clone);
+  initCustomSelect(clone.querySelector('.custom-select-wrapper'));
+  updateSummary();
+}
+
+function removeRow(btn) {
+  if (document.querySelectorAll('.product-item').length <= 1) { alert('Phải có ít nhất 1 sản phẩm!'); return; }
+  btn.closest('.product-row').remove();
+  updateSummary();
+}
+
+document.querySelectorAll('.custom-select-wrapper').forEach(initCustomSelect);
+updateSummary();
+
+if (!IS_COMPLETED) {
+  document.getElementById('edit-form').addEventListener('submit', function(e) {
+    const hasSelected = [...document.querySelectorAll('.prod-select')].some(s => s.value !== '');
+    if (!hasSelected) { alert('Phải chọn ít nhất 1 sản phẩm!'); e.preventDefault(); return; }
+    document.querySelectorAll('.price-input').forEach(i => { i.value = i.value.replace(/\./g, ''); });
+  });
+}
+</script>
 </body>
 </html>

@@ -1,12 +1,10 @@
 <?php
 require_once "../../config/config.php";
 
-// Lấy danh sách sản phẩm từ DB cho dropdown
 $products_result = $conn->query("SELECT id, name, cost_price FROM products ORDER BY id ASC");
 $products_list   = $products_result->fetch_all(MYSQLI_ASSOC);
 $conn->close();
 
-// Thông báo lỗi từ redirect
 $error = $_GET['error'] ?? '';
 $error_msg = match($error) {
     'missing_fields' => 'Vui lòng điền đầy đủ ngày, mã phiếu và ít nhất 1 sản phẩm.',
@@ -37,12 +35,12 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
 .form-col { flex: 1; min-width: 180px; }
 .form-label { display: block; font-weight: 600; margin-bottom: 8px; }
 .form-control { width: 100%; border: 1px solid #8e4b00; border-radius: 6px; padding: 10px; font-size: 14px; box-sizing: border-box; }
-.product-row { display: flex; gap: 14px; margin-bottom: 14px; background: #f8f9fa; padding: 14px; border-radius: 8px; align-items: center; flex-wrap: wrap; }
-.product-select { flex: 2; min-width: 160px; }
+.product-row { display: flex; gap: 14px; margin-bottom: 14px; background: #f8f9fa; padding: 14px; border-radius: 8px; align-items: flex-start; flex-wrap: wrap; }
+.product-select-wrap { flex: 2; min-width: 160px; position: relative; }
 .product-price { flex: 1; min-width: 120px; }
 .product-quantity { flex: 1; min-width: 80px; }
-.product-total { flex: 1; color: #8e4b00; font-weight: 700; text-align: right; padding-right: 10px; min-width: 100px; }
-.product-actions { flex: 0.3; display: flex; justify-content: center; }
+.product-total { flex: 1; color: #8e4b00; font-weight: 700; text-align: right; padding-right: 10px; min-width: 100px; padding-top: 10px; }
+.product-actions { flex: 0.3; display: flex; justify-content: center; padding-top: 4px; }
 .btn { padding: 10px 22px; border-radius: 8px; border: none; font-weight: 600; color: white; cursor: pointer; text-decoration: none; display: inline-block; }
 .btn-secondary { background: #6c757d; }
 .btn-primary { background: #8e4b00; }
@@ -57,9 +55,43 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
 .input-with-usd .form-control { padding-right: 50px; }
 .input-usd-label { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #8e4b00; font-weight: 700; font-size: 14px; }
 .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px; padding: 12px 18px; margin-bottom: 18px; font-weight: 600; }
-.alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 8px; padding: 12px 18px; margin-bottom: 18px; font-weight: 600; }
-select.form-control { background: white; }
 .col-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+
+/* ── Searchable dropdown ── */
+.custom-select-wrapper { position: relative; }
+.custom-select-display {
+  width: 100%; border: 1px solid #8e4b00; border-radius: 6px;
+  padding: 10px 36px 10px 10px; font-size: 14px; box-sizing: border-box;
+  background: white; cursor: pointer; user-select: none;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: #555;
+}
+.custom-select-display::after {
+  content: '▾'; position: absolute; right: 10px; top: 50%;
+  transform: translateY(-50%); color: #8e4b00; pointer-events: none;
+}
+.custom-select-dropdown {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: white; border: 1px solid #8e4b00; border-radius: 6px;
+  z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 260px;
+  overflow: hidden; flex-direction: column;
+}
+.custom-select-dropdown.open { display: flex; }
+.custom-select-search {
+  padding: 8px 10px; border: none; border-bottom: 1px solid #eee;
+  font-size: 14px; outline: none; width: 100%; box-sizing: border-box;
+}
+.custom-select-search::placeholder { color: #aaa; }
+.custom-select-list { overflow-y: auto; max-height: 200px; }
+.custom-select-option {
+  padding: 10px 12px; cursor: pointer; font-size: 14px;
+  border-bottom: 1px solid #f5f5f5;
+}
+.custom-select-option:hover, .custom-select-option.highlighted { background: #f8ce86; color: #8e4b00; }
+.custom-select-option.selected { background: #8e4b00; color: #f8ce86; }
+.custom-select-empty { padding: 10px 12px; color: #aaa; font-size: 14px; }
+/* Hidden real select */
+.hidden-select { display: none; }
 </style>
 </head>
 <body>
@@ -95,18 +127,15 @@ select.form-control { background: white; }
       <div class="form-row">
         <div class="form-col">
           <label class="form-label">Date *</label>
-          <input type="date" name="date" class="form-control" required
-                 value="<?= date('Y-m-d') ?>">
+          <input type="date" name="date" class="form-control" required value="<?= date('Y-m-d') ?>">
         </div>
         <div class="form-col">
           <label class="form-label">Order Number *</label>
-          <input type="text" name="order_number" class="form-control"
-                 placeholder="VD: GR.021" required>
+          <input type="text" name="order_number" class="form-control" placeholder="VD: GR.021" required>
         </div>
         <div class="form-col">
           <label class="form-label">Supplier</label>
-          <input type="text" name="supplier" class="form-control"
-                 placeholder="Tên nhà cung cấp">
+          <input type="text" name="supplier" class="form-control" placeholder="Tên nhà cung cấp">
         </div>
       </div>
 
@@ -120,18 +149,37 @@ select.form-control { background: white; }
       </div>
 
       <div id="product-container">
-        <!-- Row mẫu (sẽ bị clone) -->
+        <!-- Row mẫu -->
         <div class="product-row product-item">
-          <div class="product-select">
-            <select class="form-control prod-select" name="product_code[]">
+          <div class="product-select-wrap">
+            <!-- Real hidden select (submitted with form) -->
+            <select class="hidden-select prod-select" name="product_code[]">
               <option value="">— Chọn sản phẩm —</option>
               <?php foreach ($products_list as $p): ?>
                 <option value="<?= htmlspecialchars($p['id']) ?>"
-                        data-cost="<?= $p['cost_price'] ?>">
+                        data-cost="<?= $p['cost_price'] ?>"
+                        data-label="<?= htmlspecialchars($p['id']) ?> — <?= htmlspecialchars($p['name']) ?>">
                   <?= htmlspecialchars($p['id']) ?> — <?= htmlspecialchars($p['name']) ?>
                 </option>
               <?php endforeach; ?>
             </select>
+            <!-- Custom searchable UI -->
+            <div class="custom-select-wrapper">
+              <div class="custom-select-display" tabindex="0">— Chọn sản phẩm —</div>
+              <div class="custom-select-dropdown">
+                <input type="text" class="custom-select-search" placeholder="🔍 Tìm theo mã hoặc tên...">
+                <div class="custom-select-list">
+                  <div class="custom-select-option" data-value="" data-cost="">— Chọn sản phẩm —</div>
+                  <?php foreach ($products_list as $p): ?>
+                    <div class="custom-select-option"
+                         data-value="<?= htmlspecialchars($p['id']) ?>"
+                         data-cost="<?= $p['cost_price'] ?>">
+                      <?= htmlspecialchars($p['id']) ?> — <?= htmlspecialchars($p['name']) ?>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="product-price input-with-usd">
             <input type="text" name="price[]" class="form-control price-input"
@@ -144,37 +192,29 @@ select.form-control { background: white; }
           </div>
           <div class="product-total">0 USD</div>
           <div class="product-actions">
-            <button type="button" class="btn btn-danger"
-                    onclick="removeRow(this)">✖</button>
+            <button type="button" class="btn btn-danger" onclick="removeRow(this)">✖</button>
           </div>
         </div>
       </div>
 
-      <button type="button" class="btn btn-primary btn-add-product"
-              onclick="addRow()">+ Add Product</button>
+      <button type="button" class="btn btn-primary btn-add-product" onclick="addRow()">+ Add Product</button>
 
-      <!-- Summary -->
       <div class="summary-card">
         <div class="summary-row">
-          <span>Total Products:</span>
-          <span id="sum-products">1</span>
+          <span>Total Products:</span><span id="sum-products">0</span>
         </div>
         <div class="summary-row">
-          <span>Total Quantity:</span>
-          <span id="sum-qty">1</span>
+          <span>Total Quantity:</span><span id="sum-qty">0</span>
         </div>
         <div class="summary-row summary-total">
-          <span>Grand Total:</span>
-          <span id="sum-total">0 USD</span>
+          <span>Grand Total:</span><span id="sum-total">0 USD</span>
         </div>
       </div>
 
       <div class="form-actions">
         <a href="import_management.php" class="btn btn-secondary">Cancel</a>
-        <button type="submit" name="status" value="Draft"
-                class="btn btn-secondary">Save Draft</button>
-        <button type="submit" name="status" value="Completed"
-                class="btn btn-primary">✔ Save & Complete</button>
+        <button type="submit" name="status" value="Draft" class="btn btn-secondary">Save Draft</button>
+        <button type="submit" name="status" value="Completed" class="btn btn-primary">✔ Save & Complete</button>
       </div>
 
     </div>
@@ -183,20 +223,10 @@ select.form-control { background: white; }
 </form>
 
 <script>
-// ── Auto-fill giá nhập khi chọn sản phẩm ──────────────────
-document.addEventListener('change', function(e) {
-  if (e.target.classList.contains('prod-select')) {
-    const cost = e.target.selectedOptions[0]?.dataset.cost || '';
-    const row  = e.target.closest('.product-row');
-    if (cost && parseFloat(cost) > 0) {
-      const priceInput = row.querySelector('.price-input');
-      priceInput.value = formatNum(Math.round(parseFloat(cost)));
-      calcRow(priceInput);
-    }
-  }
-});
+// ── All products data (for cloning rows) ──────────────────
+const ALL_PRODUCTS = <?= json_encode($products_list) ?>;
 
-// ── Format số có dấu chấm ngàn ────────────────────────────
+// ── Format helpers ─────────────────────────────────────────
 function formatNum(n) {
   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
@@ -205,7 +235,7 @@ function formatPrice(input) {
   input.value = raw ? formatNum(parseInt(raw)) : '';
 }
 
-// ── Tính tổng từng row ────────────────────────────────────
+// ── Calc row total ─────────────────────────────────────────
 function calcRow(el) {
   const row   = el.closest('.product-row');
   const price = parseInt((row.querySelector('.price-input').value || '0').replace(/\./g, '')) || 0;
@@ -214,64 +244,149 @@ function calcRow(el) {
   updateSummary();
 }
 
-// ── Cập nhật summary ──────────────────────────────────────
+// ── Summary ───────────────────────────────────────────────
 function updateSummary() {
-  const rows = document.querySelectorAll('.product-item');
   let totalQty = 0, totalVal = 0, productCount = 0;
-
-  rows.forEach(row => {
+  document.querySelectorAll('.product-item').forEach(row => {
     const pid   = row.querySelector('.prod-select')?.value;
     const price = parseInt((row.querySelector('.price-input').value || '0').replace(/\./g, '')) || 0;
     const qty   = parseInt(row.querySelector('.qty-input').value) || 0;
-    if (pid) {
-      productCount++;
-      totalQty += qty;
-      totalVal += price * qty;
-    }
+    if (pid) { productCount++; totalQty += qty; totalVal += price * qty; }
   });
-
   document.getElementById('sum-products').textContent = productCount;
   document.getElementById('sum-qty').textContent      = totalQty;
   document.getElementById('sum-total').textContent    = formatNum(totalVal) + ' USD';
 }
 
-// ── Thêm row sản phẩm ─────────────────────────────────────
+// ── Searchable Select logic ────────────────────────────────
+function initCustomSelect(wrapper) {
+  const display   = wrapper.querySelector('.custom-select-display');
+  const dropdown  = wrapper.querySelector('.custom-select-dropdown');
+  const search    = wrapper.querySelector('.custom-select-search');
+  const list      = wrapper.querySelector('.custom-select-list');
+  const hiddenSel = wrapper.closest('.product-select-wrap').querySelector('.prod-select');
+
+  // Toggle open/close
+  display.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.classList.contains('open');
+    closeAllDropdowns();
+    if (!isOpen) {
+      dropdown.classList.add('open');
+      search.value = '';
+      filterOptions(list, '');
+      search.focus();
+    }
+  });
+  display.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { display.click(); e.preventDefault(); }
+  });
+
+  // Search/filter
+  search.addEventListener('input', () => filterOptions(list, search.value));
+  search.addEventListener('click', e => e.stopPropagation());
+
+  // Option click
+  list.addEventListener('click', (e) => {
+    const opt = e.target.closest('.custom-select-option');
+    if (!opt) return;
+    selectOption(wrapper, opt, hiddenSel);
+  });
+}
+
+function filterOptions(list, query) {
+  const q = query.toLowerCase().trim();
+  const opts = list.querySelectorAll('.custom-select-option');
+  let hasVisible = false;
+  opts.forEach(opt => {
+    const text = opt.textContent.toLowerCase();
+    const match = !q || text.includes(q);
+    opt.style.display = match ? '' : 'none';
+    if (match) hasVisible = true;
+  });
+  // Empty state
+  let empty = list.querySelector('.custom-select-empty');
+  if (!hasVisible) {
+    if (!empty) { empty = document.createElement('div'); empty.className = 'custom-select-empty'; empty.textContent = 'Không tìm thấy sản phẩm'; list.appendChild(empty); }
+    empty.style.display = '';
+  } else if (empty) { empty.style.display = 'none'; }
+}
+
+function selectOption(wrapper, opt, hiddenSel) {
+  const value = opt.dataset.value || '';
+  const cost  = opt.dataset.cost  || '';
+  const label = opt.textContent.trim();
+
+  // Update display
+  wrapper.querySelector('.custom-select-display').textContent = label;
+
+  // Update hidden select
+  hiddenSel.value = value;
+
+  // Mark selected
+  wrapper.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
+  opt.classList.add('selected');
+
+  // Close
+  wrapper.querySelector('.custom-select-dropdown').classList.remove('open');
+
+  // Auto-fill cost price
+  if (cost && parseFloat(cost) > 0) {
+    const row = wrapper.closest('.product-row');
+    const priceInput = row.querySelector('.price-input');
+    priceInput.value = formatNum(Math.round(parseFloat(cost)));
+    calcRow(priceInput);
+  } else {
+    updateSummary();
+  }
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.custom-select-dropdown.open').forEach(d => d.classList.remove('open'));
+}
+
+// Close on outside click
+document.addEventListener('click', closeAllDropdowns);
+
+// ── Add / Remove rows ─────────────────────────────────────
 function addRow() {
   const first = document.querySelector('.product-row');
   const clone = first.cloneNode(true);
-  clone.querySelectorAll('input').forEach(i => {
-    i.value = i.type === 'number' ? 1 : '';
-  });
-  clone.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+
+  // Reset inputs
+  clone.querySelectorAll('input').forEach(i => { i.value = i.type === 'number' ? 1 : ''; });
+  clone.querySelector('.prod-select').value = '';
   clone.querySelector('.product-total').textContent = '0 USD';
+
+  // Reset custom display
+  const display = clone.querySelector('.custom-select-display');
+  if (display) display.textContent = '— Chọn sản phẩm —';
+  clone.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
+  const dropdown = clone.querySelector('.custom-select-dropdown');
+  if (dropdown) dropdown.classList.remove('open');
+
   document.getElementById('product-container').appendChild(clone);
+  initCustomSelect(clone.querySelector('.custom-select-wrapper'));
   updateSummary();
 }
 
-// ── Xóa row ───────────────────────────────────────────────
 function removeRow(btn) {
-  const rows = document.querySelectorAll('.product-item');
-  if (rows.length <= 1) {
-    alert('Phải có ít nhất 1 sản phẩm!');
-    return;
+  if (document.querySelectorAll('.product-item').length <= 1) {
+    alert('Phải có ít nhất 1 sản phẩm!'); return;
   }
   btn.closest('.product-row').remove();
   updateSummary();
 }
 
-// ── Làm sạch giá trước khi submit ────────────────────────
+// ── Init all existing rows ────────────────────────────────
+document.querySelectorAll('.custom-select-wrapper').forEach(initCustomSelect);
+updateSummary();
+
+// ── Strip thousand separators before submit ───────────────
 document.getElementById('entry-form').addEventListener('submit', function(e) {
-  const selected = [...document.querySelectorAll('.prod-select')]
-    .some(s => s.value !== '');
-  if (!selected) {
-    alert('Phải chọn ít nhất 1 sản phẩm!');
-    e.preventDefault();
-    return;
-  }
-  // Bỏ dấu chấm ngàn trong price trước khi gửi
-  document.querySelectorAll('.price-input').forEach(i => {
-    i.value = i.value.replace(/\./g, '');
-  });
+  const hasSelected = [...document.querySelectorAll('.prod-select')].some(s => s.value !== '');
+  if (!hasSelected) { alert('Phải chọn ít nhất 1 sản phẩm!'); e.preventDefault(); return; }
+  document.querySelectorAll('.price-input').forEach(i => { i.value = i.value.replace(/\./g, ''); });
 });
 </script>
 </body>
