@@ -21,7 +21,7 @@
       </a>
       <div class="search-box">
         <input type="text" placeholder="Search products...">
-        <button onclick="window.location.href='search.html'">
+        <button onclick="window.location.href='../search.html'">
           <i class="fas fa-search"></i>
         </button>
       </div>
@@ -35,63 +35,20 @@
 
 <section id="page-banner" class="padding-large no-padding-top position-relative">
   <div class="page-container">
-    
+
     <div class="category-and-filter-bar">
-        
-        
-
-        <nav class="filter-nav">
-          <a href="product.html" class="active">All</a>
-          <a href="product_male.html">Male</a>
-          <a href="product_female.html">Female</a>
-          <a href="product_unisex.html">Unisex</a>
-        </nav>
-        
+      <nav class="filter-nav">
+        <a href="#" class="filter-tab active" data-gender="all">All</a>
+        <a href="#" class="filter-tab" data-gender="Male">Male</a>
+        <a href="#" class="filter-tab" data-gender="Female">Female</a>
+        <a href="#" class="filter-tab" data-gender="Unisex">Unisex</a>
+      </nav>
     </div>
 
-    <div class="products-grid" id="products-grid">
-  <!-- JS sẽ render sản phẩm vào đây -->
-</div>
+    <div class="products-grid" id="products-grid"></div>
 
-<script>
-async function loadProducts() {
-  try {
-    const res = await fetch('products.php');
-    const products = await res.json();
+    <div class="pagination" id="pagination"></div>
 
-    const grid = document.getElementById('products-grid');
-    grid.innerHTML = '';
-
-    products.forEach(product => {
-      const card = document.createElement('article');
-      card.className = 'product-card';
-      card.innerHTML = `
-        <a href="R01.php?id=${product.id}" class="product-card-link">
-          <div class="image-holder">
-            <img src="../../images/${product.image}" alt="${product.name}" class="product-image">
-          </div>
-          <h3 class="product-title">${product.name}</h3>
-          <span class="product-price">$${Number(product.sale_price).toFixed(2)}</span>
-        </a>
-        <button class="btn-add" onclick="showNotification('${product.name}')">Add to Cart</button>
-      `;
-      grid.appendChild(card);
-    });
-  } catch (err) {
-    console.error('Error loading products:', err);
-  }
-}
-
-// Load sản phẩm khi trang mở
-loadProducts();
-</script>
-    <div class="pagination">
-      <a href="#" class="disabled"><</a>
-      <a href="#" class="active">1</a>
-      <a href="#">2</a>
-      <a href="#">3</a>
-      <a href="#">></a>
-    </div>
   </div>
 </section>
 
@@ -152,13 +109,124 @@ loadProducts();
 </div>
 
 <script>
+const ITEMS_PER_PAGE = 8;
+let allProducts = [];
+let currentPage = 1;
+let currentGender = 'all';
+
+async function loadProducts(gender) {
+  try {
+    const url = gender === 'all' ? 'products.php' : `products.php?gender=${gender}`;
+    const res = await fetch(url);
+    allProducts = await res.json();
+    currentPage = 1;
+    renderPage(currentPage);
+    renderPagination();
+  } catch (err) {
+    console.error('Error loading products:', err);
+  }
+}
+
+function renderPage(page) {
+  const grid = document.getElementById('products-grid');
+  grid.innerHTML = '';
+
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  const pageProducts = allProducts.slice(start, end);
+
+  pageProducts.forEach(product => {
+    const card = document.createElement('article');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <a href="R01.php?id=${product.id}" class="product-card-link">
+        <div class="image-holder">
+          <img src="../../images/${product.image}" alt="${product.name}" class="product-image">
+        </div>
+        <h3 class="product-title">${product.name}</h3>
+        <span class="product-price">$${Number(product.sale_price).toFixed(2)}</span>
+      </a>
+      <button class="btn-add" onclick="showNotification('${product.name}')">Add to Cart</button>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
+  const pagination = document.getElementById('pagination');
+  pagination.innerHTML = '';
+
+  // Nút <
+  const prev = document.createElement('a');
+  prev.href = '#';
+  prev.textContent = '<';
+  if (currentPage === 1) prev.classList.add('disabled');
+  prev.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      renderPage(currentPage);
+      renderPagination();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+  pagination.appendChild(prev);
+
+  // Số trang
+  for (let i = 1; i <= totalPages; i++) {
+    const a = document.createElement('a');
+    a.href = '#';
+    a.textContent = i;
+    if (i === currentPage) a.classList.add('active');
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      currentPage = i;
+      renderPage(currentPage);
+      renderPagination();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    pagination.appendChild(a);
+  }
+
+  // Nút >
+  const next = document.createElement('a');
+  next.href = '#';
+  next.textContent = '>';
+  if (currentPage === totalPages || totalPages === 0) next.classList.add('disabled');
+  next.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderPage(currentPage);
+      renderPagination();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+  pagination.appendChild(next);
+}
+
+// Xử lý click tab filter
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    currentGender = this.dataset.gender;
+    loadProducts(currentGender);
+  });
+});
+
+// Load lần đầu
+loadProducts('all');
+</script>
+
+<script>
 function showNotification(productName) {
   const notification = document.getElementById('cart-notification');
   const textEl = notification.querySelector('.notification-text h3');
   textEl.textContent = `"${productName}" added to cart!`;
-
   notification.classList.add('show');
-
   clearTimeout(notification.timeout);
   notification.timeout = setTimeout(() => {
     notification.classList.remove('show');
@@ -170,22 +238,6 @@ function closeNotification() {
   notification.classList.remove('show');
   clearTimeout(notification.timeout);
 }
-
-  // Khi người dùng click vào nút phân trang
-  document.querySelectorAll('.pagination a').forEach(link => {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-
-      // Nếu nút bị disabled thì bỏ qua
-      if (this.classList.contains('disabled')) return;
-
-      // Xóa class 'active' khỏi tất cả các nút
-      document.querySelectorAll('.pagination a').forEach(a => a.classList.remove('active'));
-
-      // Thêm class 'active' cho nút được click
-      this.classList.add('active');
-    });
-  });
 </script>
 
 </body>
