@@ -4,6 +4,7 @@ require __DIR__ . "/../../config/config.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+  /* khó nói  */
     $fullname = trim($_POST['fullname'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
