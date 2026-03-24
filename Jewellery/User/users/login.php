@@ -1,13 +1,14 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 session_start();
-require_once "../../config/config.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/DO_AN_WEB/Jewellery/config/config.php";
 if (isset($_SESSION['user_id'])) {
     header("Location: ../index_profile.php");
     exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  /* khó nói  */
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
@@ -103,8 +104,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   </form>
 
   <div class="extra-links">
-    <a href="Register.php">Sign Up</a>
-    <a href="forgot-password.php">Forgot Password?</a>
+    <a href="register.php">Sign Up</a>
+    <a href="forgotpassword.php">Forgot Password?</a>
   </div>
 </div>
 
@@ -123,4 +124,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </script>
 </body>
 </html>
-

@@ -1,156 +1,156 @@
 <?php
 session_start();
-require __DIR__ . "/../../config/config.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/do_an_web/Jewellery/config/config.php";
+if (isset($_SESSION['user_id'])) {
+    header("Location: ../index_profile.php");
+    exit();
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-  /* khó nói  */
     $fullname = trim($_POST['fullname'] ?? '');
-    $email = trim($_POST['email'] ?? '');
+    $email    = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
-    $confirm = trim($_POST['confirmPassword'] ?? '');
+    $confirm  = trim($_POST['confirmPassword'] ?? '');
 
-    // kiểm tra rỗng
     if ($fullname === '' || $email === '' || $password === '') {
         $error = "Vui lòng nhập đầy đủ thông tin!";
-    }
-    // kiểm tra password
-    elseif ($password != $confirm) {
+    } elseif ($password !== $confirm) {
         $error = "Mật khẩu không khớp!";
     } else {
-
-        // ✅ check email đúng cột
         $stmt = $conn_user->prepare("SELECT id FROM users WHERE email = ?");
+        if (!$stmt) {
+            die("SQL error: " . $conn_user->error);
+        }
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
             $error = "Email đã tồn tại!";
+            $stmt->close();
         } else {
+            $stmt->close();
 
-            // ✅ mã hóa password
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
-            // ✅ INSERT đúng
             $stmt = $conn_user->prepare(
                 "INSERT INTO users(username, email, password) VALUES (?, ?, ?)"
             );
-
             $stmt->bind_param("sss", $fullname, $email, $hash);
 
             if ($stmt->execute()) {
-
-                $_SESSION['user_id'] = $stmt->insert_id;
+                $_SESSION['user_id']  = $stmt->insert_id;
                 $_SESSION['username'] = $fullname;
-
+                $stmt->close();
                 header("Location: login.php");
                 exit();
-
             } else {
                 $error = "Lỗi đăng ký!";
+                $stmt->close();
             }
         }
-
-        $stmt->close();
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register</title>
-
-  <link rel="stylesheet" href="../users/Register.css">
+  <link rel="stylesheet" href="../search.css">
+  <link rel="stylesheet" href="../Login.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .header-container .center a img {
+      width: 80px !important;
+      height: auto !important;
+      display: block;
+    }
+  </style>
 </head>
-
 <body>
 
 <header class="header-container">
   <div class="search-bar">
-
     <div class="left">
-      <a href="../index.php" class="home-btn">
-        <i class="fas fa-home"></i> Home
-      </a>
+      <a href="../index.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
-
     <div class="center">
       <a href="../index.php">
-        <img src="../images/36-logo.png" class="header-logo">
+        <img src="/do_an_web/Jewellery/images/36-logo.png" alt="Logo" width="80" height="auto">
       </a>
-
       <div class="search-box">
-        <input type="text" id="searchInput">
-        <button id="searchBtn"><i class="fas fa-search"></i></button>
+        <input type="text" placeholder="Search products...">
+        <button onclick="window.location.href='search.php'">
+          <i class="fas fa-search"></i>
+        </button>
       </div>
     </div>
-
     <div class="right">
-      <a href="Jewelry-cart.php"><i class="fas fa-shopping-cart"></i></a>
-      <a href="login.php"><i class="fas fa-user"></i></a>
+      <a href="Jewelry-cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="login.php" class="icon-link"><i class="fas fa-user"></i></a>
     </div>
-
   </div>
 </header>
 
-<div class="register-container">
+<div class="login-container">
+  <h2 class="title">Create Account</h2>
 
-  <button onclick="window.history.back()" class="back-btn">←</button>
-  <h2 class="register-title">Create Account</h2>
-
-  <!-- HIỂN THỊ LỖI -->
-  <?php if(isset($error)): ?>
-    <p style="color:red; text-align:center;">
-      <?= $error ?>
-    </p>
+  <?php if (isset($error)): ?>
+    <p style="color:red; text-align:center; margin-bottom: 15px;"><?= htmlspecialchars($error) ?></p>
   <?php endif; ?>
 
-  <!-- FORM PHP -->
-  <form method="POST">
+  <form method="POST" class="login-form">
 
     <div class="input-group">
-      <label>Full Name</label>
-      <input type="text" name="fullname" required>
+      <label for="fullname">Full Name</label>
+      <input type="text" id="fullname" name="fullname"
+             placeholder="Enter your full name"
+             value="<?= htmlspecialchars($_POST['fullname'] ?? '') ?>" required>
     </div>
 
     <div class="input-group">
-      <label>Email</label>
-      <input type="email" name="email" required>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email"
+             placeholder="Enter your email"
+             value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
     </div>
 
     <div class="input-group">
-      <label>Password</label>
-      <input type="password" name="password" required>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password"
+             placeholder="Enter your password" required>
     </div>
 
     <div class="input-group">
-      <label>Confirm Password</label>
-      <input type="password" name="confirmPassword" required>
+      <label for="confirmPassword">Confirm Password</label>
+      <input type="password" id="confirmPassword" name="confirmPassword"
+             placeholder="Re-enter your password" required>
     </div>
 
-    <!-- NÚT ĐÚNG -->
-    <button type="submit" class="btn-register">
-      Register
-    </button>
+    <button type="submit" class="btn">Register</button>
 
   </form>
 
   <div class="extra-links">
     Already have an account? <a href="login.php">Login</a>
   </div>
-
 </div>
 
 <script>
-  // Search
-  document.getElementById("searchBtn").onclick = function() {
-    let key = document.getElementById("searchInput").value;
-    if (key.trim()) alert("Searching: " + key);
-  };
+  document.querySelector('.search-box button').addEventListener('click', function () {
+    const searchTerm = document.querySelector('.search-box input').value;
+    if (searchTerm.trim() !== '') {
+      window.location.href = 'search.php?q=' + encodeURIComponent(searchTerm);
+    }
+  });
+  document.querySelector('.search-box input').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      document.querySelector('.search-box button').click();
+    }
+  });
 </script>
 
 </body>
