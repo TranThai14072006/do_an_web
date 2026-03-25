@@ -214,10 +214,10 @@ tr:hover td{background:#f9f2e7;}
   <div class="menu">
     <a href="../Administration_menu.html#products">Jewelry List</a>
     <a href="../Administration_menu.html#product-manage">Product Management</a>
-    <a href="pricing.php" class="active">Pricing Management</a>
     <a href="../Administration_menu.html#users">Customers</a>
-    <a href="../Order Manage/order_management.php">Order Management</a>
+    <a href="pricing.php" class="active">Pricing Management</a>
     <a href="../Import_product/import_management.php">Import Management</a>
+    <a href="../Order Manage/order_management.php">Order Management</a>
     <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
     <a href="../Administration_menu.html#settings">Settings</a>
   </div>
