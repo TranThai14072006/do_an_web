@@ -64,10 +64,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <header class="header-container">
   <div class="search-bar">
     <div class="left">
-      <a href="../index.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
+      <a href="index.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
     <div class="center">
-      <a href="../index.php">
+      <a href="index.php">
         <img src="/do_an_web/Jewellery/images/36-logo.png" alt="Logo" width="80" height="auto">
       </a>
       <div class="search-box">
