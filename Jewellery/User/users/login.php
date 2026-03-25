@@ -1,14 +1,13 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 session_start();
-require_once $_SERVER['DOCUMENT_ROOT'] . "/do_an_web/Jewellery/config/config.php";
+require_once "../../config/config.php";
 if (isset($_SESSION['user_id'])) {
-header("Location: index_profile.php");
+    header("Location: ../index.php");
     exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  /* khó nói  */
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
@@ -29,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
-                header("Location: index_profile.php");
+                header("Location: ../index_profile.php");
                 exit();
             } else {
                 $error = "Sai mật khẩu!";
@@ -78,8 +77,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       </div>
     </div>
     <div class="right">
-      <a href="Jewelry-cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
-      <a href="index_profile.php" class="icon-link"><i class="fas fa-user"></i></a>
+      <a href="cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.php" class="icon-link"><i class="fas fa-user"></i></a>
     </div>
   </div>
 </header>
@@ -104,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   </form>
 
   <div class="extra-links">
-    <a href="register.php">Sign Up</a>
+    <a href="Register.php">Sign Up</a>
     <a href="forgotpassword.php">Forgot Password?</a>
   </div>
 </div>
@@ -124,3 +123,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </script>
 </body>
 </html>
+

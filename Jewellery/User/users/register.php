@@ -11,7 +11,7 @@ $error = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fullname = trim($_POST['fullname'] ?? '');
-    $email    = trim($_POST['email'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
     $confirm  = trim($_POST['confirmPassword'] ?? '');
     $phone    = trim($_POST['phone'] ?? '');
@@ -35,8 +35,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error = "Email already exists!";
             $stmt->close();
         } else {
-            $stmt->close();
 
+            // ✅ mã hóa password
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $username = $email; // use email as username
 
@@ -67,9 +67,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $error = "Registration failed. Please try again.";
             }
         }
+
+        $stmt->close();
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -503,30 +506,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
   </style>
 </head>
+
 <body>
 
 <header class="header-container">
   <div class="search-bar">
+
     <div class="left">
-      <a href="../index.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
+      <a href="../index.php" class="home-btn">
+        <i class="fas fa-home"></i> Home
+      </a>
     </div>
+
     <div class="center">
       <a href="index.php">
         <img src="/do_an_web/Jewellery/images/36-logo.png" alt="Logo" class="header-logo">
       </a>
+
       <div class="search-box">
-        <input type="text" placeholder="Search products...">
-        <button onclick="window.location.href='search.php'">
-          <i class="fas fa-search"></i>
-        </button>
+        <input type="text" id="searchInput">
+        <button id="searchBtn"><i class="fas fa-search"></i></button>
       </div>
     </div>
+
     <div class="right">
       <div class="icons">
         <a href="Jewelry-cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
         <a href="login.php" class="icon-link"><i class="fas fa-user"></i></a>
       </div>
     </div>
+
   </div>
 </header>
 
@@ -543,17 +552,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
   <form method="POST" class="register-form">
     <div class="input-group">
-      <label for="fullname">Full Name</label>
-      <input type="text" id="fullname" name="fullname"
-             placeholder="Enter your full name"
-             value="<?= htmlspecialchars($_POST['fullname'] ?? '') ?>" required>
+      <label>Full Name</label>
+      <input type="text" name="fullname" required>
     </div>
 
     <div class="input-group">
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email"
-             placeholder="Enter your email"
-             value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+      <label>Email</label>
+      <input type="email" name="email" required>
     </div>
 
     <div class="input-group">
@@ -577,9 +582,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <div class="input-group">
-      <label for="confirmPassword">Confirm Password</label>
-      <input type="password" id="confirmPassword" name="confirmPassword"
-             placeholder="Re-enter your password" required>
+      <label>Confirm Password</label>
+      <input type="password" name="confirmPassword" required>
     </div>
 
     <button type="submit" class="btn-register">Register</button>
@@ -588,20 +592,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <div class="extra-links">
     Already have an account? <a href="login.php">Login</a>
   </div>
+
 </div>
 
 <script>
-  document.querySelector('.search-box button').addEventListener('click', function () {
-    const searchTerm = document.querySelector('.search-box input').value;
-    if (searchTerm.trim() !== '') {
-      window.location.href = 'search.php?q=' + encodeURIComponent(searchTerm);
-    }
-  });
-  document.querySelector('.search-box input').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-      document.querySelector('.search-box button').click();
-    }
-  });
+  // Search
+  document.getElementById("searchBtn").onclick = function() {
+    let key = document.getElementById("searchInput").value;
+    if (key.trim()) alert("Searching: " + key);
+  };
 </script>
 
 </body>

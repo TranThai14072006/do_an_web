@@ -182,8 +182,9 @@ $status_class = [
     <div class="menu">
       <a href="../Administration_menu.html#products">Jewelry List</a>
       <a href="../Administration_menu.html#product-manage">Product Management</a>
-      <a href="../Price Manage/pricing.php">Pricing Management</a>
       <a href="../Administration_menu.html#users">Customers</a>
+      <a href="../Price Manage/pricing.php">Pricing Management</a>
+      <a href="../Import_product/import_management.php">Import Management</a>
       <a href="order_management.php" class="active">Order Management</a>
       <a href="../Stock Manage/stocking_management.php">Stocking</a>
       <a href="../Administration_menu.html#setting">Settings</a>
