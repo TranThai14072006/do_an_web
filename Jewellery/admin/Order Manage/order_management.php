@@ -7,7 +7,7 @@ require_once "../../config/config.php";
 $from_date  = isset($_GET['from_date'])  ? trim($_GET['from_date'])  : '';
 $to_date    = isset($_GET['to_date'])    ? trim($_GET['to_date'])    : '';
 $status     = isset($_GET['status'])     ? trim($_GET['status'])     : 'All';
-$sort_by    = isset($_GET['sort_by'])    ? trim($_GET['sort_by'])    : '';   // 'district' hoặc ''
+$sort_by    = isset($_GET['sort_by'])    ? trim($_GET['sort_by'])    : '';
 $sort_dir   = isset($_GET['sort_dir'])   ? trim($_GET['sort_dir'])   : 'asc';
 $searched   = isset($_GET['searched']);
 
@@ -60,43 +60,63 @@ $raw_orders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 // ============================================================
-// Ghép thông tin customer + tách district từ address
-// Định dạng address: "123 Le Loi, Q1, HCMC"
-//   → parts[0] = "123 Le Loi"  (đường)
-//   → parts[1] = "Q1"           (quận/phường) ← dùng để sort
-//   → parts[2] = "HCMC"         (thành phố)
+// Ghép thông tin customer + tách district & city từ address
+// Định dạng: "123 Le Loi, Q1, HCMC"
+//   parts[0] = "123 Le Loi"  → đường
+//   parts[1] = "Q1"          → quận/phường
+//   parts[2] = "HCMC"        → tỉnh/thành phố
 // ============================================================
 $orders = [];
 foreach ($raw_orders as $o) {
-    $cid            = $o['customer_id'];
-    $address        = $cust_map[$cid]['address'] ?? 'N/A';
-
-    // Tách phần quận/phường: lấy phần tử thứ 2 (index 1) khi split bởi dấu phẩy
-    $addr_parts     = array_map('trim', explode(',', $address));
-    $district       = $addr_parts[1] ?? $addr_parts[0] ?? 'N/A';
+    $cid         = $o['customer_id'];
+    $address     = $cust_map[$cid]['address'] ?? 'N/A';
+    $addr_parts  = array_map('trim', explode(',', $address));
 
     $o['full_name'] = $cust_map[$cid]['full_name'] ?? 'N/A';
     $o['phone']     = $cust_map[$cid]['phone']     ?? 'N/A';
     $o['address']   = $address;
-    $o['district']  = $district;
+    $o['district']  = $addr_parts[1] ?? 'N/A';   // phần tử index 1 → Quận
+    $o['city']      = $addr_parts[2] ?? 'N/A';   // phần tử index 2 → Tỉnh/TP
     $orders[]       = $o;
 }
 
 // ============================================================
-// Sort theo district nếu được yêu cầu
+// Sort
 // ============================================================
 if ($sort_by === 'district') {
     usort($orders, function($a, $b) use ($sort_dir) {
         $cmp = strcmp($a['district'], $b['district']);
         return $sort_dir === 'desc' ? -$cmp : $cmp;
     });
+} elseif ($sort_by === 'city') {
+    usort($orders, function($a, $b) use ($sort_dir) {
+        $cmp = strcmp($a['city'], $b['city']);
+        return $sort_dir === 'desc' ? -$cmp : $cmp;
+    });
+} elseif ($sort_by === 'amount') {
+    usort($orders, function($a, $b) use ($sort_dir) {
+        $cmp = $a['total_amount'] <=> $b['total_amount'];
+        return $sort_dir === 'desc' ? -$cmp : $cmp;
+    });
+} elseif ($sort_by === 'date') {
+    usort($orders, function($a, $b) use ($sort_dir) {
+        $cmp = strcmp($a['order_date'], $b['order_date']);
+        return $sort_dir === 'desc' ? -$cmp : $cmp;
+    });
 }
 
-// Helper: tạo URL sort — giữ nguyên tham số filter, toggle direction
+// Helper: tạo URL sort
 function sortUrl($col, $current_sort, $current_dir, $extra = []) {
     $dir = ($current_sort === $col && $current_dir === 'asc') ? 'desc' : 'asc';
     $params = array_merge($_GET, ['sort_by' => $col, 'sort_dir' => $dir, 'searched' => '1'], $extra);
     return '?' . http_build_query(array_filter($params, fn($v) => $v !== ''));
+}
+
+function sortIcon($col, $current_sort, $current_dir) {
+    if ($current_sort !== $col) return '<span style="opacity:.35;font-size:11px;margin-left:4px;">⇅</span>';
+    return $current_dir === 'asc'
+        ? '<span style="font-size:11px;margin-left:4px;">▲</span>'
+        : '<span style="font-size:11px;margin-left:4px;">▼</span>';
 }
 
 $status_options = ['All', 'Pending', 'Processed', 'Delivered', 'Cancelled'];
@@ -106,14 +126,6 @@ $status_class   = [
     'Delivered' => 'status-delivered',
     'Cancelled' => 'status-cancelled',
 ];
-
-// Icon sort cho header
-function sortIcon($col, $current_sort, $current_dir) {
-    if ($current_sort !== $col) return '<span style="opacity:.35;font-size:11px;margin-left:4px;">⇅</span>';
-    return $current_dir === 'asc'
-        ? '<span style="font-size:11px;margin-left:4px;">▲</span>'
-        : '<span style="font-size:11px;margin-left:4px;">▼</span>';
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -163,8 +175,9 @@ function sortIcon($col, $current_sort, $current_dir) {
     tr:nth-child(even) td { background: #faf6f2; }
     tr:hover td { background: #f3ede6; }
 
-    /* District badge */
-    .district-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #f8f0e6; color: #8e4b00; white-space: nowrap; }
+    .location-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .district-badge { background: #f8f0e6; color: #8e4b00; }
+    .city-badge     { background: #e8f0fe; color: #1a56cc; }
 
     .btn-view { background-color: #8e4b00; color: #f8ce86; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px; transition: 0.2s; display: inline-block; }
     .btn-view:hover { background-color: #a3670b; color: #fff; }
@@ -181,13 +194,16 @@ function sortIcon($col, $current_sort, $current_dir) {
     .pagination-btn.active { background-color: #8e4b00; color: #fff; border-color: #8e4b00; }
     .pagination-info { text-align: center; font-size: 14px; color: #666; margin-top: 10px; }
 
-    .no-result { text-align: center; padding: 30px; color: #888; font-size: 15px; }
+    .no-result  { text-align: center; padding: 30px; color: #888; font-size: 15px; }
     .result-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; border-radius: 8px; padding: 10px 16px; margin-bottom: 15px; font-size: 14px; }
 
-    /* Highlight row khi đang sort theo district */
+    /* Highlight column đang sort */
     <?php if ($sort_by === 'district'): ?>
     td.district-col { background-color: rgba(142,75,0,0.04) !important; }
     tr:hover td.district-col { background-color: rgba(142,75,0,0.08) !important; }
+    <?php elseif ($sort_by === 'city'): ?>
+    td.city-col { background-color: rgba(26,86,204,0.04) !important; }
+    tr:hover td.city-col { background-color: rgba(26,86,204,0.08) !important; }
     <?php endif; ?>
   </style>
 </head>
@@ -246,42 +262,43 @@ function sortIcon($col, $current_sort, $current_dir) {
     <!-- SORT TOOLBAR -->
     <div class="sort-bar">
       <span>Sort by:</span>
-
-      <!-- Sort theo ngày (mặc định) -->
       <a href="<?= sortUrl('date', $sort_by, $sort_dir) ?>"
          class="sort-btn <?= $sort_by === 'date' ? 'active' : '' ?>">
-        Date
-        <span class="icon"><?= $sort_by === 'date' ? ($sort_dir === 'asc' ? '▲' : '▼') : '⇅' ?></span>
+        Date <span class="icon"><?= $sort_by === 'date' ? ($sort_dir === 'asc' ? '▲' : '▼') : '⇅' ?></span>
       </a>
-
-      <!-- Sort theo district/phường -->
       <a href="<?= sortUrl('district', $sort_by, $sort_dir) ?>"
          class="sort-btn <?= $sort_by === 'district' ? 'active' : '' ?>">
-        District / Ward
-        <span class="icon"><?= $sort_by === 'district' ? ($sort_dir === 'asc' ? '▲' : '▼') : '⇅' ?></span>
+        District <span class="icon"><?= $sort_by === 'district' ? ($sort_dir === 'asc' ? '▲' : '▼') : '⇅' ?></span>
       </a>
-
-      <!-- Sort theo tổng tiền -->
+      <!-- ✅ MỚI: Sort theo City/Province -->
+      <a href="<?= sortUrl('city', $sort_by, $sort_dir) ?>"
+         class="sort-btn <?= $sort_by === 'city' ? 'active' : '' ?>">
+        City / Province <span class="icon"><?= $sort_by === 'city' ? ($sort_dir === 'asc' ? '▲' : '▼') : '⇅' ?></span>
+      </a>
       <a href="<?= sortUrl('amount', $sort_by, $sort_dir) ?>"
          class="sort-btn <?= $sort_by === 'amount' ? 'active' : '' ?>">
-        Amount
-        <span class="icon"><?= $sort_by === 'amount' ? ($sort_dir === 'asc' ? '▲' : '▼') : '⇅' ?></span>
+        Amount <span class="icon"><?= $sort_by === 'amount' ? ($sort_dir === 'asc' ? '▲' : '▼') : '⇅' ?></span>
       </a>
 
-      <?php if ($sort_by === 'district'): ?>
+      <?php if ($sort_by === 'city'): ?>
+        <span style="font-size:13px;color:#1a56cc;font-weight:600;">
+          — Sorting by City/Province <?= $sort_dir === 'asc' ? '(A → Z)' : '(Z → A)' ?>
+        </span>
+      <?php elseif ($sort_by === 'district'): ?>
         <span style="font-size:13px;color:#8e4b00;font-weight:600;">
-          — Đang sắp xếp theo quận/phường <?= $sort_dir === 'asc' ? '(A → Z)' : '(Z → A)' ?>
+          — Sorting by District <?= $sort_dir === 'asc' ? '(A → Z)' : '(Z → A)' ?>
         </span>
       <?php endif; ?>
     </div>
 
     <?php if ($searched): ?>
       <div class="result-info">
-        🔍 Tìm thấy <strong><?= count($orders) ?></strong> đơn hàng
-        <?= $from_date ? " từ <strong>" . htmlspecialchars($from_date) . "</strong>" : '' ?>
-        <?= $to_date   ? " đến <strong>" . htmlspecialchars($to_date)   . "</strong>" : '' ?>
-        <?= ($status !== 'All') ? " — trạng thái: <strong>" . htmlspecialchars($status) . "</strong>" : '' ?>
-        <?= $sort_by === 'district' ? " — sắp xếp theo <strong>quận/phường</strong>" : '' ?>
+        🔍 Found <strong><?= count($orders) ?></strong> order(s)
+        <?= $from_date ? " from <strong>" . htmlspecialchars($from_date) . "</strong>" : '' ?>
+        <?= $to_date   ? " to <strong>"   . htmlspecialchars($to_date)   . "</strong>" : '' ?>
+        <?= ($status !== 'All') ? " — status: <strong>" . htmlspecialchars($status) . "</strong>" : '' ?>
+        <?= $sort_by === 'city'     ? " — sorted by <strong>City/Province</strong>" : '' ?>
+        <?= $sort_by === 'district' ? " — sorted by <strong>District</strong>"      : '' ?>
       </div>
     <?php endif; ?>
 
@@ -293,11 +310,15 @@ function sortIcon($col, $current_sort, $current_dir) {
           <th>Order No.</th>
           <th>Customer Name</th>
           <th>Full Address</th>
-          <!-- Header District có thể click để sort -->
+          <!-- ✅ Cột District riêng -->
           <th class="sortable <?= $sort_by === 'district' ? 'sorted' : '' ?>"
               onclick="window.location.href='<?= sortUrl('district', $sort_by, $sort_dir) ?>'">
-            District / Ward
-            <?= sortIcon('district', $sort_by, $sort_dir) ?>
+            District <?= sortIcon('district', $sort_by, $sort_dir) ?>
+          </th>
+          <!-- ✅ Cột City/Province riêng -->
+          <th class="sortable <?= $sort_by === 'city' ? 'sorted' : '' ?>"
+              onclick="window.location.href='<?= sortUrl('city', $sort_by, $sort_dir) ?>'">
+            City / Province <?= sortIcon('city', $sort_by, $sort_dir) ?>
           </th>
           <th>Phone</th>
           <th class="sortable <?= $sort_by === 'date' ? 'sorted' : '' ?>"
@@ -315,45 +336,43 @@ function sortIcon($col, $current_sort, $current_dir) {
       <tbody>
         <?php if (empty($orders)): ?>
           <tr>
-            <td colspan="10" class="no-result">
-              <?= $searched ? '❌ Không tìm thấy đơn hàng phù hợp.' : 'Chưa có đơn hàng.' ?>
+            <td colspan="11" class="no-result">
+              <?= $searched ? '❌ No orders found.' : 'No orders yet.' ?>
             </td>
           </tr>
         <?php else: ?>
           <?php
-          // Sort amount ở PHP (orders đã được sort district ở trên nếu cần)
-          if ($sort_by === 'amount') {
-              usort($orders, function($a, $b) use ($sort_dir) {
-                  $cmp = $a['total_amount'] <=> $b['total_amount'];
-                  return $sort_dir === 'desc' ? -$cmp : $cmp;
-              });
-          } elseif ($sort_by === 'date') {
-              usort($orders, function($a, $b) use ($sort_dir) {
-                  $cmp = strcmp($a['order_date'], $b['order_date']);
-                  return $sort_dir === 'desc' ? -$cmp : $cmp;
-              });
-          }
+          // Group highlight khi sort theo city hoặc district
+          $prev_group   = null;
+          $group_colors = ['#fffbf5', '#fff'];
+          $color_idx    = 0;
+          $group_key    = in_array($sort_by, ['city', 'district']) ? $sort_by : null;
           ?>
-          <?php
-          // Dùng để group highlight khi sort district
-          $prev_district = null;
-          $group_colors  = ['#fffbf5', '#fff'];
-          $color_idx     = 0;
-
-          foreach ($orders as $i => $o):
-            if ($sort_by === 'district' && $o['district'] !== $prev_district) {
-                $color_idx    = 1 - $color_idx;
-                $prev_district = $o['district'];
+          <?php foreach ($orders as $i => $o): ?>
+            <?php
+            if ($group_key) {
+                $current_group = $o[$group_key];
+                if ($current_group !== $prev_group) {
+                    $color_idx  = 1 - $color_idx;
+                    $prev_group = $current_group;
+                }
+                $row_bg = $group_colors[$color_idx];
+            } else {
+                $row_bg = '';
             }
-            $row_bg = ($sort_by === 'district') ? $group_colors[$color_idx] : '';
-          ?>
+            ?>
             <tr <?= $row_bg ? "style='background:{$row_bg}'" : '' ?>>
               <td><?= $i + 1 ?></td>
               <td><?= htmlspecialchars($o['order_number']) ?></td>
               <td><?= htmlspecialchars($o['full_name']) ?></td>
               <td style="text-align:left;font-size:13px;color:#555"><?= htmlspecialchars($o['address']) ?></td>
+              <!-- ✅ Cột District -->
               <td class="district-col">
-                <span class="district-badge"><?= htmlspecialchars($o['district']) ?></span>
+                <span class="location-badge district-badge"><?= htmlspecialchars($o['district']) ?></span>
+              </td>
+              <!-- ✅ Cột City/Province -->
+              <td class="city-col">
+                <span class="location-badge city-badge"><?= htmlspecialchars($o['city']) ?></span>
               </td>
               <td><?= htmlspecialchars($o['phone']) ?></td>
               <td><?= htmlspecialchars($o['order_date']) ?></td>

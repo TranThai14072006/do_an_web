@@ -1,6 +1,5 @@
 <?php
 require_once "../../config/config.php";
-// $conn → jewelry_db
 
 // ============================================================
 // Nhận dữ liệu từ form
@@ -14,7 +13,7 @@ $product_codes = $_POST['product_code'] ?? [];
 $prices        = $_POST['price']        ?? [];
 $quantities    = $_POST['quantity']     ?? [];
 
-// Validate
+// ── Validate ──────────────────────────────────────────────
 if ($date === '' || $order_number === '' || empty($product_codes)) {
     header('Location: add_entry_form.php?error=missing_fields');
     exit;
@@ -26,22 +25,20 @@ if (!in_array($status, $allowed_status)) {
 }
 
 // ============================================================
-// Tính tổng để lưu vào goods_receipt
+// Build items + tính tổng
 // ============================================================
 $total_quantity = 0;
 $total_value    = 0;
-$items          = []; // danh sách sản phẩm hợp lệ
+$items          = [];
 
 for ($i = 0; $i < count($product_codes); $i++) {
     $pid = trim($product_codes[$i] ?? '');
     if ($pid === '') continue;
 
-    // Làm sạch giá (bỏ dấu chấm phân cách ngàn)
     $price = floatval(str_replace(['.', ','], ['', '.'], $prices[$i] ?? '0'));
     $qty   = intval($quantities[$i] ?? 1);
     if ($qty <= 0) $qty = 1;
 
-    // Lấy tên sản phẩm từ DB
     $stmt_p = $conn->prepare("SELECT name FROM products WHERE id = ?");
     $stmt_p->bind_param('s', $pid);
     $stmt_p->execute();
@@ -68,8 +65,7 @@ if (empty($items)) {
 }
 
 // ============================================================
-// BƯỚC 1: INSERT goods_receipt TRƯỚC (có status)
-// Trigger đọc status từ bảng này khi items được insert
+// BƯỚC 1: INSERT goods_receipt
 // ============================================================
 $stmt1 = $conn->prepare("
     INSERT INTO goods_receipt
@@ -92,13 +88,11 @@ if (!$stmt1->execute()) {
     exit;
 }
 
-$receipt_id = $conn->insert_id; // lấy ID vừa tạo
+$receipt_id = $conn->insert_id;
 $stmt1->close();
 
 // ============================================================
-// BƯỚC 2: INSERT goods_receipt_items SAU
-// Trigger trg_avg_cost_after_insert kích hoạt tại đây
-// Nó đọc goods_receipt.status theo receipt_id → tính giá bình quân
+// BƯỚC 2: INSERT goods_receipt_items
 // ============================================================
 $stmt2 = $conn->prepare("
     INSERT INTO goods_receipt_items
@@ -118,18 +112,55 @@ foreach ($items as $item) {
     );
 
     if (!$stmt2->execute()) {
-        // Ghi log lỗi nhưng không dừng — các item khác vẫn insert
         error_log("save_receipt: failed item {$item['product_id']}: " . $conn->error);
     }
 }
 $stmt2->close();
 
 // ============================================================
-// BƯỚC 3: Nếu Completed → sync lại stock (phòng trường hợp
-// trigger bị delay hoặc sản phẩm không có trong products)
+// BƯỚC 3: Nếu Completed → tính giá bình quân + cập nhật stock
 // ============================================================
 if ($status === 'Completed') {
     foreach ($items as $item) {
+        $pid       = $item['product_id'];
+        $new_qty   = $item['quantity'];
+        $new_price = $item['unit_price'];
+
+        // ── Lấy stock và cost_price hiện tại ──────────────
+        // Stock hiện tại đã bao gồm phiếu vừa insert ở BƯỚC 2,
+        // nên ta trừ đi new_qty để lấy stock TRƯỚC khi nhập
+        $stmt_cur = $conn->prepare(
+            "SELECT stock, cost_price FROM products WHERE id = ?"
+        );
+        $stmt_cur->bind_param('s', $pid);
+        $stmt_cur->execute();
+        $cur = $stmt_cur->get_result()->fetch_assoc();
+        $stmt_cur->close();
+
+        // stock trong DB chưa được cập nhật tại thời điểm này
+        // → dùng trực tiếp làm "tồn trước khi nhập"
+        $cur_stock = max(0, floatval($cur['stock']      ?? 0));
+        $cur_cost  = floatval($cur['cost_price'] ?? 0);
+
+        // ── Công thức bình quân ───────────────────────────
+        // (tồn * giá cũ + nhập mới * giá mới) / (tồn + nhập mới)
+        $total_units = $cur_stock + $new_qty;
+        $avg_cost    = $total_units > 0
+            ? ($cur_stock * $cur_cost + $new_qty * $new_price) / $total_units
+            : $new_price;
+
+        // ── Cập nhật cost_price bình quân + tính lại giá bán ──
+        $stmt_upd = $conn->prepare("
+            UPDATE products
+            SET cost_price = ROUND(?, 4),
+                price      = ROUND(? * (1 + profit_percent / 100.0), 2)
+            WHERE id = ?
+        ");
+        $stmt_upd->bind_param('dds', $avg_cost, $avg_cost, $pid);
+        $stmt_upd->execute();
+        $stmt_upd->close();
+
+        // ── Cập nhật stock ────────────────────────────────
         $conn->query("
             UPDATE products p
             SET p.stock = (
@@ -137,7 +168,8 @@ if ($status === 'Completed') {
                     SELECT SUM(gri.quantity)
                     FROM goods_receipt_items gri
                     JOIN goods_receipt gr ON gri.receipt_id = gr.id
-                    WHERE gri.product_id = p.id AND gr.status = 'Completed'
+                    WHERE gri.product_id = p.id
+                      AND gr.status = 'Completed'
                 ), 0)
                 -
                 COALESCE((
@@ -146,7 +178,7 @@ if ($status === 'Completed') {
                     WHERE oi.product_id = p.id
                 ), 0)
             )
-            WHERE p.id = '{$item['product_id']}'
+            WHERE p.id = '{$pid}'
         ");
     }
 }
@@ -154,7 +186,7 @@ if ($status === 'Completed') {
 $conn->close();
 
 // ============================================================
-// Redirect về import_management với thông báo thành công
+// Redirect
 // ============================================================
 header("Location: import_management.php?success=1&receipt_id={$receipt_id}");
 exit;
