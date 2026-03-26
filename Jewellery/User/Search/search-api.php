@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 
 $host = 'localhost';
-$db   = 'shop_db';
+$db   = 'jewelry_db';
 $user = 'root';
 $pass = '';
 
@@ -26,44 +26,54 @@ $gender = isset($_GET['gender']) ? $_GET['gender'] : 'all';
 
 if ($gender !== 'all') {
     $stmt = $pdo->prepare(
-        "SELECT id, name, price AS cost_price, profit_percent, stock, image, gender 
+        "SELECT id, name, cost_price, profit_percent, stock, image, gender 
          FROM products WHERE gender = :gender ORDER BY id ASC"
     );
     $stmt->execute(['gender' => $gender]);
 } else {
     $stmt = $pdo->query(
-        "SELECT id, name, price AS cost_price, profit_percent, stock, image, gender 
+        "SELECT id, name, cost_price, profit_percent, stock, image, gender 
          FROM products ORDER BY id ASC"
     );
 }
 
 $rows = $stmt->fetchAll();
 
-// Pre-load phiếu nhập (goods_receipt_items)
+// Pre-load phiếu nhập
 $receiptItems = [];
 foreach ($pdo->query("SELECT product_id, quantity, unit_price FROM goods_receipt_items")->fetchAll() as $r) {
     $receiptItems[$r['product_id']][] = $r;
 }
 
-// Tính giá bán weighted average + profit_percent
+// Tính giá bán
 $products = [];
+
 foreach ($rows as $p) {
     $pid            = $p['id'];
-    $current_stock  = (int)$p['stock'];
     $current_cost   = (float)$p['cost_price'];
-    $profit_percent = isset($p['profit_percent']) ? (float)$p['profit_percent'] : 0;
+    $profit_percent = (float)$p['profit_percent'];
 
-    $total_quantity = $current_stock;
-    $total_cost     = $current_cost * $current_stock;
+    // ❌ BỎ stock ra khỏi công thức
+    $total_quantity = 0;
+    $total_cost     = 0;
 
+    // Chỉ tính từ phiếu nhập
     foreach ($receiptItems[$pid] ?? [] as $r) {
-        $qty_new   = (int)$r['quantity'];
-        $price_new = (float)$r['unit_price'];
-        $total_cost += $qty_new * $price_new;
-        $total_quantity += $qty_new;
+        $qty   = (int)$r['quantity'];
+        $price = (float)$r['unit_price'];
+
+        $total_quantity += $qty;
+        $total_cost     += $qty * $price;
     }
 
-    $avg_cost   = $total_quantity > 0 ? $total_cost / $total_quantity : $current_cost;
+    // Nếu chưa có nhập → dùng cost_price
+    if ($total_quantity > 0) {
+        $avg_cost = $total_cost / $total_quantity;
+    } else {
+        $avg_cost = $current_cost;
+    }
+
+    // Giá bán
     $sale_price = round($avg_cost * (1 + $profit_percent / 100), 2);
 
     $products[] = [
