@@ -1,0 +1,473 @@
+<?php
+session_start();
+require_once __DIR__ . '/../../config/config.php';
+
+// Kiểm tra đăng nhập
+if (!isset($_SESSION['user_id'])) {
+    header("Location: " . BASE_URL . "User/Login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Lấy thông tin customer_id từ bảng customers
+$stmt = $conn->prepare("SELECT id FROM customers WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$customer = $result->fetch_assoc();
+
+if (!$customer) {
+    // Nếu chưa có thông tin khách hàng, có thể hiển thị thông báo hoặc để trống
+    $orders = [];
+} else {
+    $customer_id = $customer['id'];
+    // Lấy danh sách đơn hàng của khách hàng
+    $stmt = $conn->prepare("SELECT id, order_number, order_date, total_amount, status FROM orders WHERE customer_id = ? ORDER BY order_date DESC");
+    $stmt->bind_param("i", $customer_id);
+    $stmt->execute();
+    $orders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+$stmt->close();
+
+// Định nghĩa BASE_URL nếu chưa có (để dùng trong HTML)
+if (!defined('BASE_URL')) {
+    define('BASE_URL', '/do_an_web/Jewellery/');
+}
+define('IMG_URL', BASE_URL . 'images/');
+
+// Link helpers
+$link_home    = BASE_URL . 'User/index.php';
+$link_login   = BASE_URL . 'User/Login.php';
+$link_cart    = BASE_URL . 'User/users/cart.php';
+$link_profile = BASE_URL . 'User/users/profile.php';
+$link_logout  = BASE_URL . 'User/users/logout.php';
+$link_search  = BASE_URL . 'User/users/search.php';
+$link_detail  = BASE_URL . 'User/users/product_detail.php';
+$link_history = BASE_URL . 'User/users/History.php';
+$link_view    = BASE_URL . 'User/users/view_details.php';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Orders | 36 Jewelry</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* {
+  margin:0; padding:0; box-sizing:border-box;
+  font-family:"Cormorant Garamond", serif;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(rgba(255,255,255,0.1), rgba(0,0,0,0.6)),
+              url("<?= IMG_URL ?>chocolat/pfb10.jpg") no-repeat center center/cover;
+  overflow-x: hidden;
+}
+
+/* ===== HEADER STYLING - ĐỒNG BỘ VỚI SEARCH ===== */
+.header-container {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.search-bar {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-top: 1px solid rgba(0,0,0,0.03);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.search-bar .left,
+.search-bar .center,
+.search-bar .right {
+  display: flex;
+  align-items: center;
+}
+
+.search-bar .left { 
+  width: auto; 
+  justify-content: flex-start;
+}
+
+.search-bar .right { 
+  justify-content: flex-end; 
+  width: auto; 
+}
+
+.search-bar .center { 
+  flex: 1 1 auto;
+  justify-content: center;
+  gap: 30px;
+  position: relative;
+}
+
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #111111;
+  font-weight: 600;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.home-btn i {
+  margin-right: 5px;
+  font-size: 18px;
+}
+
+.home-btn:hover {
+  background: #f9f9f9;
+  color: #b8860b;
+}
+
+.search-bar .center a {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.search-bar .center .header-logo {
+  height: 55px;
+  max-width: 180px;
+  object-fit: contain;
+  transition: all 0.25s ease;
+}
+
+.search-box {
+  flex: 0 1 450px;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9f9f9;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+  height: 50px;
+  opacity: 1;
+}
+
+.search-box input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 2px 6px;
+  font-size: 15px;
+  color: #111111;
+  min-width: 100px;
+}
+
+.search-box input::placeholder {
+  color: #666666;
+}
+
+.search-box button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: #b8860b;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.search-box button:hover {
+  background: #996600;
+}
+
+.icons { 
+  display: flex; 
+  gap: 10px; 
+  align-items: center; 
+}
+
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #111111;
+  transition: all 0.18s;
+  font-size: 18px;
+}
+
+.icon-link:hover {
+  background: rgba(186,134,11,0.08);
+  color: #b8860b;
+}
+
+/* ===== BOX ===== */
+.main-content {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  background: rgba(255,255,255,0.15);
+  padding: 50px 40px 40px 40px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 35px rgba(255,215,0,0.25);
+  margin: 40px auto;
+}
+
+/* ===== BACK BUTTON ===== */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid #f8ce86;
+  color: #f8ce86;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(6px);
+}
+.back-button:hover {
+  background: #f8ce86;
+  color: #000;
+  box-shadow: 0 0 10px rgba(248,206,134,0.6);
+  transform: scale(1.05);
+}
+
+/* ===== TITLE ===== */
+.orders-section h2 {
+  text-align: center;
+  color: #ede9e3;
+  font-size: 26px;
+  margin-bottom: 25px;
+  text-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+/* ===== TABLE ===== */
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+.orders-table th, .orders-table td {
+  padding: 12px;
+  border-bottom:1px solid rgba(255,215,0,0.3);
+  text-align:center;
+  color:#fff;
+}
+.orders-table th {
+  background: rgba(218,165,32,0.15);
+  text-transform: uppercase;
+  letter-spacing:0.5px;
+}
+.status {
+  font-weight:600;
+  padding:5px 10px;
+  border-radius:8px;
+  color:#fff;
+}
+.status.pending { background-color:#ff9800; }
+.status.completed { background-color:#4caf50; }
+.status.cancelled { background-color:#f44336; }
+
+/* ===== VIEW BUTTON ===== */
+.view-details-btn {
+  padding:6px 12px;
+  background: linear-gradient(120deg, #f8ce86, #d4af37, #b8860b);
+  color: #3b2f10;
+  border:none;
+  border-radius:50px;
+  font-weight:bold;
+  cursor:pointer;
+  transition: all 0.3s ease;
+  box-shadow:0 0 15px rgba(255,215,0,0.3);
+}
+.view-details-btn:hover {
+  transform:scale(1.05);
+  box-shadow:0 0 25px rgba(255,215,0,0.5);
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  text-align:center;
+  margin-top:30px;
+  color:#f0e6b2;
+  font-size:14px;
+  padding: 20px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .search-bar {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .search-bar .left,
+  .search-bar .right,
+  .search-bar .center {
+    flex: unset;
+  }
+  
+  .search-box {
+    flex: 1;
+    margin-left: 0;
+    max-width: 100%;
+  }
+  
+  .main-content {
+    width: 95%;
+    padding: 40px 20px 30px 20px;
+    margin: 20px auto;
+  }
+  
+  .orders-table {
+    font-size: 14px;
+  }
+  
+  .orders-table th, .orders-table td {
+    padding: 8px 6px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="<?= $link_home ?>" class="home-btn"><i class="fas fa-home"></i> Home</a>
+    </div>
+    <div class="center">
+      <a href="<?= $link_home ?>">
+        <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search products...">
+        <button onclick="doSearch()">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    <div class="right">
+      <a href="<?= $link_cart ?>" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="<?= $link_profile ?>" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+
+  <!-- BACK BUTTON -->
+  <button class="back-button" onclick="window.history.back();">&#8592;</button>
+
+  <section class="orders-section">
+    <h2>Orders History</h2>
+    <?php if (empty($orders)): ?>
+      <p style="color:white; text-align:center;">You have no orders yet.</p>
+    <?php else: ?>
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($orders as $order): ?>
+            <?php
+              // Định dạng ngày
+              $order_date = date('Y-m-d', strtotime($order['order_date']));
+              // Xác định class cho status
+              $status_class = '';
+              $status_text = '';
+              switch ($order['status']) {
+                  case 'Pending': $status_class = 'pending'; $status_text = 'Pending'; break;
+                  case 'Processed': $status_class = 'completed'; $status_text = 'Processed'; break;
+                  case 'Delivered': $status_class = 'completed'; $status_text = 'Delivered'; break;
+                  case 'Cancelled': $status_class = 'cancelled'; $status_text = 'Cancelled'; break;
+                  default: $status_class = 'pending'; $status_text = $order['status'];
+              }
+            ?>
+            <tr>
+              <td><?= htmlspecialchars($order['order_number']) ?></td>
+              <td><?= $order_date ?></td>
+              <td>$<?= number_format($order['total_amount'], 2) ?></td>
+              <td><span class="status <?= $status_class ?>"><?= $status_text ?></span></td>
+              <td><button class="view-details-btn" data-order-id="<?= $order['id'] ?>">View Details</button></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php endif; ?>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
+</footer>
+
+<script>
+  function doSearch() {
+    const keyword = document.getElementById('search-input').value.trim();
+    if (keyword !== '') {
+      window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(keyword);
+    }
+  }
+
+  // Xử lý nút View Details
+  const buttons = document.querySelectorAll(".view-details-btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const orderId = btn.dataset.orderId;
+      if (orderId) {
+        window.location.href = "<?= $link_view ?>?order_id=" + encodeURIComponent(orderId);
+      } else {
+        // fallback (nếu là link cũ)
+        window.location.href = "view_details.html";
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
