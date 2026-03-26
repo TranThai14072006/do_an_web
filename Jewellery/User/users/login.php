@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <a href="../index.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
     <div class="center">
-      <a href="../index.php">
+      <a href="../indexprofile.php">
         <img src="../../images/36-logo.png" alt="Logo" width="80" height="auto">
       </a>
       <div class="search-box">
