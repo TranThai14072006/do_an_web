@@ -14,9 +14,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($username === '' || $password === '') {
         $error = "Vui lòng nhập đầy đủ thông tin!";
     } else {
-        $stmt = $conn_user->prepare("SELECT id, username, password FROM users WHERE username = ?");
+        $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
         if (!$stmt) {
-            die("SQL error: " . $conn_user->error);
+            die("SQL error: " . $conn->error);
         }
         $stmt->bind_param("s", $username);
         $stmt->execute();
@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
-                header("Location: ../index_profile.php");
+                header("Location: ../indexprofile.php");
                 exit();
             } else {
                 $error = "Sai mật khẩu!";
