@@ -2,7 +2,7 @@
 session_start();
 require_once "../../config/config.php";
 if (isset($_SESSION['user_id'])) {
-    header("Location: ../index.php");
+    header("Location:../index.php");
     exit();
 }
 
@@ -63,11 +63,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <header class="header-container">
   <div class="search-bar">
     <div class="left">
-      <a href="index.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
+      <a href="../index.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
     <div class="center">
-      <a href="index.php">
-        <img src="/do_an_web/Jewellery/images/36-logo.png" alt="Logo" width="80" height="auto">
+      <a href="../index.php">
+        <img src="../../images/36-logo.png" alt="Logo" width="80" height="auto">
       </a>
       <div class="search-box">
         <input type="text" placeholder="Search products...">
