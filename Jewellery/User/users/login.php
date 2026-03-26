@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   </form>
 
   <div class="extra-links">
-    <a href="Register.php">Sign Up</a>
+    <a href="register.php">Sign Up</a>
     <a href="forgotpassword.php">Forgot Password?</a>
   </div>
 </div>

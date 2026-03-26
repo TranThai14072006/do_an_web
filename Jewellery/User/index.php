@@ -216,7 +216,7 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
   <div class="banner-content content-light style1 text-center col-md-6">
     <h2 class="banner-title"><?= htmlspecialchars($banner_title) ?></h2>
     <div class="btn-center">
-      <a href="<?= $link_login ?>" class="btn btn-medium btn-light">Shop Now</a>
+      <a href="../Products/products.php " class="btn btn-medium btn-light">Shop Now</a>
     </div>
   </div>
 </section>

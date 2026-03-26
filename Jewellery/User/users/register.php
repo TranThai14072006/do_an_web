@@ -3,7 +3,7 @@ session_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . "/do_an_web/Jewellery/config/config.php";
 
 if (isset($_SESSION['user_id'])) {
-    header("Location: index_profile.php");
+    header("Location:../index.php");
     exit();
 }
 
@@ -519,8 +519,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <div class="center">
-      <a href="index.php">
-        <img src="/do_an_web/Jewellery/images/36-logo.png" alt="Logo" class="header-logo">
+      <a href="../index.php">
+        <img src="../../images/36-logo.png" alt="Logo" class="header-logo">
       </a>
 
       <div class="search-box">
