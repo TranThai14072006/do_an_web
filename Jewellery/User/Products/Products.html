@@ -13,7 +13,7 @@
 <header class="header-container">
   <div class="search-bar">
     <div class="left">
-      <a href="../../index_profile.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+      <a href="../../index.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
     <div class="center">
       <a href="../../index.html">
@@ -21,7 +21,7 @@
       </a>
       <div class="search-box">
         <input type="text" placeholder="Search products...">
-        <button onclick="window.location.href='../search.html'">
+        <button onclick="window.location.href='../Search/search.html'">
           <i class="fas fa-search"></i>
         </button>
       </div>
@@ -66,8 +66,8 @@
           <div class="footer-menu menu-002">
             <h5 class="widget-title">Quick Links</h5>
             <ul class="menu-list list-unstyled text-uppercase">
-              <li class="menu-item"><a href="index.html">Home</a></li>
-              <li class="menu-item"><a href="product.html">Products</a></li>
+              <li class="menu-item"><a href="../../index.html">Home</a></li>
+              <li class="menu-item"><a href="Products.html">Products</a></li>
               <li class="menu-item"><a href="#">Contact</a></li>
             </ul>
           </div>
@@ -139,17 +139,22 @@ function renderPage(page) {
     const card = document.createElement('article');
     card.className = 'product-card';
     card.innerHTML = `
-      <a href="R01.php?id=${product.id}" class="product-card-link">
+      <a href="product-detail.php?id=${product.id}" class="product-card-link">
         <div class="image-holder">
           <img src="../../images/${product.image}" alt="${product.name}" class="product-image">
         </div>
         <h3 class="product-title">${product.name}</h3>
         <span class="product-price">$${Number(product.sale_price).toFixed(2)}</span>
       </a>
-      <button class="btn-add" onclick="showNotification('${product.name}')">Add to Cart</button>
+      <button class="btn-add" data-id="${product.id}" data-name="${product.name}">Add to Cart</button>
     `;
     grid.appendChild(card);
   });
+  document.querySelectorAll('.btn-add').forEach(btn => {
+  btn.addEventListener('click', function () {
+    addToCart(this.dataset.id, this.dataset.name, this);
+  });
+});
 }
 
 function renderPagination() {
@@ -237,6 +242,31 @@ function closeNotification() {
   const notification = document.getElementById('cart-notification');
   notification.classList.remove('show');
   clearTimeout(notification.timeout);
+}
+async function addToCart(productId, productName, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Adding...';
+
+  try {
+    const res = await fetch('add_to_cart.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId, quantity: 1 }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showNotification(productName);
+    } else {
+      alert(data.message || 'Failed to add to cart');
+    }
+  } catch (err) {
+    alert('Network error, please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add to Cart';
+  }
 }
 </script>
 

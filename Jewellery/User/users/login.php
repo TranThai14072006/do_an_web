@@ -2,7 +2,7 @@
 session_start();
 require_once "../../config/config.php";
 if (isset($_SESSION['user_id'])) {
-    header("Location: ../index_profile.php");
+    header("Location: ../index.php");
     exit();
 }
 
@@ -63,10 +63,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <header class="header-container">
   <div class="search-bar">
     <div class="left">
-      <a href="../index.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
+      <a href="index.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
     <div class="center">
-      <a href="../index.php">
+      <a href="index.php">
         <img src="/do_an_web/Jewellery/images/36-logo.png" alt="Logo" width="80" height="auto">
       </a>
       <div class="search-box">
@@ -77,8 +77,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       </div>
     </div>
     <div class="right">
-      <a href="Jewelry-cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
-      <a href="index_profile.php" class="icon-link"><i class="fas fa-user"></i></a>
+      <a href="cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.php" class="icon-link"><i class="fas fa-user"></i></a>
     </div>
   </div>
 </header>
@@ -104,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
   <div class="extra-links">
     <a href="Register.php">Sign Up</a>
-    <a href="forgot-password.php">Forgot Password?</a>
+    <a href="forgotpassword.php">Forgot Password?</a>
   </div>
 </div>
 

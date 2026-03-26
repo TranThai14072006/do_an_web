@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Products - Jewelry Store</title>
+  <link rel="stylesheet" href="search.css">
+  <link rel="stylesheet" type="text/css" href="../fonts/icomoon.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="homepage bg-accent-light">
+
+<!-- ===== HEADER ===== -->
+<header class="header-container">
+  <div class="search-bar">
+    <div class="left">
+      <a href="../../index.html" class="home-btn"><i class="fas fa-home"></i> Home</a>
+    </div>
+    <div class="center">
+      <a href="../../index.html">
+        <img src="../../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" id="header-search" placeholder="Search products..." oninput="debounceSearch()">
+        <button onclick="applyFilter()"><i class="fas fa-search"></i></button>
+      </div>
+    </div>
+    <div class="right">
+      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="container my-5">
+  <div class="section-header text-center">
+    <h1 class="section-title text-uppercase">Search Results</h1>
+  </div>
+
+  <!-- ===== FILTER BAR ===== -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label for="category">Category:</label>
+      <select id="category" onchange="applyFilter()">
+        <option value="all">All</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Unisex">Unisex</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="price">Price Range:</label>
+      <select id="price" onchange="applyFilter()">
+        <option value="all">All</option>
+        <option value="0-500">$0 – $500</option>
+        <option value="500-1000">$500 – $1,000</option>
+        <option value="1000-2000">$1,000 – $2,000</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="sort">Sort by:</label>
+      <select id="sort" onchange="applyFilter()">
+        <option value="default">Default</option>
+        <option value="price-low-high">Price: Low → High</option>
+        <option value="price-high-low">Price: High → Low</option>
+        <option value="name">Name (A → Z)</option>
+      </select>
+    </div>
+    <div class="filter-group search-group">
+      <label for="search">Search:</label>
+      <input type="text" id="search" placeholder="Search product name..." oninput="debounceSearch()">
+    </div>
+    <button class="btn btn-primary filter-btn" onclick="applyFilter()">
+      <i class="fas fa-filter"></i> Find
+    </button>
+  </div>
+
+  <!-- ===== PRODUCTS GRID ===== -->
+  <div class="products-grid" id="products-grid"></div>
+
+  <!-- ===== PAGINATION ===== -->
+  <div class="pagination" id="pagination"></div>
+
+</div><!-- /.container -->
+
+<!-- ===== FOOTER ===== -->
+<footer id="footer" class="overflow-hidden">
+  <div class="container mt-5">
+    <div class="footer-top-area">
+      <div class="row d-flex flex-wrap justify-content-between">
+        <div class="col-lg-3 col-sm-6">
+          <div class="footer-menu menu-001">
+            <img src="../../images/36-logo.png" alt="logo">
+            <p>Questions? Contact us at <a href="mailto:yourinfo@gmail.com">yourinfo@gmail.com</a></p>
+          </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+          <div class="footer-menu menu-002">
+            <h5 class="widget-title">Quick Links</h5>
+            <ul class="menu-list list-unstyled text-uppercase">
+              <li class="menu-item"><a href="../../index.html">Home</a></li>
+              <li class="menu-item"><a href="Products.html">Products</a></li>
+              <li class="menu-item"><a href="#">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="footer-menu text-uppercase menu-003">
+            <h5 class="widget-title">Help & Info</h5>
+            <ul class="menu-list list-unstyled">
+              <li class="menu-item"><a href="#">Shipping</a></li>
+              <li class="menu-item"><a href="#">Returns</a></li>
+              <li class="menu-item"><a href="#">Faqs</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="footer-menu contact-item menu-004">
+            <h5 class="widget-title">Contact Us</h5>
+            <p>If you need support? Call +55 111 222 333</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== CART NOTIFICATION ===== -->
+<div class="cart-notification" id="cart-notification">
+  <div class="notification-content">
+    <div class="notification-icon"><i class="fas fa-check-circle"></i></div>
+    <div class="notification-text">
+      <h3>Added to cart!</h3>
+      <p>The product has been added to your shopping cart.</p>
+    </div>
+    <button class="close-notification" onclick="closeNotification()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+
+<script>
+const ITEMS_PER_PAGE = 8;
+let allProducts = [];
+let filteredProducts = [];
+let currentPage = 1;
+let searchTimer = null;
+
+// Load products from API
+window.addEventListener('DOMContentLoaded', () => loadProducts());
+
+async function loadProducts() {
+  try {
+    const res = await fetch('search-api.php');
+    allProducts = await res.json();
+    if (!Array.isArray(allProducts) && allProducts.products) allProducts = allProducts.products;
+    applyFilter();
+  } catch (err) {
+    document.getElementById('products-grid').innerHTML =
+      `<p style="grid-column:1/-1;text-align:center;padding:40px;color:#c00;">
+        Error loading products: ${err.message}
+      </p>`;
+  }
+}
+
+// Apply filter, sort, search
+function applyFilter() {
+  const headerSearch = document.getElementById('header-search').value.trim();
+  if (headerSearch) document.getElementById('search').value = headerSearch;
+
+  const category = document.getElementById('category').value;
+  const price = document.getElementById('price').value;
+  const sort = document.getElementById('sort').value;
+  const search = document.getElementById('search').value.trim().toLowerCase();
+
+  filteredProducts = allProducts.filter(p => {
+    if (category !== 'all' && p.gender !== category) return false;
+    if (price !== 'all') {
+      const [min, max] = price.split('-').map(Number);
+      if (p.sale_price < min || p.sale_price > max) return false;
+    }
+    if (search && !p.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if (sort === 'price-low-high') filteredProducts.sort((a, b) => a.sale_price - b.sale_price);
+  else if (sort === 'price-high-low') filteredProducts.sort((a, b) => b.sale_price - a.sale_price);
+  else if (sort === 'name') filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+
+  currentPage = 1;
+  renderPage(currentPage);
+  renderPagination();
+}
+
+// Render products
+function renderPage(page) {
+  const grid = document.getElementById('products-grid');
+  grid.innerHTML = '';
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const pageProducts = filteredProducts.slice(start, start + ITEMS_PER_PAGE);
+
+  if (pageProducts.length === 0) {
+    grid.innerHTML = `<p style="grid-column:1/-1;text-align:center;padding:40px;color:black;"font-size: 24px; /* tăng kích thước chữ */
+        font-weight: 600; /* nếu muốn chữ đậm hơn */>
+                        No products match your filters.
+                      </p>`;
+    return;
+  }
+
+  pageProducts.forEach(p => {
+    const card = document.createElement('article');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <a href="../Products/product-detail.php?id=${p.id}" class="product-card-link">
+        <div class="image-holder">
+          <img src="../../images/${p.image}" alt="${p.name}" class="product-image">
+        </div>
+        <h3 class="product-title">${p.name}</h3>
+        <span class="product-price">$${Number(p.sale_price).toFixed(2)}</span>
+      </a>
+      <button class="btn-add" data-id="${p.id}" data-name="${p.name}">Add to Cart</button>
+    `;
+    grid.appendChild(card);
+  });
+
+  document.querySelectorAll('.btn-add').forEach(btn => {
+    btn.addEventListener('click', function () {
+      addToCart(this.dataset.id, this.dataset.name, this);
+    });
+  });
+}
+
+// Render pagination
+function renderPagination() {
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const container = document.getElementById('pagination');
+  container.innerHTML = '';
+
+  if (totalPages <= 1) return;
+
+  const createPageLink = (text, pageNum, disabled = false, active = false) => {
+    const a = document.createElement('a');
+    a.href = '#';
+    a.textContent = text;
+    if (disabled) a.classList.add('disabled');
+    if (active) a.classList.add('active');
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      if (!disabled && currentPage !== pageNum) {
+        currentPage = pageNum;
+        renderPage(currentPage);
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+    return a;
+  };
+
+  container.appendChild(createPageLink('<', currentPage - 1, currentPage === 1));
+
+  for (let i = 1; i <= totalPages; i++) {
+    container.appendChild(createPageLink(i, i, false, i === currentPage));
+  }
+
+  container.appendChild(createPageLink('>', currentPage + 1, currentPage === totalPages));
+}
+
+// Debounce search input
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyFilter, 400);
+}
+
+// Add to cart
+async function addToCart(productId, productName, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Adding...';
+  try {
+    const res = await fetch('add_to_cart.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId, quantity: 1 }),
+    });
+    const data = await res.json();
+    if (data.success) showNotification(productName);
+    else alert(data.message || 'Failed to add to cart');
+  } catch {
+    alert('Network error, please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add to Cart';
+  }
+}
+
+// Cart notification
+function showNotification(productName) {
+  const n = document.getElementById('cart-notification');
+  n.querySelector('.notification-text h3').textContent = `"${productName}" added to cart!`;
+  n.classList.add('show');
+  clearTimeout(n._t);
+  n._t = setTimeout(() => n.classList.remove('show'), 3000);
+}
+
+function closeNotification() {
+  const n = document.getElementById('cart-notification');
+  n.classList.remove('show');
+  clearTimeout(n._t);
+}
+</script>
+
+</body>
+</html>
