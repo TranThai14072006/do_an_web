@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db = "shop_db";
+$db = "jewelry_db";
 
 $conn = new mysqli($host, $user, $pass, $db);
 $conn->set_charset("utf8");
