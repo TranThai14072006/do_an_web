@@ -288,7 +288,7 @@ ALTER TABLE `product_details`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 ALTER TABLE `product_details`
   ADD CONSTRAINT `product_details_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
-COMMIT;
+
 --
 -- Table structure for table `receipt_details`
 --
