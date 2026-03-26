@@ -182,7 +182,7 @@ function build_url($page, $params = []) {
     <a href="../Price Manage/pricing.php">Pricing Management</a>
     <a href="import_management.php" class="active">Import Management</a>
     <a href="../Order Manage/order_management.php">Order Management</a>
-    <a href="../Stock Manage/stocking_management.php">Stocking</a>
+    <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
   </div>
 </div>
 

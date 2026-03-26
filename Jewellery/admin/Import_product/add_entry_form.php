@@ -57,6 +57,37 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
 .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 8px; padding: 12px 18px; margin-bottom: 18px; font-weight: 600; }
 .col-label { font-size: 12px; color: #888; margin-bottom: 4px; }
 
+/* ── Order number prefix input ── */
+.order-number-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid #8e4b00;
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+}
+.order-prefix {
+  padding: 10px 12px;
+  background: #f8ce86;
+  color: #8e4b00;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  border-right: 1px solid #8e4b00;
+  line-height: 1;
+}
+.order-suffix-input {
+  border: none !important;
+  border-radius: 0 !important;
+  flex: 1;
+  outline: none;
+  padding: 10px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.order-suffix-input:focus { box-shadow: none; }
+
 /* ── Searchable dropdown ── */
 .custom-select-wrapper { position: relative; }
 .custom-select-display {
@@ -90,7 +121,6 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
 .custom-select-option:hover, .custom-select-option.highlighted { background: #f8ce86; color: #8e4b00; }
 .custom-select-option.selected { background: #8e4b00; color: #f8ce86; }
 .custom-select-empty { padding: 10px 12px; color: #aaa; font-size: 14px; }
-/* Hidden real select */
 .hidden-select { display: none; }
 </style>
 </head>
@@ -129,10 +159,25 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
           <label class="form-label">Date *</label>
           <input type="date" name="date" class="form-control" required value="<?= date('Y-m-d') ?>">
         </div>
+
         <div class="form-col">
           <label class="form-label">Order Number *</label>
-          <input type="text" name="order_number" class="form-control" placeholder="VD: GR.021" required>
+          <!-- Chỉ nhập số, prefix ORD. tự động ghép vào hidden input -->
+          <div class="order-number-wrap">
+            <span class="order-prefix">ORD.</span>
+            <input type="text"
+                   id="order_suffix"
+                   class="order-suffix-input"
+                   placeholder="021"
+                   inputmode="numeric"
+                   maxlength="10"
+                   autocomplete="off"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,''); syncOrderNumber();">
+          </div>
+          <!-- Hidden input thực sự submit lên server -->
+          <input type="hidden" name="order_number" id="order_number_hidden">
         </div>
+
         <div class="form-col">
           <label class="form-label">Supplier</label>
           <input type="text" name="supplier" class="form-control" placeholder="Tên nhà cung cấp">
@@ -149,10 +194,8 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
       </div>
 
       <div id="product-container">
-        <!-- Row mẫu -->
         <div class="product-row product-item">
           <div class="product-select-wrap">
-            <!-- Real hidden select (submitted with form) -->
             <select class="hidden-select prod-select" name="product_code[]">
               <option value="">— Chọn sản phẩm —</option>
               <?php foreach ($products_list as $p): ?>
@@ -163,7 +206,6 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
                 </option>
               <?php endforeach; ?>
             </select>
-            <!-- Custom searchable UI -->
             <div class="custom-select-wrapper">
               <div class="custom-select-display" tabindex="0">— Chọn sản phẩm —</div>
               <div class="custom-select-dropdown">
@@ -223,8 +265,13 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
 </form>
 
 <script>
-// ── All products data (for cloning rows) ──────────────────
 const ALL_PRODUCTS = <?= json_encode($products_list) ?>;
+
+// ── Ghép prefix ORD. vào hidden input ─────────────────────
+function syncOrderNumber() {
+  const suffix = document.getElementById('order_suffix').value.trim();
+  document.getElementById('order_number_hidden').value = suffix ? 'ORD.' + suffix : '';
+}
 
 // ── Format helpers ─────────────────────────────────────────
 function formatNum(n) {
@@ -266,7 +313,6 @@ function initCustomSelect(wrapper) {
   const list      = wrapper.querySelector('.custom-select-list');
   const hiddenSel = wrapper.closest('.product-select-wrap').querySelector('.prod-select');
 
-  // Toggle open/close
   display.addEventListener('click', (e) => {
     e.stopPropagation();
     const isOpen = dropdown.classList.contains('open');
@@ -282,11 +328,9 @@ function initCustomSelect(wrapper) {
     if (e.key === 'Enter' || e.key === ' ') { display.click(); e.preventDefault(); }
   });
 
-  // Search/filter
   search.addEventListener('input', () => filterOptions(list, search.value));
   search.addEventListener('click', e => e.stopPropagation());
 
-  // Option click
   list.addEventListener('click', (e) => {
     const opt = e.target.closest('.custom-select-option');
     if (!opt) return;
@@ -304,7 +348,6 @@ function filterOptions(list, query) {
     opt.style.display = match ? '' : 'none';
     if (match) hasVisible = true;
   });
-  // Empty state
   let empty = list.querySelector('.custom-select-empty');
   if (!hasVisible) {
     if (!empty) { empty = document.createElement('div'); empty.className = 'custom-select-empty'; empty.textContent = 'Không tìm thấy sản phẩm'; list.appendChild(empty); }
@@ -317,20 +360,12 @@ function selectOption(wrapper, opt, hiddenSel) {
   const cost  = opt.dataset.cost  || '';
   const label = opt.textContent.trim();
 
-  // Update display
   wrapper.querySelector('.custom-select-display').textContent = label;
-
-  // Update hidden select
   hiddenSel.value = value;
-
-  // Mark selected
   wrapper.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
   opt.classList.add('selected');
-
-  // Close
   wrapper.querySelector('.custom-select-dropdown').classList.remove('open');
 
-  // Auto-fill cost price
   if (cost && parseFloat(cost) > 0) {
     const row = wrapper.closest('.product-row');
     const priceInput = row.querySelector('.price-input');
@@ -344,8 +379,6 @@ function selectOption(wrapper, opt, hiddenSel) {
 function closeAllDropdowns() {
   document.querySelectorAll('.custom-select-dropdown.open').forEach(d => d.classList.remove('open'));
 }
-
-// Close on outside click
 document.addEventListener('click', closeAllDropdowns);
 
 // ── Add / Remove rows ─────────────────────────────────────
@@ -353,12 +386,10 @@ function addRow() {
   const first = document.querySelector('.product-row');
   const clone = first.cloneNode(true);
 
-  // Reset inputs
   clone.querySelectorAll('input').forEach(i => { i.value = i.type === 'number' ? 1 : ''; });
   clone.querySelector('.prod-select').value = '';
   clone.querySelector('.product-total').textContent = '0 USD';
 
-  // Reset custom display
   const display = clone.querySelector('.custom-select-display');
   if (display) display.textContent = '— Chọn sản phẩm —';
   clone.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
@@ -378,15 +409,32 @@ function removeRow(btn) {
   updateSummary();
 }
 
-// ── Init all existing rows ────────────────────────────────
 document.querySelectorAll('.custom-select-wrapper').forEach(initCustomSelect);
 updateSummary();
 
-// ── Strip thousand separators before submit ───────────────
+// ── Validate & submit ─────────────────────────────────────
 document.getElementById('entry-form').addEventListener('submit', function(e) {
+  // Kiểm tra order number
+  const suffix = document.getElementById('order_suffix').value.trim();
+  if (!suffix) {
+    alert('Vui lòng nhập số mã phiếu!');
+    e.preventDefault();
+    return;
+  }
+  syncOrderNumber(); // đảm bảo hidden input được cập nhật
+
+  // Kiểm tra có chọn sản phẩm chưa
   const hasSelected = [...document.querySelectorAll('.prod-select')].some(s => s.value !== '');
-  if (!hasSelected) { alert('Phải chọn ít nhất 1 sản phẩm!'); e.preventDefault(); return; }
-  document.querySelectorAll('.price-input').forEach(i => { i.value = i.value.replace(/\./g, ''); });
+  if (!hasSelected) {
+    alert('Phải chọn ít nhất 1 sản phẩm!');
+    e.preventDefault();
+    return;
+  }
+
+  // Strip dấu chấm ngàn trước khi submit
+  document.querySelectorAll('.price-input').forEach(i => {
+    i.value = i.value.replace(/\./g, '');
+  });
 });
 </script>
 </body>

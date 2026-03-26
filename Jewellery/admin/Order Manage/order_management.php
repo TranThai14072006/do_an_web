@@ -12,46 +12,48 @@ $sort_dir   = isset($_GET['sort_dir'])   ? trim($_GET['sort_dir'])   : 'asc';
 $searched   = isset($_GET['searched']);
 
 // ============================================================
-// Lấy customers từ user_db
-// ============================================================
-$cust_map    = [];
-$cust_result = $conn_user->query("
-    SELECT c.id, c.full_name, c.phone, c.address, u.email
-    FROM customers c
-    JOIN users u ON c.user_id = u.id
-");
-if ($cust_result !== false) {
-    while ($row = $cust_result->fetch_assoc()) {
-        $cust_map[$row['id']] = $row;
-    }
-}
-
-// ============================================================
-// Query orders từ jewelry_db
+// Query orders + customer info — tất cả từ jewelry_db (1 DB duy nhất)
 // ============================================================
 $where  = [];
 $params = [];
 $types  = '';
 
 if ($from_date !== '') {
-    $where[]  = 'order_date >= ?';
+    $where[]  = 'o.order_date >= ?';
     $params[] = $from_date;
     $types   .= 's';
 }
 if ($to_date !== '') {
-    $where[]  = 'order_date <= ?';
+    $where[]  = 'o.order_date <= ?';
     $params[] = $to_date;
     $types   .= 's';
 }
 if ($status !== '' && $status !== 'All') {
-    $where[]  = 'status = ?';
+    $where[]  = 'o.status = ?';
     $params[] = $status;
     $types   .= 's';
 }
 
 $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-$sql = "SELECT id, order_number, customer_id, order_date, total_amount, status
-        FROM orders $where_sql ORDER BY order_date DESC";
+
+$sql = "
+    SELECT
+        o.id,
+        o.order_number,
+        o.customer_id,
+        o.order_date,
+        o.total_amount,
+        o.status,
+        c.full_name,
+        c.phone,
+        c.address,
+        u.email
+    FROM orders o
+    JOIN customers c ON o.customer_id = c.id
+    JOIN users    u ON c.user_id = u.id
+    $where_sql
+    ORDER BY o.order_date DESC
+";
 
 $stmt = $conn->prepare($sql);
 if ($params) $stmt->bind_param($types, ...$params);
@@ -60,7 +62,7 @@ $raw_orders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 // ============================================================
-// Ghép thông tin customer + tách district & city từ address
+// Tách district & city từ address
 // Định dạng: "123 Le Loi, Q1, HCMC"
 //   parts[0] = "123 Le Loi"  → đường
 //   parts[1] = "Q1"          → quận/phường
@@ -68,15 +70,9 @@ $stmt->close();
 // ============================================================
 $orders = [];
 foreach ($raw_orders as $o) {
-    $cid         = $o['customer_id'];
-    $address     = $cust_map[$cid]['address'] ?? 'N/A';
-    $addr_parts  = array_map('trim', explode(',', $address));
-
-    $o['full_name'] = $cust_map[$cid]['full_name'] ?? 'N/A';
-    $o['phone']     = $cust_map[$cid]['phone']     ?? 'N/A';
-    $o['address']   = $address;
-    $o['district']  = $addr_parts[1] ?? 'N/A';   // phần tử index 1 → Quận
-    $o['city']      = $addr_parts[2] ?? 'N/A';   // phần tử index 2 → Tỉnh/TP
+    $addr_parts     = array_map('trim', explode(',', $o['address'] ?? ''));
+    $o['district']  = $addr_parts[1] ?? 'N/A';
+    $o['city']      = $addr_parts[2] ?? 'N/A';
     $orders[]       = $o;
 }
 
@@ -106,9 +102,9 @@ if ($sort_by === 'district') {
 }
 
 // Helper: tạo URL sort
-function sortUrl($col, $current_sort, $current_dir, $extra = []) {
+function sortUrl($col, $current_sort, $current_dir) {
     $dir = ($current_sort === $col && $current_dir === 'asc') ? 'desc' : 'asc';
-    $params = array_merge($_GET, ['sort_by' => $col, 'sort_dir' => $dir, 'searched' => '1'], $extra);
+    $params = array_merge($_GET, ['sort_by' => $col, 'sort_dir' => $dir, 'searched' => '1']);
     return '?' . http_build_query(array_filter($params, fn($v) => $v !== ''));
 }
 
@@ -270,7 +266,6 @@ $status_class   = [
          class="sort-btn <?= $sort_by === 'district' ? 'active' : '' ?>">
         District <span class="icon"><?= $sort_by === 'district' ? ($sort_dir === 'asc' ? '▲' : '▼') : '⇅' ?></span>
       </a>
-      <!-- ✅ MỚI: Sort theo City/Province -->
       <a href="<?= sortUrl('city', $sort_by, $sort_dir) ?>"
          class="sort-btn <?= $sort_by === 'city' ? 'active' : '' ?>">
         City / Province <span class="icon"><?= $sort_by === 'city' ? ($sort_dir === 'asc' ? '▲' : '▼') : '⇅' ?></span>
@@ -310,12 +305,10 @@ $status_class   = [
           <th>Order No.</th>
           <th>Customer Name</th>
           <th>Full Address</th>
-          <!-- ✅ Cột District riêng -->
           <th class="sortable <?= $sort_by === 'district' ? 'sorted' : '' ?>"
               onclick="window.location.href='<?= sortUrl('district', $sort_by, $sort_dir) ?>'">
             District <?= sortIcon('district', $sort_by, $sort_dir) ?>
           </th>
-          <!-- ✅ Cột City/Province riêng -->
           <th class="sortable <?= $sort_by === 'city' ? 'sorted' : '' ?>"
               onclick="window.location.href='<?= sortUrl('city', $sort_by, $sort_dir) ?>'">
             City / Province <?= sortIcon('city', $sort_by, $sort_dir) ?>
@@ -342,7 +335,6 @@ $status_class   = [
           </tr>
         <?php else: ?>
           <?php
-          // Group highlight khi sort theo city hoặc district
           $prev_group   = null;
           $group_colors = ['#fffbf5', '#fff'];
           $color_idx    = 0;
@@ -365,16 +357,14 @@ $status_class   = [
               <td><?= $i + 1 ?></td>
               <td><?= htmlspecialchars($o['order_number']) ?></td>
               <td><?= htmlspecialchars($o['full_name']) ?></td>
-              <td style="text-align:left;font-size:13px;color:#555"><?= htmlspecialchars($o['address']) ?></td>
-              <!-- ✅ Cột District -->
+              <td style="text-align:left;font-size:13px;color:#555"><?= htmlspecialchars($o['address'] ?? '') ?></td>
               <td class="district-col">
                 <span class="location-badge district-badge"><?= htmlspecialchars($o['district']) ?></span>
               </td>
-              <!-- ✅ Cột City/Province -->
               <td class="city-col">
                 <span class="location-badge city-badge"><?= htmlspecialchars($o['city']) ?></span>
               </td>
-              <td><?= htmlspecialchars($o['phone']) ?></td>
+              <td><?= htmlspecialchars($o['phone'] ?? '') ?></td>
               <td><?= htmlspecialchars($o['order_date']) ?></td>
               <td><?= number_format($o['total_amount'], 0, '.', ',') ?> USD</td>
               <td>
@@ -402,7 +392,4 @@ $status_class   = [
   </main>
 </body>
 </html>
-<?php
-$conn->close();
-$conn_user->close();
-?>
+<?php $conn->close(); ?>

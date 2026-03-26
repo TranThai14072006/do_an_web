@@ -251,7 +251,7 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
       <a href="../Administration_menu.html#product-manage">Product Management</a>
       <a href="../Administration_menu.html#users">Customers</a>
       <a href="../Price Manage/pricing.php">Pricing Management</a>
-      <a href="../Import product manage/import_management.php">Import Management</a>
+      <a href="../Import_product/import_management.php">Import Management</a>
       <a href="../Order Manage/order_management.php">Order Management</a>
       <a href="stocking_management.php" class="active">Stocking Management</a>
       <a href="../Administration_menu.html#settings">Settings</a>>
