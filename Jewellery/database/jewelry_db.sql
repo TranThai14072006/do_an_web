@@ -216,7 +216,6 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `quan
 --
 -- Table structure for table `products`
 --
-
 CREATE TABLE `products` (
   `id` varchar(50) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
@@ -225,24 +224,26 @@ CREATE TABLE `products` (
   `cost_price` decimal(15,2) DEFAULT 0.00,
   `profit_percent` int(11) DEFAULT 0,
   `stock` int(11) DEFAULT 0,
-  `category` varchar(100) DEFAULT NULL
+  `category` varchar(100) DEFAULT NULL,
+  `gender` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `products`
+-- Đang đổ dữ liệu cho bảng `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `price`, `image`, `cost_price`, `profit_percent`, `stock`, `category`) VALUES
-('B001', 'Luxury Gold Bracelet', 0.00, 'B001.jpg', 2000.00, 50, 0, 'Bracelet'),
-('E001', 'Pearl Drop Earrings', 0.00, 'E001.jpg', 500.00, 40, 0, 'Earring'),
-('E002', 'Crystal Stud Earrings', 0.00, 'E002.jpg', 300.00, 35, 0, 'Earring'),
-('N001', 'Diamond Heart Necklace', 0.00, 'N001.jpg', 1500.00, 30, 0, 'Necklace'),
-('N002', 'Gold Chain Necklace', 0.00, 'N002.jpg', 1100.00, 25, 0, 'Necklace'),
-('R001', 'Kane Moissanite Ring', 0.00, 'R001.jpg', 1020.00, 20, 17, 'Ring'),
-('R002', 'Winston Anchor Ring', 0.00, 'R002.jpg', 1220.00, 40, -1, 'Ring'),
-('R003', 'Ula Opal Teardrop Ring', 0.00, 'R003.jpg', 39.50, 25, 9, 'Ring'),
-('R004', 'Platinum Clover Charm Ring', 16200000.00, 'R004.jpg', 12000000.00, 35, 1, 'Ring'),
-('R005', 'Paisley Moissanite Ring', 0.00, 'R005.jpg', 980.00, 20, -3, 'Ring');
+INSERT INTO `products` (`id`, `name`, `price`, `image`, `cost_price`, `profit_percent`, `stock`, `category`, `gender`) VALUES
+('R001', 'Kane Moissanite Ring', 1326.00, 'R001.jpg', 1020.00, 30, 10, 'Ring', 'Male'),
+('R002', 'Winston Anchor Ring', 1708.00, 'R002.jpg', 1220.00, 40, 5, 'Ring', 'Male'),
+('R003', 'Ula Opal Teardrop Ring', 49.38, 'R003.jpg', 39.50, 25, 15, 'Ring', 'Female'),
+('R004', 'Platinum Clover Charm Ring', 1633.50, 'R004.jpg', 1210.00, 35, 8, 'Ring', 'Female'),
+('R005', 'Paisley Moissanite Ring', 1176.00, 'R005.jpg', 980.00, 20, 12, 'Ring', 'Female'),
+('R006', 'Niche Crown Stack Ring', 120.00, 'R006.jpg', 60.00, 100, 10, 'Ring', 'Female'),
+('R007', 'The Zenith Ring', 130.00, 'R007.jpg', 70.00, 85, 15, 'Ring', 'Male'),
+('R008', 'Silver Eminence Ring', 150.00, 'R008.jpg', 90.00, 67, 8, 'Ring', 'Male'),
+('R009', 'Elysian Flow', 200.00, 'R009.jpg', 120.00, 67, 5, 'Ring', 'Unisex'),
+('R010', 'Onyx Edge', 95.00, 'R010.jpg', 50.00, 90, 12, 'Ring', 'Unisex');
+
 
 -- --------------------------------------------------------
 
