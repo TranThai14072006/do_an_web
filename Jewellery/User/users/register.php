@@ -531,7 +531,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="right">
       <div class="icons">
-        <a href="Jewelry-cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+        <a href="cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
         <a href="login.php" class="icon-link"><i class="fas fa-user"></i></a>
       </div>
     </div>

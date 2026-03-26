@@ -81,7 +81,7 @@ while ($row = $order_result->fetch_assoc()) {
     </div>
 
     <div class="right">
-      <a href="Jewelry-cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
       <a href="profile.php" class="icon-link"><i class="fas fa-user"></i></a>
     </div>
   </div>
