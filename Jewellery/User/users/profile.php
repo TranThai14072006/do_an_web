@@ -17,16 +17,12 @@ $sql = "SELECT u.username, u.email,
         LEFT JOIN customers c ON u.id = c.user_id
         WHERE u.id = ?";
 
-<<<<<<< HEAD
 
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
     die("SQL Error: " . $conn->error);
 }
-=======
-$stmt = $conn->prepare($sql);
->>>>>>> cf5a4079aca4d9dbb3866ce77d1f4eae362c1259
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();

@@ -20,12 +20,12 @@ if (isset($_POST['ajax_action'])) {
         $product_id = (int)$_POST['product_id'];
         $quantity = (int)$_POST['quantity'];
         if ($product_id > 0 && $quantity >= 1) {
-            $stmt = $conn_user->prepare("UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?");
+            $stmt = $conn->prepare("UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?");
             $stmt->bind_param("iii", $quantity, $user_id, $product_id);
             $stmt->execute();
             if ($stmt->affected_rows === 0) {
                 // Chưa có thì thêm mới
-                $stmt2 = $conn_user->prepare("INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)");
+                $stmt2 = $conn->prepare("INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)");
                 $stmt2->bind_param("iii", $user_id, $product_id, $quantity);
                 $stmt2->execute();
                 $stmt2->close();
@@ -38,7 +38,7 @@ if (isset($_POST['ajax_action'])) {
     } elseif ($_POST['ajax_action'] === 'remove' && isset($_POST['product_id'])) {
         $product_id = (int)$_POST['product_id'];
         if ($product_id > 0) {
-            $stmt = $conn_user->prepare("DELETE FROM cart WHERE user_id = ? AND product_id = ?");
+            $stmt = $conn->prepare("DELETE FROM cart WHERE user_id = ? AND product_id = ?");
             $stmt->bind_param("ii", $user_id, $product_id);
             $stmt->execute();
             $stmt->close();
@@ -54,16 +54,21 @@ if (isset($_POST['ajax_action'])) {
 
 // Lấy giỏ hàng
 $sql_cart = "SELECT product_id, quantity FROM cart WHERE user_id = ?";
-$stmt = $conn_user->prepare($sql_cart);
-$stmt->bind_param("i", $user_id);
+$stmt = $conn->prepare($sql_cart);
+
+if (!$stmt) {
+    die("SQL Error: " . $conn->error);
+}
 $stmt->execute();
-$result = $stmt->get_result();
+
+$stmt->bind_result($product_id, $quantity);
 
 $cart_items = [];
 $product_ids = [];
-while ($row = $result->fetch_assoc()) {
-    $cart_items[$row['product_id']] = $row['quantity'];
-    $product_ids[] = $row['product_id'];
+
+while ($stmt->fetch()) {
+    $cart_items[$product_id] = $quantity;
+    $product_ids[] = $product_id;
 }
 
 if (!empty($product_ids)) {
@@ -99,7 +104,7 @@ if (!empty($product_ids)) {
 
 $stmt->close();
 $conn->close();
-$conn_user->close();
+
 
 // Link helpers
 $link_home    = BASE_URL . 'User/index.php';
