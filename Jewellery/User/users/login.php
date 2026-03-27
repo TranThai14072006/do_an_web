@@ -10,6 +10,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   /* khó nói  */
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['username'] = $user['username']; // thêm dòng này
 
     if ($username === '' || $password === '') {
         $error = "Vui lòng nhập đầy đủ thông tin!";

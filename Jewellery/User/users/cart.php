@@ -52,6 +52,8 @@ if (isset($_POST['ajax_action'])) {
     exit;
 }
 
+$logged_in_name = $_SESSION['username'] ?? 'User';
+
 // Lấy giỏ hàng
 $sql_cart = "SELECT product_id, quantity FROM cart WHERE user_id = ?";
 $stmt = $conn->prepare($sql_cart);
