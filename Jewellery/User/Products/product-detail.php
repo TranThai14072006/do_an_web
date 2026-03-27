@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "shop_db");
+$conn = new mysqli("localhost", "root", "", "jewelry_db");
 $conn->set_charset("utf8");
 
 $id = $_GET['id'] ?? '';
@@ -21,8 +21,9 @@ if ($product) {
     $current_cost = (float)$product['price'];
     $profit_percent = (float)$product['profit_percent'];
 
-    $total_quantity = $current_stock;
-    $total_cost = $current_cost * $current_stock;
+    // Chỉ tính từ phiếu nhập, KHÔNG cộng stock (đồng bộ search-api.php)
+    $total_quantity = 0;
+    $total_cost = 0;
 
     $sql_receipt = "SELECT quantity, unit_price 
                     FROM goods_receipt_items 
@@ -75,7 +76,7 @@ if ($product) {
     </div>
 
     <div class="right">
-      <a href="../Jewelry-cart.html" class="icon-link">
+      <a href="../Cart/Jewelry-cart.html" class="icon-link">
         <i class="fas fa-shopping-cart"></i>
       </a>
       <a href="../profile.html" class="icon-link">
@@ -191,8 +192,31 @@ function closeNotification() {
   document.getElementById('cart-notification').classList.remove('show');
 }
 
-function addToCart(id, name) {
-  showNotification(name);
+async function addToCart(id, name) {
+  const btn = document.querySelector('.add-to-cart');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+  try {
+    const res = await fetch('../Cart/jewelry_cart.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add', product_id: id, quantity: 1 })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showNotification(name);
+    } else {
+      alert(data.message || 'Failed to add to cart');
+    }
+  } catch (err) {
+    alert('Network error, please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to cart';
+  }
 }
 </script>
 
