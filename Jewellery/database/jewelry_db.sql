@@ -289,6 +289,12 @@ ALTER TABLE `product_details`
 ALTER TABLE `product_details`
   ADD CONSTRAINT `product_details_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
+CREATE TABLE `cart` (
+  `product_id` varchar(50) NOT NULL,
+  `quantity` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ALTER TABLE `cart`
+  ADD PRIMARY KEY (`product_id`);
 --
 -- Table structure for table `receipt_details`
 --
