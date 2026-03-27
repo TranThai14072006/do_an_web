@@ -1,42 +1,50 @@
 <?php
 session_start();
 require_once "../../config/config.php";
+
+// Nếu đã login → về trang chủ
 if (isset($_SESSION['user_id'])) {
-    header("Location:../index.php");
+    header("Location: ../index.php");
     exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  /* khó nói  */
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
     if ($username === '' || $password === '') {
         $error = "Vui lòng nhập đầy đủ thông tin!";
     } else {
-        $stmt = $conn_user->prepare("SELECT id, username, password FROM users WHERE username = ?");
+        $stmt = $conn->prepare(
+            "SELECT id, username, password, role, status FROM users WHERE username = ? LIMIT 1"
+        );
         if (!$stmt) {
-            die("SQL error: " . $conn_user->error);
+            die("SQL error: " . $conn->error);
         }
         $stmt->bind_param("s", $username);
         $stmt->execute();
         $result = $stmt->get_result();
-
-        if ($result->num_rows === 1) {
-            $user = $result->fetch_assoc();
-            if (password_verify($password, $user['password'])) {
-                session_regenerate_id(true);
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                header("Location: ../index_profile.php");
-                exit();
-            } else {
-                $error = "Sai mật khẩu!";
-            }
-        } else {
-            $error = "Tài khoản không tồn tại!";
-        }
+        $user   = $result->fetch_assoc();
         $stmt->close();
+
+        if (!$user) {
+            $error = "Tài khoản không tồn tại!";
+        } elseif ($user['role'] === 'admin') {
+            // Admin cố đăng nhập vào cổng user
+            $error = "⛔ Tài khoản admin không thể đăng nhập tại đây. Vui lòng dùng <a href='../../admin/admin_login.php' style='color:#8e4b00;'>Admin Login</a>.";
+        } elseif ($user['status'] === 'Locked') {
+            $error = "🔒 Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ.";
+        } elseif (!password_verify($password, $user['password'])) {
+            $error = "Sai mật khẩu!";
+        } else {
+            // ✅ Đăng nhập thành công
+            session_regenerate_id(true);
+            $_SESSION['user_id']   = $user['id'];
+            $_SESSION['username']  = $user['username'];
+            $_SESSION['user_role'] = 'user';
+            header("Location: ../index_profile.php");
+            exit();
+        }
     }
 }
 ?>

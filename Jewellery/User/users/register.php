@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once $_SERVER['DOCUMENT_ROOT'] . "/do_an_web/Jewellery/config/config.php";
+require_once "../../config/config.php";
 
 if (isset($_SESSION['user_id'])) {
     header("Location: index_profile.php");
@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Invalid phone number (must start with 0 and have 10-11 digits)!";
     } else {
         // Check email exists
-        $stmt = $conn_user->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -40,30 +40,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $username = $email; // use email as username
 
-            $conn_user->begin_transaction();
+            $conn->begin_transaction();
 
             try {
                 // Insert into users
-                $stmt = $conn_user->prepare("INSERT INTO users(username, email, password) VALUES (?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO users(username, email, password, role) VALUES (?, ?, ?, 'user')");
                 $stmt->bind_param("sss", $username, $email, $hash);
                 $stmt->execute();
                 $user_id = $stmt->insert_id;
                 $stmt->close();
 
                 // Insert into customers
-                $stmt = $conn_user->prepare("INSERT INTO customers(user_id, full_name, phone, address) VALUES (?, ?, ?, ?)");
+                $stmt = $conn->prepare("INSERT INTO customers(user_id, full_name, phone, address) VALUES (?, ?, ?, ?)");
                 $stmt->bind_param("isss", $user_id, $fullname, $phone, $address);
                 $stmt->execute();
                 $stmt->close();
 
-                $conn_user->commit();
+                $conn->commit();
 
                 $_SESSION['user_id']  = $user_id;
                 $_SESSION['username'] = $fullname;
                 header("Location: login.php");
                 exit();
             } catch (Exception $e) {
-                $conn_user->rollback();
+                $conn->rollback();
                 $error = "Registration failed. Please try again.";
             }
         }
