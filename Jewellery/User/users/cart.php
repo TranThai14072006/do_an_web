@@ -1,7 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../config/config.php'; // nếu cart.php ở User/
-
+require_once "../../config/config.php";
 define('BASE_URL', '/do_an_web/Jewellery/');
 define('IMG_URL', BASE_URL . 'images/');
 
@@ -103,10 +102,10 @@ $conn->close();
 $conn_user->close();
 
 // Link helpers
-$link_home    = BASE_URL . 'User/users/index.php';
-$link_login   = BASE_URL . 'User/login.php';
-$link_cart    = BASE_URL . 'User/cart.php';
-$link_profile = BASE_URL . 'User/profile.php';
+$link_home    = BASE_URL . 'User/index.php';
+$link_login   = BASE_URL . 'User/users/Login.php';
+$link_cart    = BASE_URL . 'User/users/cart.php';
+$link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
 $link_detail  = BASE_URL . 'User/users/product_detail.php';
 ?>
