@@ -1,49 +1,46 @@
 <?php
 session_start();
+require_once '../config/config.php';
 
-// Optional: protect this page
-// if (empty($_SESSION['admin_logged_in'])) {
-//     header('Location: admin_login.php');
-//     exit;
-// }
+// ──────────────────────────────────────────────
+// JEWELRY LIST — pagination per tab
+// ──────────────────────────────────────────────
+$prod_limit = 6;
 
+// Tab-aware page params (male_page, female_page, unisex_page)
+$male_page   = isset($_GET['male_page'])   && is_numeric($_GET['male_page'])   ? max(1,(int)$_GET['male_page'])   : 1;
+$female_page = isset($_GET['female_page']) && is_numeric($_GET['female_page']) ? max(1,(int)$_GET['female_page']) : 1;
+$unisex_page = isset($_GET['unisex_page']) && is_numeric($_GET['unisex_page']) ? max(1,(int)$_GET['unisex_page']) : 1;
 
+// Search params per tab
+$male_name   = isset($_GET['male_name'])   ? trim($_GET['male_name'])   : '';
+$female_name = isset($_GET['female_name']) ? trim($_GET['female_name']) : '';
+$unisex_name = isset($_GET['unisex_name']) ? trim($_GET['unisex_name']) : '';
 
-$customers = [
-    ['id'=>1,'name'=>'Alice Nguyen','email'=>'alice@example.com','status'=>'Active'],
-    ['id'=>2,'name'=>'Emma Tran',   'email'=>'emma@example.com', 'status'=>'Locked'],
-    ['id'=>3,'name'=>'David Le',    'email'=>'david@example.com','status'=>'Active'],
-    ['id'=>4,'name'=>'Olivia Pham', 'email'=>'olivia@example.com','status'=>'Active'],
-    ['id'=>5,'name'=>'Lucas Hoang', 'email'=>'lucas@example.com','status'=>'Locked'],
-    ['id'=>6,'name'=>'Sophia Vu',   'email'=>'sophia@example.com','status'=>'Active'],
-    ['id'=>7,'name'=>'Henry Bui',   'email'=>'henry@example.com','status'=>'Locked'],
-    ['id'=>8,'name'=>'Isabella Do', 'email'=>'isabella@example.com','status'=>'Active'],
-    ['id'=>9,'name'=>'Ethan Tran',  'email'=>'ethan@example.com','status'=>'Active'],
-    ['id'=>10,'name'=>'Chloe Nguyen','email'=>'chloe@example.com','status'=>'Locked'],
-];
+function fetchProducts($conn, $category, $search_name, $page, $limit) {
+    $offset = ($page - 1) * $limit;
+    $where  = "WHERE category = '" . $conn->real_escape_string($category) . "'";
+    if (!empty($search_name)) {
+        $where .= " AND name LIKE '%" . $conn->real_escape_string($search_name) . "%'";
+    }
+    $rows  = [];
+    $r     = $conn->query("SELECT id, name, image, category FROM products $where ORDER BY id ASC LIMIT $offset, $limit");
+    if ($r) while ($row = $r->fetch_assoc()) $rows[] = $row;
+    $cnt   = $conn->query("SELECT COUNT(id) AS total FROM products $where");
+    $total = $cnt ? (int)$cnt->fetch_assoc()['total'] : 0;
+    $pages = max(1, (int)ceil($total / $limit));
+    return [$rows, $total, $pages];
+}
 
-$male_products = [
-    ['no'=>2,'img'=>'R002.jpg','name'=>'Winston Anchor Ring','category'=>'Ring'],
-    ['no'=>6,'img'=>'R006.jpg','name'=>'Arielle Princess CZ Ring','category'=>'Ring'],
-    ['no'=>3,'img'=>'R005.jpg','name'=>'Ula Opal Teardrop Ring','category'=>'Ring'],
-];
+[$male_products,   $male_total,   $male_pages]   = fetchProducts($conn, 'Male',   $male_name,   $male_page,   $prod_limit);
+[$female_products, $female_total, $female_pages] = fetchProducts($conn, 'Female', $female_name, $female_page, $prod_limit);
+[$unisex_products, $unisex_total, $unisex_pages] = fetchProducts($conn, 'Unisex', $unisex_name, $unisex_page, $prod_limit);
 
-$female_products = [
-    ['no'=>1,'img'=>'R001.jpg','name'=>'Kane Moissanite Ring','category'=>'Ring'],
-    ['no'=>2,'img'=>'R002.jpg','name'=>'Kane Moissanite Ring','category'=>'Ring'],
-    ['no'=>3,'img'=>'R003.jpg','name'=>'Ula Opal Teardrop Ring','category'=>'Ring'],
-    ['no'=>4,'img'=>'R004.jpg','name'=>'Platinum Clover Charm Ring','category'=>'Ring'],
-    ['no'=>5,'img'=>'R005.jpg','name'=>'Paisley Moissanite Ring','category'=>'Ring'],
-    ['no'=>7,'img'=>'R007.jpg','name'=>'Miracle Queen CZ Ring','category'=>'Ring'],
-    ['no'=>8,'img'=>'R008.jpg','name'=>'Niche Crown Stack Ring','category'=>'Ring'],
-    ['no'=>9,'img'=>'R009.jpg','name'=>'Rosemary Topaz Ring','category'=>'Ring'],
-    ['no'=>10,'img'=>'R010.jpg','name'=>'Royal Moissanite Ring','category'=>'Ring'],
-];
-
-$unisex_products = [
-    ['no'=>1,'img'=>'R006.jpg','name'=>'Kane Moissanite Ring','category'=>'Ring'],
-    ['no'=>3,'img'=>'R005.jpg','name'=>'Ula Opal Teardrop Ring','category'=>'Ring'],
-];
+// Helper: build query string keeping all GET params, overriding specific keys
+function pageUrl($overrides = []) {
+    $params = array_merge($_GET, $overrides);
+    return '?' . http_build_query($params);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -53,6 +50,30 @@ $unisex_products = [
   <title>Luxury Jewelry Admin Panel</title>
   <link rel="stylesheet" href="admin_function.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+  <style>
+    .product-img { border-radius:6px; object-fit:cover; width:60px; height:60px; }
+    .no-image { width:60px; height:60px; border-radius:6px; background:#f0f0f0;
+                display:inline-flex; align-items:center; justify-content:center;
+                color:#aaa; font-size:10px; text-align:center; }
+    .pagination-info { text-align:center; color:#888; font-size:13px; margin-top:4px; }
+    .logout-btn { display:inline-flex; align-items:center; gap:10px; padding:12px 24px;
+      background:linear-gradient(135deg,#d9534f,#c9302c); color:white; text-decoration:none;
+      border-radius:8px; font-weight:600; transition:all .3s;
+      box-shadow:0 4px 10px rgba(217,83,79,.3); border:none; cursor:pointer; }
+    .logout-btn:hover { transform:translateY(-2px); background:linear-gradient(135deg,#c9302c,#ac2925);
+      box-shadow:0 6px 15px rgba(217,83,79,.4); }
+    .logout-btn i { font-size:18px; }
+    .tab-search { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;
+                  background:#fdf7ee; border:1px solid #e8d5b0; border-radius:8px;
+                  padding:12px 16px; margin-bottom:14px; }
+    .tab-search input { padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:14px; }
+    .tab-search button { padding:8px 16px; border:none; border-radius:6px; cursor:pointer;
+                         font-size:14px; font-weight:600; background:#8e4b00; color:#fff; }
+    .tab-search button:hover { background:#a3670b; }
+    .tab-search a.reset-btn { padding:8px 14px; border-radius:6px; font-size:14px;
+                               background:#e0e0e0; color:#333; text-decoration:none; font-weight:600; }
+  </style>
 </head>
 <body>
   <div class="sidebar">
@@ -64,7 +85,7 @@ $unisex_products = [
       <a href="#products">Jewelry List</a>
       <a href="product_management.php">Product Management</a>
       <a href="Price Manage/pricing.php">Pricing Management</a>
-      <a href="#users">Customers</a>
+      <a href="customer_management.php">Customers</a>
       <a href="Order Manage/order_management.php">Order Management</a>
       <a href="Import product manage/import_management.php">Import Management</a>
       <a href="Stock Manage/stocking_management.php">Stocking Management</a>
@@ -79,107 +100,176 @@ $unisex_products = [
       <header><h1>Jewelry Inventory</h1></header>
 
       <div class="tabs">
-        <div class="tab active" data-tab="tab1">Male</div>
-        <div class="tab" data-tab="tab2">Female</div>
-        <div class="tab" data-tab="tab3">Unisex</div>
+        <div class="tab active" data-tab="tab1">Male (<?php echo $male_total; ?>)</div>
+        <div class="tab" data-tab="tab2">Female (<?php echo $female_total; ?>)</div>
+        <div class="tab" data-tab="tab3">Unisex (<?php echo $unisex_total; ?>)</div>
       </div>
 
       <div class="product-list">
 
         <!-- TAB1 – Male -->
         <div class="tab-content active" id="tab1">
-          <div class="search-section">
-            <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
-            <div class="search-group"><label class="search-label">Category</label>
-              <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select>
-            </div>
-            <button class="btn-search" onclick="window.location.href='search.php'">Search</button>
-            <button class="btn-reset"  onclick="window.location.href='search.php'">Reset</button>
-          </div>
+          <form class="tab-search" method="GET" action="Administration_menu.php">
+            <input type="hidden" name="female_name"  value="<?php echo htmlspecialchars($female_name); ?>">
+            <input type="hidden" name="unisex_name"  value="<?php echo htmlspecialchars($unisex_name); ?>">
+            <input type="hidden" name="female_page"  value="<?php echo $female_page; ?>">
+            <input type="hidden" name="unisex_page"  value="<?php echo $unisex_page; ?>">
+            <input type="hidden" name="cust_page"    value="<?php echo $cust_page; ?>">
+            <input type="hidden" name="cust_name"    value="<?php echo htmlspecialchars($cust_name); ?>">
+            <input type="hidden" name="cust_status"  value="<?php echo htmlspecialchars($cust_status); ?>">
+            <input type="text" name="male_name" placeholder="Search product name…" value="<?php echo htmlspecialchars($male_name); ?>">
+            <button type="submit"><i class="fas fa-search"></i> Search</button>
+            <?php if (!empty($male_name)): ?>
+              <a class="reset-btn" href="<?php echo pageUrl(['male_name'=>'','male_page'=>1]); ?>">Reset</a>
+            <?php endif; ?>
+          </form>
           <table>
-            <thead><tr><th>No.</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
+            <thead><tr><th>#</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
             <tbody>
-              <?php foreach ($male_products as $p): ?>
+              <?php if (empty($male_products)): ?>
+              <tr><td colspan="4" style="text-align:center;color:#888;padding:20px;">No products found.</td></tr>
+              <?php else: ?>
+              <?php foreach ($male_products as $i => $p): ?>
               <tr>
-                <td><?php echo $p['no']; ?></td>
-                <td><img src="../images/<?php echo htmlspecialchars($p['img']); ?>" width="60"></td>
+                <td><?php echo ($male_page-1)*$prod_limit + $i + 1; ?></td>
+                <td>
+                  <?php if (!empty($p['image'])): ?>
+                    <img src="../images/<?php echo htmlspecialchars($p['image']); ?>" class="product-img"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';">
+                    <span class="no-image" style="display:none;">No img</span>
+                  <?php else: ?><span class="no-image">No img</span><?php endif; ?>
+                </td>
                 <td><?php echo htmlspecialchars($p['name']); ?></td>
                 <td><?php echo htmlspecialchars($p['category']); ?></td>
               </tr>
-              <?php endforeach; ?>
+              <?php endforeach; endif; ?>
             </tbody>
           </table>
+          <?php if ($male_pages > 1): ?>
           <div class="pagination">
-            <a href="#" class="page-link prev">← Previous</a>
-            <a href="#" class="page-link active">1</a>
-            <a href="#" class="page-link">2</a>
-            <a href="#" class="page-link">3</a>
-            <a href="#" class="page-link next">Next →</a>
+            <?php if ($male_page > 1): ?>
+              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['male_page'=>$male_page-1]); ?>#products'">&#10094;</button>
+            <?php endif; ?>
+            <?php for ($i=1; $i<=$male_pages; $i++): ?>
+              <button class="pagination-btn <?php echo ($i==$male_page)?'active':''; ?>"
+                      onclick="window.location.href='<?php echo pageUrl(['male_page'=>$i]); ?>#products'"><?php echo $i; ?></button>
+            <?php endfor; ?>
+            <?php if ($male_page < $male_pages): ?>
+              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['male_page'=>$male_page+1]); ?>#products'">&#10095;</button>
+            <?php endif; ?>
           </div>
+          <div class="pagination-info">Page <?php echo $male_page; ?>/<?php echo $male_pages; ?> — <?php echo $male_total; ?> product(s)</div>
+          <?php endif; ?>
         </div>
 
         <!-- TAB2 – Female -->
         <div class="tab-content" id="tab2">
-          <div class="search-section">
-            <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
-            <div class="search-group"><label class="search-label">Category</label>
-              <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select>
-            </div>
-            <button class="btn-search" onclick="window.location.href='search.php'">Search</button>
-            <button class="btn-reset"  onclick="window.location.href='search.php'">Reset</button>
-          </div>
+          <form class="tab-search" method="GET" action="Administration_menu.php">
+            <input type="hidden" name="male_name"    value="<?php echo htmlspecialchars($male_name); ?>">
+            <input type="hidden" name="unisex_name"  value="<?php echo htmlspecialchars($unisex_name); ?>">
+            <input type="hidden" name="male_page"    value="<?php echo $male_page; ?>">
+            <input type="hidden" name="unisex_page"  value="<?php echo $unisex_page; ?>">
+            <input type="hidden" name="cust_page"    value="<?php echo $cust_page; ?>">
+            <input type="hidden" name="cust_name"    value="<?php echo htmlspecialchars($cust_name); ?>">
+            <input type="hidden" name="cust_status"  value="<?php echo htmlspecialchars($cust_status); ?>">
+            <input type="text" name="female_name" placeholder="Search product name…" value="<?php echo htmlspecialchars($female_name); ?>">
+            <button type="submit"><i class="fas fa-search"></i> Search</button>
+            <?php if (!empty($female_name)): ?>
+              <a class="reset-btn" href="<?php echo pageUrl(['female_name'=>'','female_page'=>1]); ?>">Reset</a>
+            <?php endif; ?>
+          </form>
           <table>
-            <thead><tr><th>No.</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
+            <thead><tr><th>#</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
             <tbody>
-              <?php foreach ($female_products as $p): ?>
+              <?php if (empty($female_products)): ?>
+              <tr><td colspan="4" style="text-align:center;color:#888;padding:20px;">No products found.</td></tr>
+              <?php else: ?>
+              <?php foreach ($female_products as $i => $p): ?>
               <tr>
-                <td><?php echo $p['no']; ?></td>
-                <td><img src="../images/<?php echo htmlspecialchars($p['img']); ?>" width="60"></td>
+                <td><?php echo ($female_page-1)*$prod_limit + $i + 1; ?></td>
+                <td>
+                  <?php if (!empty($p['image'])): ?>
+                    <img src="../images/<?php echo htmlspecialchars($p['image']); ?>" class="product-img"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';">
+                    <span class="no-image" style="display:none;">No img</span>
+                  <?php else: ?><span class="no-image">No img</span><?php endif; ?>
+                </td>
                 <td><?php echo htmlspecialchars($p['name']); ?></td>
                 <td><?php echo htmlspecialchars($p['category']); ?></td>
               </tr>
-              <?php endforeach; ?>
+              <?php endforeach; endif; ?>
             </tbody>
           </table>
+          <?php if ($female_pages > 1): ?>
           <div class="pagination">
-            <a href="#" class="page-link prev">← Previous</a>
-            <a href="#" class="page-link active">1</a>
-            <a href="#" class="page-link">2</a>
-            <a href="#" class="page-link">3</a>
-            <a href="#" class="page-link next">Next →</a>
+            <?php if ($female_page > 1): ?>
+              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['female_page'=>$female_page-1]); ?>#products'">&#10094;</button>
+            <?php endif; ?>
+            <?php for ($i=1; $i<=$female_pages; $i++): ?>
+              <button class="pagination-btn <?php echo ($i==$female_page)?'active':''; ?>"
+                      onclick="window.location.href='<?php echo pageUrl(['female_page'=>$i]); ?>#products'"><?php echo $i; ?></button>
+            <?php endfor; ?>
+            <?php if ($female_page < $female_pages): ?>
+              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['female_page'=>$female_page+1]); ?>#products'">&#10095;</button>
+            <?php endif; ?>
           </div>
+          <div class="pagination-info">Page <?php echo $female_page; ?>/<?php echo $female_pages; ?> — <?php echo $female_total; ?> product(s)</div>
+          <?php endif; ?>
         </div>
 
         <!-- TAB3 – Unisex -->
         <div class="tab-content" id="tab3">
-          <div class="search-section">
-            <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
-            <div class="search-group"><label class="search-label">Category</label>
-              <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select>
-            </div>
-            <button class="btn-search" onclick="window.location.href='search.php'">Search</button>
-            <button class="btn-reset"  onclick="window.location.href='search.php'">Reset</button>
-          </div>
+          <form class="tab-search" method="GET" action="Administration_menu.php">
+            <input type="hidden" name="male_name"    value="<?php echo htmlspecialchars($male_name); ?>">
+            <input type="hidden" name="female_name"  value="<?php echo htmlspecialchars($female_name); ?>">
+            <input type="hidden" name="male_page"    value="<?php echo $male_page; ?>">
+            <input type="hidden" name="female_page"  value="<?php echo $female_page; ?>">
+            <input type="hidden" name="cust_page"    value="<?php echo $cust_page; ?>">
+            <input type="hidden" name="cust_name"    value="<?php echo htmlspecialchars($cust_name); ?>">
+            <input type="hidden" name="cust_status"  value="<?php echo htmlspecialchars($cust_status); ?>">
+            <input type="text" name="unisex_name" placeholder="Search product name…" value="<?php echo htmlspecialchars($unisex_name); ?>">
+            <button type="submit"><i class="fas fa-search"></i> Search</button>
+            <?php if (!empty($unisex_name)): ?>
+              <a class="reset-btn" href="<?php echo pageUrl(['unisex_name'=>'','unisex_page'=>1]); ?>">Reset</a>
+            <?php endif; ?>
+          </form>
           <table>
-            <thead><tr><th>No.</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
+            <thead><tr><th>#</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
             <tbody>
-              <?php foreach ($unisex_products as $p): ?>
+              <?php if (empty($unisex_products)): ?>
+              <tr><td colspan="4" style="text-align:center;color:#888;padding:20px;">No products found.</td></tr>
+              <?php else: ?>
+              <?php foreach ($unisex_products as $i => $p): ?>
               <tr>
-                <td><?php echo $p['no']; ?></td>
-                <td><img src="../images/<?php echo htmlspecialchars($p['img']); ?>" width="60"></td>
+                <td><?php echo ($unisex_page-1)*$prod_limit + $i + 1; ?></td>
+                <td>
+                  <?php if (!empty($p['image'])): ?>
+                    <img src="../images/<?php echo htmlspecialchars($p['image']); ?>" class="product-img"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';">
+                    <span class="no-image" style="display:none;">No img</span>
+                  <?php else: ?><span class="no-image">No img</span><?php endif; ?>
+                </td>
                 <td><?php echo htmlspecialchars($p['name']); ?></td>
                 <td><?php echo htmlspecialchars($p['category']); ?></td>
               </tr>
-              <?php endforeach; ?>
+              <?php endforeach; endif; ?>
             </tbody>
           </table>
+          <?php if ($unisex_pages > 1): ?>
           <div class="pagination">
-            <a href="#" class="page-link prev">← Previous</a>
-            <a href="#" class="page-link active">1</a>
-            <a href="#" class="page-link">2</a>
-            <a href="#" class="page-link">3</a>
-            <a href="#" class="page-link next">Next →</a>
+            <?php if ($unisex_page > 1): ?>
+              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['unisex_page'=>$unisex_page-1]); ?>#products'">&#10094;</button>
+            <?php endif; ?>
+            <?php for ($i=1; $i<=$unisex_pages; $i++): ?>
+              <button class="pagination-btn <?php echo ($i==$unisex_page)?'active':''; ?>"
+                      onclick="window.location.href='<?php echo pageUrl(['unisex_page'=>$i]); ?>#products'"><?php echo $i; ?></button>
+            <?php endfor; ?>
+            <?php if ($unisex_page < $unisex_pages): ?>
+              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['unisex_page'=>$unisex_page+1]); ?>#products'">&#10095;</button>
+            <?php endif; ?>
           </div>
+          <div class="pagination-info">Page <?php echo $unisex_page; ?>/<?php echo $unisex_pages; ?> — <?php echo $unisex_total; ?> product(s)</div>
+          <?php endif; ?>
         </div>
 
       </div>
@@ -208,119 +298,9 @@ $unisex_products = [
       </div>
     </section>
 
-
-
     <!-- ======= Customers ======= -->
-    <section id="users" class="section">
-      <header><h1>Customer Management</h1></header>
-
-      <div class="search-section">
-        <div class="search-group">
-          <label class="search-label" for="customer-name">Search by Name</label>
-          <input type="text" id="customer-name" class="search-input" placeholder="Enter customer name">
-        </div>
-        <div class="search-group">
-          <label class="search-label" for="customer-status">Filter by Status</label>
-          <select id="customer-status" class="search-select">
-            <option value="">All</option>
-            <option value="active">Active</option>
-            <option value="locked">Locked</option>
-          </select>
-        </div>
-        <button class="btn-search">
-          <i class="material-icons-round" onclick="window.location.href='search_customer.php'">search</i>
-        </button>
-      </div>
-
-      <input type="checkbox" id="toggleCustomerList" hidden>
-      <div class="user-actions">
-        <label for="toggleCustomerList" class="btn">Show / Hide List</label>
-        <p> </p>
-      </div>
-
-      <div class="user-list">
-        <table>
-          <tr><th>ID</th><th>Customer Name</th><th>Email</th><th>Status</th><th>Action</th></tr>
-          <?php foreach ($customers as $c): ?>
-          <tr>
-            <td><?php echo $c['id']; ?></td>
-            <td><?php echo htmlspecialchars($c['name']); ?></td>
-            <td><?php echo htmlspecialchars($c['email']); ?></td>
-            <td><?php echo htmlspecialchars($c['status']); ?></td>
-            <td>
-              <label for="view" class="btn small">View</label>
-              <label for="resetPopup" class="btn small">Reset</label>
-              <?php if ($c['status'] === 'Active'): ?>
-                <label for="lockPopup" class="btn small">Lock</label>
-              <?php else: ?>
-                <label for="unlockPopup" class="btn small">Unlock</label>
-              <?php endif; ?>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-        </table>
-
-        <div class="pagination">
-          <input type="radio" name="page" id="page1" checked hidden>
-          <input type="radio" name="page" id="page2" hidden>
-          <input type="radio" name="page" id="page3" hidden>
-          <div class="page-buttons">
-            <label for="page1" class="pagination-btn">1</label>
-            <label for="page2" class="pagination-btn">2</label>
-            <label for="page3" class="pagination-btn">3</label>
-          </div>
-          <div class="pagination-content">
-            <div class="page page1"><p>Showing customers 1–5</p></div>
-            <div class="page page2"><p>Showing customers 6–10</p></div>
-            <div class="page page3"><p>Page 3</p></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Popups -->
-      <input type="checkbox" id="resetPopup" hidden>
-      <div class="popup">
-        <label for="resetPopup" class="overlay"></label>
-        <div class="popup-box">
-          <h3>Password Reset</h3>
-          <p>The customer's password has been successfully reset.</p>
-          <label for="resetPopup" class="btn close-btn">OK</label>
-        </div>
-      </div>
-
-      <input type="checkbox" id="lockPopup" hidden>
-      <div class="popup">
-        <label for="lockPopup" class="overlay"></label>
-        <div class="popup-box">
-          <h3>Account Locked</h3>
-          <p>The customer's account has been locked successfully.</p>
-          <label for="lockPopup" class="btn close-btn">OK</label>
-        </div>
-      </div>
-
-      <input type="checkbox" id="unlockPopup" hidden>
-      <div class="popup">
-        <label for="unlockPopup" class="overlay"></label>
-        <div class="popup-box">
-          <h3>Account Unlocked</h3>
-          <p>The customer's account has been successfully unlocked.</p>
-          <label for="unlockPopup" class="btn close-btn">OK</label>
-        </div>
-      </div>
-
-      <input type="checkbox" id="view" hidden>
-      <div class="user-detail">
-        <label for="view" class="overlay"></label>
-        <div class="detail-box">
-          <h3>Customer Details</h3>
-          <p><strong>Name:</strong> Demo Customer</p>
-          <p><strong>Email:</strong> demo@example.com</p>
-          <p><strong>Phone:</strong> +84 900 123 456</p>
-          <p><strong>Address:</strong> 123 Demo Street, District 1, HCMC</p>
-          <label for="view" class="btn close-btn">Close</label>
-        </div>
-      </div>
-    </section>
+    <!-- Moved to standalone customer_management.php -->
+    <section id="users" class="section" style="display:none !important;"></section>
 
     <!-- ======= Settings ======= -->
     <section id="settings" class="section">
@@ -344,24 +324,8 @@ $unisex_products = [
 
   </div><!-- /.content -->
 
-  <style>
-    .logout-btn {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #d9534f, #c9302c);
-      color: white; text-decoration: none; border-radius: 8px;
-      font-weight: 600; transition: all 0.3s ease;
-      box-shadow: 0 4px 10px rgba(217,83,79,0.3); border: none; cursor: pointer;
-    }
-    .logout-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(217,83,79,0.4);
-      background: linear-gradient(135deg, #c9302c, #ac2925);
-    }
-    .logout-btn i { font-size: 18px; }
-  </style>
-
   <script>
+    // Tab switching — remember active tab in localStorage
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -377,9 +341,9 @@ $unisex_products = [
       if (activeTab) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        const tabEl = document.querySelector(`.tab[data-tab="${activeTab}"]`);
+        const tabEl     = document.querySelector(`.tab[data-tab="${activeTab}"]`);
         const contentEl = document.getElementById(activeTab);
-        if (tabEl) tabEl.classList.add('active');
+        if (tabEl)     tabEl.classList.add('active');
         if (contentEl) contentEl.classList.add('active');
       }
     });

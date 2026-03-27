@@ -9,9 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $code        = trim($_POST['product_code'] ?? '');
     $name        = trim($_POST['product_name'] ?? '');
     $description = trim($_POST['description'] ?? '');
-    $price       = floatval($_POST['price'] ?? 0);
-    $stock       = intval($_POST['stock'] ?? 0);
-    $category    = trim($_POST['category'] ?? 'Ring');
+    $price       = 0;
+    $stock       = 0;
+    $category    = trim($_POST['category'] ?? 'Unisex');
 
     if (empty($code) || empty($name)) {
         $error = 'Product Code and Product Name are required.';
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if($check->num_rows > 0) {
                 $error = 'Product Code already exists.';
             } else {
-                $sql = "INSERT INTO products (id, name, price, stock, category, image, gender) VALUES (?, ?, ?, ?, ?, ?, 'Unisex')";
+                $sql = "INSERT INTO products (id, name, price, stock, category, image) VALUES (?, ?, ?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("ssdiss", $code, $name, $price, $stock, $category, $imagePath);
                 if ($stmt->execute()) {
@@ -140,23 +140,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <input type="text" name="product_name"
                      value="<?php echo htmlspecialchars($_POST['product_name'] ?? ''); ?>" required>
             </div>
-            <div style="display:flex; gap:20px; margin-bottom:15px;">
-                <div class="form-group" style="flex:1; margin-bottom:0;">
-                  <label>Price ($):</label>
-                  <input type="number" step="0.01" name="price" value="<?php echo htmlspecialchars($_POST['price'] ?? ''); ?>">
-                </div>
-                <div class="form-group" style="flex:1; margin-bottom:0;">
-                  <label>Stock Quantity:</label>
-                  <input type="number" name="stock" value="<?php echo htmlspecialchars($_POST['stock'] ?? ''); ?>">
-                </div>
-            </div>
             <div class="form-group">
               <label>Category:</label>
               <select name="category" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;">
-                <option value="Ring" <?php echo (($_POST['category']??'')=='Ring')?'selected':''; ?>>Ring</option>
-                <option value="Necklace" <?php echo (($_POST['category']??'')=='Necklace')?'selected':''; ?>>Necklace</option>
-                <option value="Bracelet" <?php echo (($_POST['category']??'')=='Bracelet')?'selected':''; ?>>Bracelet</option>
-                <option value="Earrings" <?php echo (($_POST['category']??'')=='Earrings')?'selected':''; ?>>Earrings</option>
+                <option value="Male" <?php echo (($_POST['category']??'')=='Male')?'selected':''; ?>>Male</option>
+                <option value="Female" <?php echo (($_POST['category']??'')=='Female')?'selected':''; ?>>Female</option>
+                <option value="Unisex" <?php echo (($_POST['category']??'')=='Unisex')?'selected':''; ?>>Unisex</option>
               </select>
             </div>
             <div class="form-group">
@@ -197,6 +186,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         reader.readAsDataURL(file);
       }
     });
+
+    // Auto-hide alert messages after 3 seconds
+    setTimeout(() => {
+      document.querySelectorAll('.alert').forEach(a => a.style.display = 'none');
+    }, 3000);
   </script>
 </body>
 </html>

@@ -34,9 +34,7 @@ $error   = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newName        = trim($_POST['product_name'] ?? '');
     $newDescription = trim($_POST['description'] ?? '');
-    $newPrice       = floatval($_POST['price'] ?? 0);
-    $newStock       = intval($_POST['stock'] ?? 0);
-    $newCategory    = trim($_POST['category'] ?? 'Ring');
+    $newCategory    = trim($_POST['category'] ?? 'Unisex');
 
     if (empty($newName)) {
         $error = 'Product Name is required.';
@@ -57,9 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($error)) {
             // Update product in database
-            $update_sql = "UPDATE products SET name=?, price=?, stock=?, category=?, image=? WHERE id=?";
+            $update_sql = "UPDATE products SET name=?, category=?, image=? WHERE id=?";
             $stmt = $conn->prepare($update_sql);
-            $stmt->bind_param("sdisss", $newName, $newPrice, $newStock, $newCategory, $product['image'], $code);
+            $stmt->bind_param("ssss", $newName, $newCategory, $product['image'], $code);
             
             if ($stmt->execute()) {
                 // Check if details exist
@@ -78,8 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $product['name']        = $newName;
                 $product['description'] = $newDescription;
-                $product['price']       = $newPrice;
-                $product['stock']       = $newStock;
                 $product['category']    = $newCategory;
                 $success = 'Product updated successfully!';
             } else {
@@ -177,23 +173,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <input type="text" name="product_name"
                      value="<?php echo htmlspecialchars($product['name']); ?>">
             </div>
-            <div style="display:flex; gap:20px; margin-bottom:15px;">
-                <div class="form-group" style="flex:1; margin-bottom:0;">
-                  <label>Price ($):</label>
-                  <input type="number" step="0.01" name="price" value="<?php echo htmlspecialchars($product['price'] ?? 0); ?>">
-                </div>
-                <div class="form-group" style="flex:1; margin-bottom:0;">
-                  <label>Stock Quantity:</label>
-                  <input type="number" name="stock" value="<?php echo htmlspecialchars($product['stock'] ?? 0); ?>">
-                </div>
-            </div>
             <div class="form-group">
               <label>Category:</label>
               <select name="category" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;">
-                <option value="Ring" <?php echo (($product['category']??'')=='Ring')?'selected':''; ?>>Ring</option>
-                <option value="Necklace" <?php echo (($product['category']??'')=='Necklace')?'selected':''; ?>>Necklace</option>
-                <option value="Bracelet" <?php echo (($product['category']??'')=='Bracelet')?'selected':''; ?>>Bracelet</option>
-                <option value="Earrings" <?php echo (($product['category']??'')=='Earrings')?'selected':''; ?>>Earrings</option>
+                <option value="Male" <?php echo (($product['category']??'')=='Male')?'selected':''; ?>>Male</option>
+                <option value="Female" <?php echo (($product['category']??'')=='Female')?'selected':''; ?>>Female</option>
+                <option value="Unisex" <?php echo (($product['category']??'')=='Unisex')?'selected':''; ?>>Unisex</option>
               </select>
             </div>
             <div class="form-group">
@@ -242,6 +227,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         reader.readAsDataURL(file);
       }
     });
+
+    // Auto-hide alert messages after 3 seconds
+    setTimeout(() => {
+      document.querySelectorAll('.alert').forEach(a => a.style.display = 'none');
+    }, 3000);
   </script>
 </body>
 </html>

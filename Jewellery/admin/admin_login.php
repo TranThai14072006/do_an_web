@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../config/config.php';
 
 $error = '';
 
@@ -7,14 +8,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $adminname = trim($_POST['adminname'] ?? '');
     $password  = trim($_POST['password'] ?? '');
 
-    // TODO: Replace with real DB authentication
-    if ($adminname === 'admin' && $password === 'admin123') {
-        $_SESSION['admin_logged_in'] = true;
-        $_SESSION['admin_name'] = $adminname;
-        header('Location: Administration_menu.php');
-        exit;
+    if ($adminname !== '' && $password !== '') {
+        $stmt = $conn->prepare("SELECT id, username, password, status FROM users WHERE (username = ? OR email = ?) AND role = 'admin'");
+        $stmt->bind_param('ss', $adminname, $adminname);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result && $result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+
+            if ($user['status'] !== 'active') {
+                $error = 'Admin account is locked.';
+            } else {
+                // Verify password (supports both plaintext for old data and bcrypt)
+                $valid = false;
+                if (password_verify($password, $user['password'])) {
+                    $valid = true;
+                } elseif ($password === $user['password']) {
+                    $valid = true;
+                    // Auto-upgrade password to hash
+                    $newHash = password_hash($password, PASSWORD_DEFAULT);
+                    $upd = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                    $upd->bind_param('si', $newHash, $user['id']);
+                    $upd->execute();
+                }
+
+                if ($valid) {
+                    $_SESSION['admin_logged_in'] = true;
+                    $_SESSION['admin_name']      = $user['username'];
+                    header('Location: Administration_menu.php');
+                    exit;
+                } else {
+                    $error = 'Invalid password.';
+                }
+            }
+        } else {
+            $error = 'Invalid admin username.';
+        }
+        $stmt->close();
     } else {
-        $error = 'Invalid admin name or password.';
+        $error = 'Please enter both username and password.';
     }
 }
 ?>

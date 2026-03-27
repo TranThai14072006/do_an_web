@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             try {
                 // Insert into users
-                $stmt = $conn->prepare("INSERT INTO users(username, email, password, role) VALUES (?, ?, ?, 'user')");
+                $stmt = $conn->prepare("INSERT INTO users(username, email, password, role, status) VALUES (?, ?, ?, 'user', 'active')");
                 $stmt->bind_param("sss", $username, $email, $hash);
                 $stmt->execute();
                 $user_id = $stmt->insert_id;
