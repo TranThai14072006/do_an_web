@@ -10,28 +10,60 @@
 </head>
 <body class="homepage bg-accent-light">
 
+  
+
 <header class="header-container">
   <div class="search-bar">
+
+    <!-- LEFT -->
     <div class="left">
       <a href="../indexprofile.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
+
+    <!-- CENTER -->
     <div class="center">
       <a href="../indexprofile.php">
         <img src="../../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
       </a>
+
       <div class="search-box">
-        <input type="text" placeholder="Search products...">
-        <button onclick="window.location.href='../Search/search.html'">
+        <input type="text" id="search-input" placeholder="Search products..."
+               onkeydown="if(event.key==='Enter') doSearch()">
+        <button onclick="doSearch()">
           <i class="fas fa-search"></i>
         </button>
       </div>
     </div>
+
+    <!-- RIGHT -->
     <div class="right">
+
+
+      <!-- CART -->
+      <a href="../Cart/Jewelry-cart.html" class="icon-link" title="Giỏ hàng">
+        <i class="fas fa-shopping-cart"></i>
+      </a>
+
+      <!-- PROFILE + NAME -->
+      <a href="<?= $link_profile ?>" class="icon-link" title="Trang cá nhân">
+        <i class="fas fa-user-circle user-icon"></i>
+        <span><?= $logged_in_name ?></span>
+      </a>
+
+      <!-- LOGOUT -->
+      <a href="<?= $link_logout ?>" class="icon-link" title="Đăng xuất" style="color:#c0392b;">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+
       <a href="../Cart/Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
       <a href="../users/profile.php" class="icon-link"><i class="fas fa-user"></i></a>
+
+
     </div>
+
   </div>
 </header>
+
 
 <section id="page-banner" class="padding-large no-padding-top position-relative">
   <div class="page-container">

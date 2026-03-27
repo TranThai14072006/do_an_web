@@ -1,7 +1,6 @@
 <?php
 require_once "../../config/config.php";
-// $conn      → jewelry_db  (orders, order_items, products)
-// $conn_user → user_db     (customers, users)
+// $conn → jewelry_db (orders, order_items, products, customers, users)
 
 // ============================================================
 // Lấy order ID
@@ -51,15 +50,14 @@ $stmt->close();
 if (!$order) {
     echo "<p style='padding:40px;color:red;font-family:sans-serif;'>❌ Không tìm thấy đơn hàng.</p>";
     $conn->close();
-    $conn_user->close();
     exit;
 }
 
 // ============================================================
-// Lấy thông tin khách hàng từ user_db
+// Lấy thông tin khách hàng từ jewelry_db
 // customers JOIN users để lấy đủ thông tin + email
 // ============================================================
-$stmt_c = $conn_user->prepare("
+$stmt_c = $conn->prepare("
     SELECT c.full_name, c.phone, c.address, u.email
     FROM customers c
     JOIN users u ON c.user_id = u.id
@@ -180,14 +178,14 @@ $status_class = [
       <h2>Luxury Jewelry Admin</h2>
     </div>
     <div class="menu">
-      <a href="../Administration_menu.html#products">Jewelry List</a>
-      <a href="../Administration_menu.html#product-manage">Product Management</a>
-      <a href="../Administration_menu.html#users">Customers</a>
+      <a href="../Administration_menu.php#products">Jewelry List</a>
+      <a href="../Administration_menu.php#product-manage">Product Management</a>
+      <a href="../Administration_menu.php#users">Customers</a>
       <a href="../Price Manage/pricing.php">Pricing Management</a>
       <a href="../Import_product/import_management.php">Import Management</a>
       <a href="order_management.php" class="active">Order Management</a>
-      <a href="../Stock Manage/stocking_management.php">Stocking</a>
-      <a href="../Administration_menu.html#setting">Settings</a>
+      <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
+      <a href="../Administration_menu.php#settings">Settings</a>
     </div>
   </div>
 
@@ -312,5 +310,4 @@ $status_class = [
 </html>
 <?php
 $conn->close();
-$conn_user->close();
 ?>
