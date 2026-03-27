@@ -122,7 +122,7 @@ async function loadCart() {
 
         <td class="action-cell">
           <button class="view-details-btn"
-            onclick="viewProduct('${item.id}')">
+            onclick="viewProduct('${item.id}', '${item.size ?? ''}')">
             View
           </button>
 
@@ -202,8 +202,8 @@ async function removeItem(id, btn) {
 }
 
 // ===== VIEW =====
-function viewProduct(id) {
-  window.location.href = '../Products/product-detail.php?id=' + id;
+function viewProduct(id, size) {
+  window.location.href = '../Cart/view.php?id=' + id + '&size=' + encodeURIComponent(size);
 }
 
 // ===== ALERT =====
