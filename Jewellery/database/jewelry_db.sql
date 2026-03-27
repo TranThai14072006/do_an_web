@@ -295,6 +295,7 @@ CREATE TABLE `cart` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ALTER TABLE `cart`
   ADD PRIMARY KEY (`product_id`);
+ALTER TABLE cart ADD COLUMN size VARCHAR(10) DEFAULT '';
 --
 -- Table structure for table `receipt_details`
 --
