@@ -213,7 +213,7 @@ tr:hover td{background:#f9f2e7;}
   </div>
   <div class="menu">
     <a href="../Administration_menu.php#products">Jewelry List</a>
-    <a href="../Administration_menu.php#product-manage">Product Management</a>
+    <a href="../product_management.php">Product Management</a>
     <a href="../Administration_menu.php#users">Customers</a>
     <a href="pricing.php" class="active">Pricing Management</a>
     <a href="../Import_product/import_management.php">Import Management</a>

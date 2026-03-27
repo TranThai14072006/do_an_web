@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     </div>
     <div class="menu">
       <a href="Administration_menu.php#products">Jewelry List</a>
-      <a href="Administration_menu.php#product-manage" class="active">Product Management</a>
+      <a href="product_management.php" class="active">Product Management</a>
       <a href="Price Manage/pricing.php">Pricing Management</a>
       <a href="Administration_menu.php#users">Customers</a>
       <a href="Order Manage/order_management.php">Order Management</a>
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
       </div>
       <button type="submit" class="btn">Search</button>
       <button type="button" class="btn secondary"
-              onclick="window.location.href='Administration_menu.php#product-manage'">Back</button>
+              onclick="window.location.href='product_management.php'">Back</button>
     </form>
 
     <table>

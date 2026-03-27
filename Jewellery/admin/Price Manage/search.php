@@ -129,7 +129,7 @@ tr:nth-child(even) td{background:#faf6f2;}
   </div>
   <div class="menu">
     <a href="../Administration_menu.html#products">Jewelry List</a>
-    <a href="../Administration_menu.html#product-manage">Product Management</a>
+    <a href="../product_management.php">Product Management</a>
     <a href="../Administration_menu.html#users">Customers</a>
     <a href="pricing.php" class="active">Pricing Management</a>
     <a href="../Import_product/import_management.php">Import Management</a>
@@ -185,3 +185,4 @@ tr:nth-child(even) td{background:#faf6f2;}
 </main>
 </body>
 </html>
+

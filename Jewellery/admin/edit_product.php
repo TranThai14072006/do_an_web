@@ -1,21 +1,32 @@
 <?php
 session_start();
+require_once '../config/config.php';
 
 // Retrieve product code from URL param (e.g. edit_product.php?code=R001)
 $code = htmlspecialchars($_GET['code'] ?? 'R001');
 
-// TODO: Replace with real DB fetch
-// $stmt = $pdo->prepare("SELECT * FROM products WHERE code = ?");
-// $stmt->execute([$code]);
-// $product = $stmt->fetch(PDO::FETCH_ASSOC);
+// Fetch real DB data
+$sql = "SELECT p.*, pd.description FROM products p LEFT JOIN product_details pd ON p.id = pd.product_id WHERE p.id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $code);
+$stmt->execute();
+$result = $stmt->get_result();
 
-// Sample fallback data
-$product = [
-    'code'        => $code,
-    'name'        => 'Diamond Heart Necklace',
-    'description' => 'Made from 18K gold with a diamond heart pendant.',
-    'image'       => 'R001.jpg',
-];
+if ($result->num_rows > 0) {
+    $productRow = $result->fetch_assoc();
+    $product = [
+        'code'        => $productRow['id'],
+        'name'        => $productRow['name'],
+        'description' => $productRow['description'],
+        'image'       => $productRow['image'],
+        'price'       => $productRow['price'],
+        'stock'       => $productRow['stock'],
+        'category'    => $productRow['category']
+    ];
+} else {
+    // redirect or die
+    die("Product not found");
+}
 
 $success = '';
 $error   = '';
@@ -23,6 +34,9 @@ $error   = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newName        = trim($_POST['product_name'] ?? '');
     $newDescription = trim($_POST['description'] ?? '');
+    $newPrice       = floatval($_POST['price'] ?? 0);
+    $newStock       = intval($_POST['stock'] ?? 0);
+    $newCategory    = trim($_POST['category'] ?? 'Ring');
 
     if (empty($newName)) {
         $error = 'Product Name is required.';
@@ -42,13 +56,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($error)) {
-            // TODO: Update product in database
-            // $pdo->prepare("UPDATE products SET name=?, description=?, image=? WHERE code=?")
-            //     ->execute([$newName, $newDescription, $product['image'], $code]);
+            // Update product in database
+            $update_sql = "UPDATE products SET name=?, price=?, stock=?, category=?, image=? WHERE id=?";
+            $stmt = $conn->prepare($update_sql);
+            $stmt->bind_param("sdisss", $newName, $newPrice, $newStock, $newCategory, $product['image'], $code);
+            
+            if ($stmt->execute()) {
+                // Check if details exist
+                $check_det = $conn->query("SELECT id FROM product_details WHERE product_id='".$conn->real_escape_string($code)."'");
+                if ($check_det->num_rows > 0) {
+                    $det_sql = "UPDATE product_details SET description=? WHERE product_id=?";
+                    $dstmt = $conn->prepare($det_sql);
+                    $dstmt->bind_param("ss", $newDescription, $code);
+                    $dstmt->execute();
+                } else {
+                    $det_sql = "INSERT INTO product_details (product_id, description) VALUES (?, ?)";
+                    $dstmt = $conn->prepare($det_sql);
+                    $dstmt->bind_param("ss", $code, $newDescription);
+                    $dstmt->execute();
+                }
 
-            $product['name']        = $newName;
-            $product['description'] = $newDescription;
-            $success = 'Product updated successfully!';
+                $product['name']        = $newName;
+                $product['description'] = $newDescription;
+                $product['price']       = $newPrice;
+                $product['stock']       = $newStock;
+                $product['category']    = $newCategory;
+                $success = 'Product updated successfully!';
+            } else {
+                $error = 'Failed to update product: ' . $conn->error;
+            }
         }
     }
 }
@@ -102,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <div class="menu">
       <a href="Administration_menu.php#products">Jewelry List</a>
-      <a href="Administration_menu.php#product-manage" class="active">Product Management</a>
+      <a href="product_management.php" class="active">Product Management</a>
       <a href="Price Manage/pricing.php">Pricing Management</a>
       <a href="Administration_menu.php#users">Customers</a>
       <a href="Order Manage/order_management.php">Order Management</a>
@@ -141,9 +177,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <input type="text" name="product_name"
                      value="<?php echo htmlspecialchars($product['name']); ?>">
             </div>
+            <div style="display:flex; gap:20px; margin-bottom:15px;">
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                  <label>Price ($):</label>
+                  <input type="number" step="0.01" name="price" value="<?php echo htmlspecialchars($product['price'] ?? 0); ?>">
+                </div>
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                  <label>Stock Quantity:</label>
+                  <input type="number" name="stock" value="<?php echo htmlspecialchars($product['stock'] ?? 0); ?>">
+                </div>
+            </div>
+            <div class="form-group">
+              <label>Category:</label>
+              <select name="category" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;">
+                <option value="Ring" <?php echo (($product['category']??'')=='Ring')?'selected':''; ?>>Ring</option>
+                <option value="Necklace" <?php echo (($product['category']??'')=='Necklace')?'selected':''; ?>>Necklace</option>
+                <option value="Bracelet" <?php echo (($product['category']??'')=='Bracelet')?'selected':''; ?>>Bracelet</option>
+                <option value="Earrings" <?php echo (($product['category']??'')=='Earrings')?'selected':''; ?>>Earrings</option>
+              </select>
+            </div>
             <div class="form-group">
               <label>Description:</label>
-              <textarea name="description"><?php echo htmlspecialchars($product['description']); ?></textarea>
+              <textarea name="description"><?php echo htmlspecialchars($product['description'] ?? ''); ?></textarea>
             </div>
           </div>
 
@@ -166,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary"
-                  onclick="window.location.href='Administration_menu.php#product-manage'">Back</button>
+                  onclick="window.location.href='product_management.php'">Back</button>
           <button type="submit" class="btn btn-primary"
                   style="padding:0.75rem 2rem;font-weight:600;">
             Save Changes

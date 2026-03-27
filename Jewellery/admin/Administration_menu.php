@@ -7,14 +7,7 @@ session_start();
 //     exit;
 // }
 
-// Sample data – replace with DB queries
-$products = [
-    ['code'=>'R001','name'=>'Diamond Heart Necklace','img'=>'R001.jpg','price'=>100,'stock'=>13],
-    ['code'=>'R002','name'=>'Diamond Heart Necklace','img'=>'R002.jpg','price'=>99, 'stock'=>7],
-    ['code'=>'R003','name'=>'Diamond Heart Necklace','img'=>'R003.jpg','price'=>56, 'stock'=>6],
-    ['code'=>'R004','name'=>'Diamond Heart Necklace','img'=>'R004.jpg','price'=>250,'stock'=>22],
-    ['code'=>'R005','name'=>'Diamond Heart Necklace','img'=>'R005.jpg','price'=>22, 'stock'=>8],
-];
+
 
 $customers = [
     ['id'=>1,'name'=>'Alice Nguyen','email'=>'alice@example.com','status'=>'Active'],
@@ -69,7 +62,7 @@ $unisex_products = [
     </div>
     <div class="menu">
       <a href="#products">Jewelry List</a>
-      <a href="#product-manage">Product Management</a>
+      <a href="product_management.php">Product Management</a>
       <a href="Price Manage/pricing.php">Pricing Management</a>
       <a href="#users">Customers</a>
       <a href="Order Manage/order_management.php">Order Management</a>
@@ -215,75 +208,7 @@ $unisex_products = [
       </div>
     </section>
 
-    <!-- ======= Product Management ======= -->
-    <section id="product-manage" class="section">
-      <header><h1>Jewelry Product Management</h1></header>
 
-      <div class="user-actions">
-        <a href="add_product.php" class="btn">Add Product</a>
-      </div>
-
-      <div class="search-section">
-        <div class="search-group">
-          <label class="search-label" for="product-name">Search by Name</label>
-          <input type="text" id="product-name" class="search-input" placeholder="Product Name">
-        </div>
-        <div class="search-group">
-          <label class="search-label" for="product-category">Search by Category</label>
-          <select id="product-category" class="search-select">
-            <option value="">All</option>
-            <option value="1">Male</option>
-            <option value="2">Female</option>
-            <option value="3">Unisex</option>
-          </select>
-        </div>
-        <button class="btn-search" onclick="window.location.href='search_product.php'">
-          <i class="material-icons-round">search</i>
-        </button>
-      </div>
-
-      <div class="user-list">
-        <table>
-          <tr>
-            <th>Product Code</th><th>Product Name</th><th>Image</th>
-            <th>Price</th><th>Stock</th><th>Action</th>
-          </tr>
-          <?php foreach ($products as $p): ?>
-          <tr>
-            <td><?php echo htmlspecialchars($p['code']); ?></td>
-            <td><?php echo htmlspecialchars($p['name']); ?></td>
-            <td><img src="../images/<?php echo htmlspecialchars($p['img']); ?>" alt="" width="60"></td>
-            <td><?php echo htmlspecialchars($p['price']); ?></td>
-            <td><?php echo htmlspecialchars($p['stock']); ?></td>
-            <td>
-              <a href="edit_product.php?code=<?php echo urlencode($p['code']); ?>" class="btn small">Edit</a>
-              <label for="deletePopup" class="btn small">Delete</label>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-        </table>
-      </div>
-
-      <div class="pagination">
-        <button class="pagination-btn"><span class="arrow-icon">&#10094;</span></button>
-        <button class="pagination-btn active">1</button>
-        <button class="pagination-btn">2</button>
-        <button class="pagination-btn">3</button>
-        <button class="pagination-btn">4</button>
-        <button class="pagination-btn">5</button>
-        <button class="pagination-btn"><span class="arrow-icon">&#10095;</span></button>
-      </div>
-
-      <input type="checkbox" id="deletePopup" hidden>
-      <div class="popup">
-        <label for="deletePopup" class="overlay"></label>
-        <div class="popup-box">
-          <h3>Confirm Delete</h3>
-          <p>Are you sure you want to delete this product?</p>
-          <label for="deletePopup" class="btn close-btn">OK</label>
-        </div>
-      </div>
-    </section>
 
     <!-- ======= Customers ======= -->
     <section id="users" class="section">

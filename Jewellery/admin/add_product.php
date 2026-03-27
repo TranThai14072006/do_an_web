@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../config/config.php';
 
 $success = '';
 $error   = '';
@@ -8,6 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $code        = trim($_POST['product_code'] ?? '');
     $name        = trim($_POST['product_name'] ?? '');
     $description = trim($_POST['description'] ?? '');
+    $price       = floatval($_POST['price'] ?? 0);
+    $stock       = intval($_POST['stock'] ?? 0);
+    $category    = trim($_POST['category'] ?? 'Ring');
 
     if (empty($code) || empty($name)) {
         $error = 'Product Code and Product Name are required.';
@@ -28,11 +32,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($error)) {
-            // TODO: Insert product into database
-            // $pdo->prepare("INSERT INTO products (code, name, description, image) VALUES (?,?,?,?)")
-            //     ->execute([$code, $name, $description, $imagePath]);
-
-            $success = 'Product added successfully!';
+            // Check if product code already exists
+            $check = $conn->query("SELECT id FROM products WHERE id = '".$conn->real_escape_string($code)."'");
+            if($check->num_rows > 0) {
+                $error = 'Product Code already exists.';
+            } else {
+                $sql = "INSERT INTO products (id, name, price, stock, category, image, gender) VALUES (?, ?, ?, ?, ?, ?, 'Unisex')";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("ssdiss", $code, $name, $price, $stock, $category, $imagePath);
+                if ($stmt->execute()) {
+                    $sql_details = "INSERT INTO product_details (product_id, description) VALUES (?, ?)";
+                    $stmt_details = $conn->prepare($sql_details);
+                    $stmt_details->bind_param("ss", $code, $description);
+                    $stmt_details->execute();
+                    $success = 'Product added successfully!';
+                } else {
+                    $error = 'Failed to add product: ' . $conn->error;
+                }
+            }
         }
     }
 }
@@ -86,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <div class="menu">
       <a href="Administration_menu.php#products">Jewelry List</a>
-      <a href="Administration_menu.php#product-manage" class="active">Product Management</a>
+      <a href="product_management.php" class="active">Product Management</a>
       <a href="Price Manage/pricing.php">Pricing Management</a>
       <a href="Administration_menu.php#users">Customers</a>
       <a href="Order Manage/order_management.php">Order Management</a>
@@ -116,12 +133,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
               <label>Product Code:</label>
               <input type="text" name="product_code"
-                     value="<?php echo htmlspecialchars($_POST['product_code'] ?? ''); ?>">
+                     value="<?php echo htmlspecialchars($_POST['product_code'] ?? ''); ?>" required>
             </div>
             <div class="form-group">
               <label>Product Name:</label>
               <input type="text" name="product_name"
-                     value="<?php echo htmlspecialchars($_POST['product_name'] ?? ''); ?>">
+                     value="<?php echo htmlspecialchars($_POST['product_name'] ?? ''); ?>" required>
+            </div>
+            <div style="display:flex; gap:20px; margin-bottom:15px;">
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                  <label>Price ($):</label>
+                  <input type="number" step="0.01" name="price" value="<?php echo htmlspecialchars($_POST['price'] ?? ''); ?>">
+                </div>
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                  <label>Stock Quantity:</label>
+                  <input type="number" name="stock" value="<?php echo htmlspecialchars($_POST['stock'] ?? ''); ?>">
+                </div>
+            </div>
+            <div class="form-group">
+              <label>Category:</label>
+              <select name="category" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;">
+                <option value="Ring" <?php echo (($_POST['category']??'')=='Ring')?'selected':''; ?>>Ring</option>
+                <option value="Necklace" <?php echo (($_POST['category']??'')=='Necklace')?'selected':''; ?>>Necklace</option>
+                <option value="Bracelet" <?php echo (($_POST['category']??'')=='Bracelet')?'selected':''; ?>>Bracelet</option>
+                <option value="Earrings" <?php echo (($_POST['category']??'')=='Earrings')?'selected':''; ?>>Earrings</option>
+              </select>
             </div>
             <div class="form-group">
               <label>Description:</label>
@@ -143,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Action Buttons -->
         <div class="form-actions">
           <button type="button" class="btn btn-secondary"
-                  onclick="window.location.href='Administration_menu.php#product-manage'">← Back</button>
+                  onclick="window.location.href='product_management.php'">← Back</button>
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
       </form>
