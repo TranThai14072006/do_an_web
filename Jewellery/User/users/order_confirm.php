@@ -194,52 +194,16 @@ $link_history = BASE_URL . 'User/users/History.php';
 
 <header class="header-container">
   <div class="search-bar">
-
-    <div class="left">
-      <a href="<?= $link_home ?>" class="home-btn">
-        <i class="fas fa-home"></i> Home
-      </a>
-    </div>
-
+    <div class="left"><a href="<?= $link_home ?>" class="home-btn"><i class="fas fa-home"></i> Home</a></div>
     <div class="center">
-      <a href="<?= $link_home ?>">
-        <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
-      </a>
-      <div class="search-box">
-        <input type="text" id="search-input" placeholder="Search products..."
-               onkeydown="if(event.key==='Enter') doSearch()">
-        <button onclick="doSearch()">
-          <i class="fas fa-search"></i>
-        </button>
-      </div>
+      <a href="<?= $link_home ?>"><img src="<?= IMG_URL ?>36-logo.png" class="header-logo"></a>
+      <div class="search-box"><input type="text" id="search-input" placeholder="Search products..."><button onclick="doSearch()"><i class="fas fa-search"></i></button></div>
     </div>
-
-    <!-- Header phải: luôn hiển thị trạng thái đã đăng nhập -->
-    <div class="right" style="display:flex; align-items:center; gap:20px;">
-
-  <!-- Giỏ hàng -->
-  <a href="<?= $link_cart ?>" class="icon-link" title="Giỏ hàng"
-     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
-    <i class="fas fa-shopping-cart" style="font-size:18px;"></i>
-  </a>
-
-  <!-- Tên tài khoản + icon profile -->
-  <a href="<?= $link_profile ?>" class="icon-link" title="Trang cá nhân"
-     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
-      <i class="fas fa-user-circle user-icon"></i>
-    <span style="font-size:13px; font-weight:600; white-space:nowrap; color:#333;">
-      <?= $logged_in_name ?>
-    </span>
-  </a>
-
-  <!-- Đăng xuất -->
-  <a href="<?= $link_logout ?>" class="icon-link" title="Đăng xuất"
-     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:#c0392b;">
-    <i class="fas fa-sign-out-alt" style="font-size:18px;"></i>
-    <span style="font-size:12px; font-weight:500;"></span>
-  </a>
-
-</div>
+    <div class="right">
+      <a href="<?= $link_cart ?>" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="<?= $link_profile ?>" class="icon-link"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
 </header>
 
 <main class="main-content">
