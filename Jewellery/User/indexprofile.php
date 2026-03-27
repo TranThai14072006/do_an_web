@@ -1,49 +1,50 @@
+
+
 <?php
 // ═══════════════════════════════════════════════════════════════
-// File: Jewellery/User/users/index.php
-// Fixes:
-//   ✔ session_start() + nhận diện user đăng nhập
-//   ✔ Đường dẫn ảnh tuyệt đối từ gốc web
-//   ✔ Thanh tìm kiếm JS chuyển hướng sang search.php
-//   ✔ Tất cả link dùng .php
-//   ✔ Include config.php có sẵn
-//   ✔ Nút Add to Cart kiểm tra đăng nhập
+// File: Jewellery/User/users/index.php  (logged-in version)
+// Config: chỉ dùng $conn → jewelry_db (1 DB duy nhất)
 // ═══════════════════════════════════════════════════════════════
 
 session_start();
-
-// ── Include config (từ User/users/ lên 3 cấp → gốc Jewellery/) ──
-require_once __DIR__ . '/../../config/config.php';
-// $conn và $conn_user đã có từ config.php
+require_once __DIR__ . '../../config/config.php';
+// $conn đã có từ config.php (jewelry_db)
 
 // ── Đường dẫn gốc web ────────────────────────────────────────
-// File này ở: Jewellery/User/users/index.php
-// Gốc web  ở: /do_an_web/Jewellery/
 define('BASE_URL', '/do_an_web/Jewellery/');
 define('IMG_URL',  BASE_URL . 'images/');
 
-// ── Nhận diện user đăng nhập ─────────────────────────────────
-// Thử nhiều key session phổ biến vì chưa xác định được key
-$session_keys_id   = ['user_id', 'id', 'userId', 'userID'];
-$session_keys_name = ['user_name', 'username', 'name', 'fullname', 'full_name'];
+// ── Nhận diện user từ session ────────────────────────────────
+// Sau đăng nhập, session lưu user_id (hoặc id) + username / full_name
+$session_user_id = $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
 
-$is_logged_in = false;
-foreach ($session_keys_id as $key) {
-    if (!empty($_SESSION[$key])) {
-        $is_logged_in = true;
-        break;
+$logged_in_name = 'Tài khoản';
+
+if ($session_user_id) {
+    // Ưu tiên lấy full_name từ customers, fallback về username của users
+    $stmt_name = $conn->prepare("
+        SELECT COALESCE(c.full_name, u.username) AS display_name
+        FROM users u
+        LEFT JOIN customers c ON c.user_id = u.id
+        WHERE u.id = ?
+        LIMIT 1
+    ");
+    $stmt_name->bind_param('i', $session_user_id);
+    $stmt_name->execute();
+    $row_name = $stmt_name->get_result()->fetch_assoc();
+    $stmt_name->close();
+    if ($row_name) {
+        $logged_in_name = htmlspecialchars($row_name['display_name']);
     }
-}
-
-$logged_in_name = '';
-if ($is_logged_in) {
+} else {
+    // Fallback: đọc từ session nếu login đã lưu sẵn tên
+    $session_keys_name = ['full_name', 'user_name', 'username', 'name'];
     foreach ($session_keys_name as $key) {
         if (!empty($_SESSION[$key])) {
             $logged_in_name = htmlspecialchars($_SESSION[$key]);
             break;
         }
     }
-    if (!$logged_in_name) $logged_in_name = 'Tài khoản';
 }
 
 // ── Hàm tính giá bán ─────────────────────────────────────────
@@ -54,7 +55,7 @@ function calcSellingPrice($row) {
     return ($cost > 0) ? $cost * (1 + $profit / 100) : $price;
 }
 
-// ── Kiểm tra cột tồn tại (tránh lỗi Unknown column) ──────────
+// ── Kiểm tra cột tồn tại ────────────────────────────────────
 $col_result = $conn->query("SHOW COLUMNS FROM products");
 $columns = [];
 while ($col = $col_result->fetch_assoc()) { $columns[] = $col['Field']; }
@@ -70,7 +71,7 @@ $select = "id, name, price, image"
         . ($has_stock    ? ", stock"          : "")
         . ($has_category ? ", category"       : "");
 
-// ── Trending products ─────────────────────────────────────────
+// ── Trending products ────────────────────────────────────────
 $order_t = $has_category
     ? "ORDER BY FIELD(category,'Ring') DESC, id ASC"
     : "ORDER BY id ASC";
@@ -89,7 +90,7 @@ if ($res) {
     }
 }
 
-// ── New arrivals ──────────────────────────────────────────────
+// ── New arrivals ─────────────────────────────────────────────
 $new_arrivals = [];
 $res2 = $conn->query("SELECT $select FROM products ORDER BY id DESC LIMIT 3");
 if ($res2) {
@@ -104,8 +105,6 @@ if ($res2) {
         ];
     }
 }
-
-// KHÔNG đóng $conn ở đây — để config.php quản lý
 
 // ── Static data ───────────────────────────────────────────────
 $page_title   = "ThirtySix Jewellery Store";
@@ -123,15 +122,14 @@ $categories = [
     ['name' => 'Unisex', 'image' => IMG_URL . 'R006.jpg'],
 ];
 
-// ── Link helpers (relative từ User/users/) ────────────────────
-// Tất cả dùng BASE_URL để nhất quán
+// ── Link helpers ──────────────────────────────────────────────
 $link_home    = BASE_URL . 'User/users/index.php';
-$link_login   = BASE_URL . 'User/Login.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
 $link_search  = BASE_URL . 'User/users/search.php';
 $link_detail  = BASE_URL . 'User/users/product_detail.php';
+$link_shop    = BASE_URL . 'User/Products/Products.html';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -153,6 +151,97 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Tên user hiển thị bên trái icon profile */
+    .user-name-label {
+      font-size: 13px;
+      font-weight: 600;
+      margin-right: 6px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    .icon-link {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .search-bar .right {
+  display: flex !important;
+  align-items: center;
+  gap: 20px;
+  padding-right: 16px;
+}
+
+.search-bar .right .icon-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: #333;
+  transition: color 0.2s;
+}
+
+.search-bar .right .icon-link:hover {
+  color: #b8972e;
+}
+
+.search-bar .right .icon-link i {
+  font-size: 18px;
+}
+
+.search-bar .right .icon-link span {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.search-bar .right {
+  display: flex;
+  align-items: center;
+  gap: 28px; /* tăng khoảng cách giữa các icon */
+  padding-right: 20px;
+}
+
+.icon-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.25s ease;
+}
+
+.icon-link:hover {
+  color: #b8972e;
+  transform: translateY(-1px);
+}
+
+/* ICON USER TO HƠN */
+.user-icon {
+  font-size: 26px; /* 🔥 tăng size */
+  color: #b8972e;
+}
+
+/* ICON GIỎ HÀNG + LOGOUT */
+.icon-link i {
+  font-size: 20px;
+}
+
+/* TEXT USER */
+.icon-link span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.user-icon {
+  font-size: 24px;
+  color: white;
+  background: #b8972e;
+  padding: 6px;
+  border-radius: 50%;
+}
+
+  </style>
 </head>
 
 <body class="hompage bg-accent-light">
@@ -171,7 +260,6 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       <a href="<?= $link_home ?>">
         <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
       </a>
-      <!-- FIX: Tìm kiếm có JS chuyển hướng sang search.php -->
       <div class="search-box">
         <input type="text" id="search-input" placeholder="Search products..."
                onkeydown="if(event.key==='Enter') doSearch()">
@@ -181,31 +269,32 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       </div>
     </div>
 
-    <div class="right">
-      <?php if ($is_logged_in): ?>
-        <!-- Đã đăng nhập -->
-        <a href="<?= $link_cart ?>" class="icon-link" title="Giỏ hàng">
-          <i class="fas fa-shopping-cart"></i>
-        </a>
-        <a href="<?= $link_profile ?>" class="icon-link" title="<?= $logged_in_name ?>">
-          <i class="fas fa-user"></i>
-          <span class="ms-1 d-none d-md-inline" style="font-size:13px;"><?= $logged_in_name ?></span>
-        </a>
-        <a href="<?= $link_logout ?>" class="icon-link" title="Đăng xuất">
-          <i class="fas fa-sign-out-alt"></i>
-        </a>
-      <?php else: ?>
-        <!-- Chưa đăng nhập -->
-        <a href="<?= $link_login ?>" class="icon-link" title="Giỏ hàng">
-          <i class="fas fa-shopping-cart"></i>
-        </a>
-        <a href="<?= $link_login ?>" class="icon-link" title="Đăng nhập">
-          <i class="fas fa-user"></i>
-        </a>
-      <?php endif; ?>
-    </div>
+    <!-- Header phải: luôn hiển thị trạng thái đã đăng nhập -->
+    <div class="right" style="display:flex; align-items:center; gap:20px;">
 
-  </div>
+  <!-- Giỏ hàng -->
+  <a href="<?= $link_cart ?>" class="icon-link" title="Giỏ hàng"
+     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
+    <i class="fas fa-shopping-cart" style="font-size:18px;"></i>
+  </a>
+
+  <!-- Tên tài khoản + icon profile -->
+  <a href="<?= $link_profile ?>" class="icon-link" title="Trang cá nhân"
+     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
+      <i class="fas fa-user-circle user-icon"></i>
+    <span style="font-size:13px; font-weight:600; white-space:nowrap; color:#333;">
+      <?= $logged_in_name ?>
+    </span>
+  </a>
+
+  <!-- Đăng xuất -->
+  <a href="<?= $link_logout ?>" class="icon-link" title="Đăng xuất"
+     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:#c0392b;">
+    <i class="fas fa-sign-out-alt" style="font-size:18px;"></i>
+    <span style="font-size:12px; font-weight:500;"></span>
+  </a>
+
+</div>
 </header>
 
 <!-- ══ BANNER ═══════════════════════════════════════════════════ -->
@@ -216,7 +305,7 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
   <div class="banner-content content-light style1 text-center col-md-6">
     <h2 class="banner-title"><?= htmlspecialchars($banner_title) ?></h2>
     <div class="btn-center">
-      <a href="<?= $link_login ?>" class="btn btn-medium btn-light">Shop Now</a>
+      <a href="<?= $link_shop ?>" class="btn btn-medium btn-light">Shop Now</a>
     </div>
   </div>
 </section>
@@ -283,12 +372,8 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
               <div class="cart-concern">
                 <div class="cart-button d-flex flex-wrap">
                   <div class="btn-left">
-                    <?php if ($is_logged_in): ?>
-                      <a href="<?= $link_cart ?>?action=add&id=<?= urlencode($p['id']) ?>"
-                         class="btn btn-medium btn-light">Add to Cart</a>
-                    <?php else: ?>
-                      <a href="<?= $link_login ?>" class="btn btn-medium btn-light">Add to Cart</a>
-                    <?php endif; ?>
+                    <a href="<?= $link_cart ?>?action=add&id=<?= urlencode($p['id']) ?>"
+                       class="btn btn-medium btn-light">Add to Cart</a>
                   </div>
                   <button type="button" class="btn btn-light view-btn d-flex"
                     onclick="window.location.href='<?= $link_detail ?>?id=<?= urlencode($p['id']) ?>'">
@@ -312,7 +397,7 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       <div class="swiper-button swiper-button-next"></div>
       <div class="swiper-button swiper-button-prev"></div>
       <div class="btn-center">
-        <a href="<?= $link_login ?>" class="btn btn-medium btn-black">Shop All</a>
+        <a href="<?= $link_shop ?>" class="btn btn-medium btn-black">Shop All</a>
       </div>
     </div>
   </div>
@@ -377,12 +462,8 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
               <div class="cart-concern">
                 <div class="cart-button d-flex flex-wrap">
                   <div class="btn-left">
-                    <?php if ($is_logged_in): ?>
-                      <a href="<?= $link_cart ?>?action=add&id=<?= urlencode($p['id']) ?>"
-                         class="btn btn-medium btn-light">Add to Cart</a>
-                    <?php else: ?>
-                      <a href="<?= $link_login ?>" class="btn btn-medium btn-light">Add to Cart</a>
-                    <?php endif; ?>
+                    <a href="<?= $link_cart ?>?action=add&id=<?= urlencode($p['id']) ?>"
+                       class="btn btn-medium btn-light">Add to Cart</a>
                   </div>
                   <button type="button" class="btn btn-light view-btn d-flex"
                     onclick="window.location.href='<?= $link_detail ?>?id=<?= urlencode($p['id']) ?>'">
@@ -406,7 +487,7 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       <div class="swiper-button swiper-button-next"></div>
       <div class="swiper-button swiper-button-prev"></div>
       <div class="btn-center">
-        <a href="<?= $link_login ?>" class="btn btn-medium btn-black">Shop All</a>
+        <a href="<?= $link_shop ?>" class="btn btn-medium btn-black">Shop All</a>
       </div>
     </div>
   </div>
@@ -428,7 +509,7 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       <div class="category-content content-light">
         <h3 class="category-title"><?= htmlspecialchars($cat['name']) ?></h3>
         <div class="btn-left">
-          <a href="<?= $link_login ?>" class="btn btn-medium <?= $bc ?>">Shop it now</a>
+          <a href="<?= $link_shop ?>" class="btn btn-medium <?= $bc ?>">Shop it now</a>
         </div>
       </div>
     </div>
@@ -466,6 +547,8 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
               <h5 class="widget-title">Quick Links</h5>
               <ul class="menu-list list-unstyled text-uppercase">
                 <li class="menu-item"><a href="<?= $link_home ?>">Home</a></li>
+                <li class="menu-item"><a href="<?= $link_shop ?>">Shop</a></li>
+                <li class="menu-item"><a href="<?= $link_profile ?>">My Profile</a></li>
               </ul>
             </div>
           </div>
@@ -538,7 +621,6 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
   crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 <script>
-  // FIX: Tìm kiếm chuyển hướng đúng sang search.php
   function doSearch() {
     const keyword = document.getElementById('search-input').value.trim();
     if (keyword !== '') {
@@ -546,7 +628,6 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
     }
   }
 
-  // Swiper sản phẩm
   const productSwiper = new Swiper('.product-swiper', {
     slidesPerView: 3,
     spaceBetween: 30,
@@ -561,7 +642,6 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
     }
   });
 
-  // Swiper testimonial
   const testimonialSwiper = new Swiper('.testimonial-swiper', {
     slidesPerView: 1,
     loop: true,
@@ -571,3 +651,4 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
 
 </body>
 </html>
+<?php $conn->close(); ?>

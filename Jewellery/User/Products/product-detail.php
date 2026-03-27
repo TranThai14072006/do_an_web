@@ -1,5 +1,7 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "shop_db");
+
+
+$conn = new mysqli("localhost", "root", "", "jewelry_db");
 $conn->set_charset("utf8");
 
 $id = $_GET['id'] ?? '';
@@ -21,8 +23,9 @@ if ($product) {
     $current_cost = (float)$product['price'];
     $profit_percent = (float)$product['profit_percent'];
 
-    $total_quantity = $current_stock;
-    $total_cost = $current_cost * $current_stock;
+    // Chỉ tính từ phiếu nhập, KHÔNG cộng stock (đồng bộ search-api.php)
+    $total_quantity = 0;
+    $total_cost = 0;
 
     $sql_receipt = "SELECT quantity, unit_price 
                     FROM goods_receipt_items 
@@ -56,13 +59,13 @@ if ($product) {
   <div class="search-bar">
 
     <div class="left">
-      <a href="../../index_profile.html" class="home-btn">
+      <a href="../indexprofile.php" class="home-btn">
         <i class="fas fa-home"></i> Home
       </a>
     </div>
 
     <div class="center">
-      <a href="../../index.html">
+      <a href="../indexprofile.php">
         <img src="../../images/36-logo.png" class="header-logo">
       </a>
 
@@ -75,10 +78,10 @@ if ($product) {
     </div>
 
     <div class="right">
-      <a href="../Jewelry-cart.html" class="icon-link">
+      <a href="../Cart/Jewelry-cart.html" class="icon-link">
         <i class="fas fa-shopping-cart"></i>
       </a>
-      <a href="../profile.html" class="icon-link">
+      <a href="../users/profile.php" class="icon-link">
         <i class="fas fa-user"></i>
       </a>
     </div>
@@ -111,14 +114,15 @@ if ($product) {
     </p>
 
     <div class="size-selection">
-      <h3>Select Ring Size</h3>
-      <select>
-        <option value="5">Size 5</option>
-        <option value="6">Size 6</option>
-        <option value="7">Size 7</option>
-        <option value="8">Size 8</option>
-      </select>
-    </div>
+  <h3>Select Ring Size</h3>
+  <select id="ring-size" required>
+    <option value="" disabled selected>-- Choose size --</option>
+    <option value="5">Size 5</option>
+    <option value="6">Size 6</option>
+    <option value="7">Size 7</option>
+    <option value="8">Size 8</option>
+  </select>
+</div>
 
     <ul class="product-specs">
       <?php if (!empty($details['material'])): ?>
@@ -149,7 +153,7 @@ if ($product) {
         Add to cart
       </button>
 
-      <a href="order_confirm.html" class="buy-now">
+      <a href="../users/order_confirm.php" class="buy-now">
         <i class="fas fa-bolt"></i>
         Buy now
       </a>
@@ -191,8 +195,44 @@ function closeNotification() {
   document.getElementById('cart-notification').classList.remove('show');
 }
 
-function addToCart(id, name) {
-  showNotification(name);
+async function addToCart(id, name) {
+  const sizeSelect = document.getElementById('ring-size');
+  const selectedSize = sizeSelect.value;
+
+  if (!selectedSize) {
+    alert('Please select a ring size before adding to cart.');
+    return;
+  }
+
+  const btn = document.querySelector('.add-to-cart');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+  try {
+    const res = await fetch('../Cart/jewelry_cart.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        action: 'add', 
+        product_id: id, 
+        quantity: 1,
+        size: selectedSize // gửi size lên server
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showNotification(`${name} (Size ${selectedSize})`);
+    } else {
+      alert(data.message || 'Failed to add to cart');
+    }
+  } catch (err) {
+    alert('Network error, please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to cart';
+  }
 }
 </script>
 

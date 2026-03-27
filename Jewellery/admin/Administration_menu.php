@@ -1,49 +1,56 @@
 <?php
 session_start();
 
-require_once '../config/config.php';
+// Optional: protect this page
+// if (empty($_SESSION['admin_logged_in'])) {
+//     header('Location: admin_login.php');
+//     exit;
+// }
 
-// ── Handle DELETE product (AJAX POST) ─────────────────────────────────────
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_product') {
-    $pid = trim($_POST['product_id'] ?? '');
-    if ($pid !== '') {
-        $stmt = $conn->prepare("DELETE FROM products WHERE id = ?");
-        $stmt->bind_param("s", $pid);
-        $ok = $stmt->execute();
-        $stmt->close();
-        header('Content-Type: application/json');
-        echo json_encode(['success' => $ok, 'message' => $ok ? 'Product deleted.' : $conn->error]);
-        exit;
-    }
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Missing product ID.']);
-    exit;
-}
+// Sample data – replace with DB queries
+$products = [
+    ['code'=>'R001','name'=>'Diamond Heart Necklace','img'=>'R001.jpg','price'=>100,'stock'=>13],
+    ['code'=>'R002','name'=>'Diamond Heart Necklace','img'=>'R002.jpg','price'=>99, 'stock'=>7],
+    ['code'=>'R003','name'=>'Diamond Heart Necklace','img'=>'R003.jpg','price'=>56, 'stock'=>6],
+    ['code'=>'R004','name'=>'Diamond Heart Necklace','img'=>'R004.jpg','price'=>250,'stock'=>22],
+    ['code'=>'R005','name'=>'Diamond Heart Necklace','img'=>'R005.jpg','price'=>22, 'stock'=>8],
+];
 
-// ── Fetch products grouped by gender ──────────────────────────────────────
-function fetchByGender($conn, $gender) {
-    $stmt = $conn->prepare("SELECT id, name, image, category, gender, price, stock FROM products WHERE gender = ? ORDER BY id");
-    $stmt->bind_param("s", $gender);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-}
+$customers = [
+    ['id'=>1,'name'=>'Alice Nguyen','email'=>'alice@example.com','status'=>'Active'],
+    ['id'=>2,'name'=>'Emma Tran',   'email'=>'emma@example.com', 'status'=>'Locked'],
+    ['id'=>3,'name'=>'David Le',    'email'=>'david@example.com','status'=>'Active'],
+    ['id'=>4,'name'=>'Olivia Pham', 'email'=>'olivia@example.com','status'=>'Active'],
+    ['id'=>5,'name'=>'Lucas Hoang', 'email'=>'lucas@example.com','status'=>'Locked'],
+    ['id'=>6,'name'=>'Sophia Vu',   'email'=>'sophia@example.com','status'=>'Active'],
+    ['id'=>7,'name'=>'Henry Bui',   'email'=>'henry@example.com','status'=>'Locked'],
+    ['id'=>8,'name'=>'Isabella Do', 'email'=>'isabella@example.com','status'=>'Active'],
+    ['id'=>9,'name'=>'Ethan Tran',  'email'=>'ethan@example.com','status'=>'Active'],
+    ['id'=>10,'name'=>'Chloe Nguyen','email'=>'chloe@example.com','status'=>'Locked'],
+];
 
-$male_products   = fetchByGender($conn, 'Male');
-$female_products = fetchByGender($conn, 'Female');
-$unisex_products = fetchByGender($conn, 'Unisex');
+$male_products = [
+    ['no'=>2,'img'=>'R002.jpg','name'=>'Winston Anchor Ring','category'=>'Ring'],
+    ['no'=>6,'img'=>'R006.jpg','name'=>'Arielle Princess CZ Ring','category'=>'Ring'],
+    ['no'=>3,'img'=>'R005.jpg','name'=>'Ula Opal Teardrop Ring','category'=>'Ring'],
+];
 
-// ── Fetch all products for Product Management table ───────────────────────
-$all_products = $conn->query("SELECT id, name, image, price, stock, gender, category FROM products ORDER BY id")->fetch_all(MYSQLI_ASSOC);
+$female_products = [
+    ['no'=>1,'img'=>'R001.jpg','name'=>'Kane Moissanite Ring','category'=>'Ring'],
+    ['no'=>2,'img'=>'R002.jpg','name'=>'Kane Moissanite Ring','category'=>'Ring'],
+    ['no'=>3,'img'=>'R003.jpg','name'=>'Ula Opal Teardrop Ring','category'=>'Ring'],
+    ['no'=>4,'img'=>'R004.jpg','name'=>'Platinum Clover Charm Ring','category'=>'Ring'],
+    ['no'=>5,'img'=>'R005.jpg','name'=>'Paisley Moissanite Ring','category'=>'Ring'],
+    ['no'=>7,'img'=>'R007.jpg','name'=>'Miracle Queen CZ Ring','category'=>'Ring'],
+    ['no'=>8,'img'=>'R008.jpg','name'=>'Niche Crown Stack Ring','category'=>'Ring'],
+    ['no'=>9,'img'=>'R009.jpg','name'=>'Rosemary Topaz Ring','category'=>'Ring'],
+    ['no'=>10,'img'=>'R010.jpg','name'=>'Royal Moissanite Ring','category'=>'Ring'],
+];
 
-// ── Fetch customers (join users) ──────────────────────────────────────────
-$cust_result = $conn->query(
-    "SELECT c.id, c.full_name AS name, u.email, u.id AS uid,
-            COALESCE(u.status, 'Active') AS status
-     FROM customers c
-     JOIN users u ON c.user_id = u.id
-     ORDER BY c.id"
-);
-$customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
+$unisex_products = [
+    ['no'=>1,'img'=>'R006.jpg','name'=>'Kane Moissanite Ring','category'=>'Ring'],
+    ['no'=>3,'img'=>'R005.jpg','name'=>'Ula Opal Teardrop Ring','category'=>'Ring'],
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,7 +73,7 @@ $customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
       <a href="Price Manage/pricing.php">Pricing Management</a>
       <a href="#users">Customers</a>
       <a href="Order Manage/order_management.php">Order Management</a>
-      <a href="Import_product/import_management.php">Import Management</a>
+      <a href="Import product manage/import_management.php">Import Management</a>
       <a href="Stock Manage/stocking_management.php">Stocking Management</a>
       <a href="#settings">Settings</a>
     </div>
@@ -88,67 +95,123 @@ $customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
 
         <!-- TAB1 – Male -->
         <div class="tab-content active" id="tab1">
+          <div class="search-section">
+            <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
+            <div class="search-group"><label class="search-label">Category</label>
+              <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select>
+            </div>
+            <button class="btn-search" onclick="window.location.href='search.php'">Search</button>
+            <button class="btn-reset"  onclick="window.location.href='search.php'">Reset</button>
+          </div>
           <table>
             <thead><tr><th>No.</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
             <tbody>
-              <?php if (empty($male_products)): ?>
-                <tr><td colspan="4" style="text-align:center;color:#999;">No male products found.</td></tr>
-              <?php else: ?>
-                <?php foreach ($male_products as $i => $p): ?>
-                <tr>
-                  <td><?php echo $i + 1; ?></td>
-                  <td><img src="../images/<?php echo htmlspecialchars($p['image']); ?>" width="60" style="border-radius:6px;"></td>
-                  <td><?php echo htmlspecialchars($p['name']); ?></td>
-                  <td>Male</td>
-                </tr>
-                <?php endforeach; ?>
-              <?php endif; ?>
+              <?php foreach ($male_products as $p): ?>
+              <tr>
+                <td><?php echo $p['no']; ?></td>
+                <td><img src="../images/<?php echo htmlspecialchars($p['img']); ?>" width="60"></td>
+                <td><?php echo htmlspecialchars($p['name']); ?></td>
+                <td><?php echo htmlspecialchars($p['category']); ?></td>
+              </tr>
+              <?php endforeach; ?>
             </tbody>
           </table>
+          <div class="pagination">
+            <a href="#" class="page-link prev">← Previous</a>
+            <a href="#" class="page-link active">1</a>
+            <a href="#" class="page-link">2</a>
+            <a href="#" class="page-link">3</a>
+            <a href="#" class="page-link next">Next →</a>
+          </div>
         </div>
 
         <!-- TAB2 – Female -->
         <div class="tab-content" id="tab2">
+          <div class="search-section">
+            <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
+            <div class="search-group"><label class="search-label">Category</label>
+              <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select>
+            </div>
+            <button class="btn-search" onclick="window.location.href='search.php'">Search</button>
+            <button class="btn-reset"  onclick="window.location.href='search.php'">Reset</button>
+          </div>
           <table>
             <thead><tr><th>No.</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
             <tbody>
-              <?php if (empty($female_products)): ?>
-                <tr><td colspan="4" style="text-align:center;color:#999;">No female products found.</td></tr>
-              <?php else: ?>
-                <?php foreach ($female_products as $i => $p): ?>
-                <tr>
-                  <td><?php echo $i + 1; ?></td>
-                  <td><img src="../images/<?php echo htmlspecialchars($p['image']); ?>" width="60" style="border-radius:6px;"></td>
-                  <td><?php echo htmlspecialchars($p['name']); ?></td>
-                  <td>Female</td>
-                </tr>
-                <?php endforeach; ?>
-              <?php endif; ?>
+              <?php foreach ($female_products as $p): ?>
+              <tr>
+                <td><?php echo $p['no']; ?></td>
+                <td><img src="../images/<?php echo htmlspecialchars($p['img']); ?>" width="60"></td>
+                <td><?php echo htmlspecialchars($p['name']); ?></td>
+                <td><?php echo htmlspecialchars($p['category']); ?></td>
+              </tr>
+              <?php endforeach; ?>
             </tbody>
           </table>
+          <div class="pagination">
+            <a href="#" class="page-link prev">← Previous</a>
+            <a href="#" class="page-link active">1</a>
+            <a href="#" class="page-link">2</a>
+            <a href="#" class="page-link">3</a>
+            <a href="#" class="page-link next">Next →</a>
+          </div>
         </div>
 
         <!-- TAB3 – Unisex -->
         <div class="tab-content" id="tab3">
+          <div class="search-section">
+            <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
+            <div class="search-group"><label class="search-label">Category</label>
+              <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>Unisex</option></select>
+            </div>
+            <button class="btn-search" onclick="window.location.href='search.php'">Search</button>
+            <button class="btn-reset"  onclick="window.location.href='search.php'">Reset</button>
+          </div>
           <table>
             <thead><tr><th>No.</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
             <tbody>
-              <?php if (empty($unisex_products)): ?>
-                <tr><td colspan="4" style="text-align:center;color:#999;">No unisex products found.</td></tr>
-              <?php else: ?>
-                <?php foreach ($unisex_products as $i => $p): ?>
-                <tr>
-                  <td><?php echo $i + 1; ?></td>
-                  <td><img src="../images/<?php echo htmlspecialchars($p['image']); ?>" width="60" style="border-radius:6px;"></td>
-                  <td><?php echo htmlspecialchars($p['name']); ?></td>
-                  <td>Unisex</td>
-                </tr>
-                <?php endforeach; ?>
-              <?php endif; ?>
+              <?php foreach ($unisex_products as $p): ?>
+              <tr>
+                <td><?php echo $p['no']; ?></td>
+                <td><img src="../images/<?php echo htmlspecialchars($p['img']); ?>" width="60"></td>
+                <td><?php echo htmlspecialchars($p['name']); ?></td>
+                <td><?php echo htmlspecialchars($p['category']); ?></td>
+              </tr>
+              <?php endforeach; ?>
             </tbody>
           </table>
+          <div class="pagination">
+            <a href="#" class="page-link prev">← Previous</a>
+            <a href="#" class="page-link active">1</a>
+            <a href="#" class="page-link">2</a>
+            <a href="#" class="page-link">3</a>
+            <a href="#" class="page-link next">Next →</a>
+          </div>
         </div>
 
+      </div>
+    </section>
+
+    <!-- ======= Jewelry Types ======= -->
+    <section id="categories" class="section">
+      <header><h1>Jewelry Type Management</h1></header>
+      <div class="user-actions">
+        <a href="#" class="btn">Add Type</a>
+        <a href="#" class="btn">Edit Type</a>
+        <a href="#" class="btn">Delete / Hide Type</a>
+      </div>
+      <div class="user-list">
+        <table>
+          <tr><th>ID</th><th>Type Name</th><th>Description</th><th>Status</th><th>Action</th></tr>
+          <tr>
+            <td>1</td><td>Necklaces</td><td>Luxury gold and diamond necklaces</td><td>Visible</td>
+            <td><a href="#" class="btn small">Edit</a> <a href="#" class="btn small">Hide</a></td>
+          </tr>
+          <tr>
+            <td>2</td><td>Rings</td><td>Elegant diamond and platinum rings</td><td>Hidden</td>
+            <td><a href="#" class="btn small">Edit</a> <a href="#" class="btn small">Show</a></td>
+          </tr>
+        </table>
       </div>
     </section>
 
@@ -157,7 +220,7 @@ $customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
       <header><h1>Jewelry Product Management</h1></header>
 
       <div class="user-actions">
-        <a href="add_product.php" class="btn">+ Add Product</a>
+        <a href="add_product.php" class="btn">Add Product</a>
       </div>
 
       <div class="search-section">
@@ -166,16 +229,16 @@ $customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
           <input type="text" id="product-name" class="search-input" placeholder="Product Name">
         </div>
         <div class="search-group">
-          <label class="search-label" for="product-category">Filter by Category</label>
+          <label class="search-label" for="product-category">Search by Category</label>
           <select id="product-category" class="search-select">
             <option value="">All</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Unisex">Unisex</option>
+            <option value="1">Male</option>
+            <option value="2">Female</option>
+            <option value="3">Unisex</option>
           </select>
         </div>
         <button class="btn-search" onclick="window.location.href='search_product.php'">
-          <i class="fas fa-search"></i>
+          <i class="material-icons-round">search</i>
         </button>
       </div>
 
@@ -183,27 +246,42 @@ $customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
         <table>
           <tr>
             <th>Product Code</th><th>Product Name</th><th>Image</th>
-            <th>Price</th><th>Stock</th><th>Category</th><th>Action</th>
+            <th>Price</th><th>Stock</th><th>Action</th>
           </tr>
-          <?php if (empty($all_products)): ?>
-            <tr><td colspan="7" style="text-align:center;color:#999;">No products in database.</td></tr>
-          <?php else: ?>
-            <?php foreach ($all_products as $p): ?>
-            <tr>
-              <td><?php echo htmlspecialchars($p['id']); ?></td>
-              <td><?php echo htmlspecialchars($p['name']); ?></td>
-              <td><img src="../images/<?php echo htmlspecialchars($p['image']); ?>" alt="" width="60" style="border-radius:6px;"></td>
-              <td>$<?php echo number_format($p['price'], 2); ?></td>
-              <td><?php echo intval($p['stock']); ?></td>
-              <td><?php echo htmlspecialchars($p['gender']); ?></td>
-              <td>
-                <a href="edit_product.php?code=<?php echo urlencode($p['id']); ?>" class="btn small">Edit</a>
-                <button class="btn small delete-product-btn" data-id="<?php echo htmlspecialchars($p['id']); ?>" data-name="<?php echo htmlspecialchars($p['name']); ?>">Delete</button>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          <?php endif; ?>
+          <?php foreach ($products as $p): ?>
+          <tr>
+            <td><?php echo htmlspecialchars($p['code']); ?></td>
+            <td><?php echo htmlspecialchars($p['name']); ?></td>
+            <td><img src="../images/<?php echo htmlspecialchars($p['img']); ?>" alt="" width="60"></td>
+            <td><?php echo htmlspecialchars($p['price']); ?></td>
+            <td><?php echo htmlspecialchars($p['stock']); ?></td>
+            <td>
+              <a href="edit_product.php?code=<?php echo urlencode($p['code']); ?>" class="btn small">Edit</a>
+              <label for="deletePopup" class="btn small">Delete</label>
+            </td>
+          </tr>
+          <?php endforeach; ?>
         </table>
+      </div>
+
+      <div class="pagination">
+        <button class="pagination-btn"><span class="arrow-icon">&#10094;</span></button>
+        <button class="pagination-btn active">1</button>
+        <button class="pagination-btn">2</button>
+        <button class="pagination-btn">3</button>
+        <button class="pagination-btn">4</button>
+        <button class="pagination-btn">5</button>
+        <button class="pagination-btn"><span class="arrow-icon">&#10095;</span></button>
+      </div>
+
+      <input type="checkbox" id="deletePopup" hidden>
+      <div class="popup">
+        <label for="deletePopup" class="overlay"></label>
+        <div class="popup-box">
+          <h3>Confirm Delete</h3>
+          <p>Are you sure you want to delete this product?</p>
+          <label for="deletePopup" class="btn close-btn">OK</label>
+        </div>
       </div>
     </section>
 
@@ -220,47 +298,102 @@ $customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
           <label class="search-label" for="customer-status">Filter by Status</label>
           <select id="customer-status" class="search-select">
             <option value="">All</option>
-            <option value="Active">Active</option>
-            <option value="Locked">Locked</option>
+            <option value="active">Active</option>
+            <option value="locked">Locked</option>
           </select>
         </div>
-        <button class="btn-search" onclick="window.location.href='search_customer.php'">
-          <i class="fas fa-search"></i>
+        <button class="btn-search">
+          <i class="material-icons-round" onclick="window.location.href='search_customer.php'">search</i>
         </button>
+      </div>
+
+      <input type="checkbox" id="toggleCustomerList" hidden>
+      <div class="user-actions">
+        <label for="toggleCustomerList" class="btn">Show / Hide List</label>
+        <p> </p>
       </div>
 
       <div class="user-list">
         <table>
           <tr><th>ID</th><th>Customer Name</th><th>Email</th><th>Status</th><th>Action</th></tr>
-          <?php if (empty($customers)): ?>
-            <tr><td colspan="5" style="text-align:center;color:#999;">No customers found.</td></tr>
-          <?php else: ?>
-            <?php foreach ($customers as $c): ?>
-            <tr>
-              <td><?php echo intval($c['id']); ?></td>
-              <td><?php echo htmlspecialchars($c['name']); ?></td>
-              <td><?php echo htmlspecialchars($c['email']); ?></td>
-              <td>
-                <span class="status-badge <?php echo strtolower($c['status']); ?>">
-                  <?php echo htmlspecialchars($c['status']); ?>
-                </span>
-              </td>
-              <td>
-                <button class="btn small view-customer-btn"
-                        data-name="<?php echo htmlspecialchars($c['name']); ?>"
-                        data-email="<?php echo htmlspecialchars($c['email']); ?>"
-                        data-status="<?php echo htmlspecialchars($c['status']); ?>">View</button>
-                <button class="btn small action-btn" data-action="reset" data-uid="<?php echo intval($c['uid']); ?>">Reset PW</button>
-                <?php if ($c['status'] === 'Active'): ?>
-                  <button class="btn small action-btn" data-action="lock" data-uid="<?php echo intval($c['uid']); ?>">Lock</button>
-                <?php else: ?>
-                  <button class="btn small action-btn" data-action="unlock" data-uid="<?php echo intval($c['uid']); ?>">Unlock</button>
-                <?php endif; ?>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-          <?php endif; ?>
+          <?php foreach ($customers as $c): ?>
+          <tr>
+            <td><?php echo $c['id']; ?></td>
+            <td><?php echo htmlspecialchars($c['name']); ?></td>
+            <td><?php echo htmlspecialchars($c['email']); ?></td>
+            <td><?php echo htmlspecialchars($c['status']); ?></td>
+            <td>
+              <label for="view" class="btn small">View</label>
+              <label for="resetPopup" class="btn small">Reset</label>
+              <?php if ($c['status'] === 'Active'): ?>
+                <label for="lockPopup" class="btn small">Lock</label>
+              <?php else: ?>
+                <label for="unlockPopup" class="btn small">Unlock</label>
+              <?php endif; ?>
+            </td>
+          </tr>
+          <?php endforeach; ?>
         </table>
+
+        <div class="pagination">
+          <input type="radio" name="page" id="page1" checked hidden>
+          <input type="radio" name="page" id="page2" hidden>
+          <input type="radio" name="page" id="page3" hidden>
+          <div class="page-buttons">
+            <label for="page1" class="pagination-btn">1</label>
+            <label for="page2" class="pagination-btn">2</label>
+            <label for="page3" class="pagination-btn">3</label>
+          </div>
+          <div class="pagination-content">
+            <div class="page page1"><p>Showing customers 1–5</p></div>
+            <div class="page page2"><p>Showing customers 6–10</p></div>
+            <div class="page page3"><p>Page 3</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Popups -->
+      <input type="checkbox" id="resetPopup" hidden>
+      <div class="popup">
+        <label for="resetPopup" class="overlay"></label>
+        <div class="popup-box">
+          <h3>Password Reset</h3>
+          <p>The customer's password has been successfully reset.</p>
+          <label for="resetPopup" class="btn close-btn">OK</label>
+        </div>
+      </div>
+
+      <input type="checkbox" id="lockPopup" hidden>
+      <div class="popup">
+        <label for="lockPopup" class="overlay"></label>
+        <div class="popup-box">
+          <h3>Account Locked</h3>
+          <p>The customer's account has been locked successfully.</p>
+          <label for="lockPopup" class="btn close-btn">OK</label>
+        </div>
+      </div>
+
+      <input type="checkbox" id="unlockPopup" hidden>
+      <div class="popup">
+        <label for="unlockPopup" class="overlay"></label>
+        <div class="popup-box">
+          <h3>Account Unlocked</h3>
+          <p>The customer's account has been successfully unlocked.</p>
+          <label for="unlockPopup" class="btn close-btn">OK</label>
+        </div>
+      </div>
+
+      <input type="checkbox" id="view" hidden>
+      <div class="user-detail">
+        <label for="view" class="overlay"></label>
+        <div class="detail-box">
+          <h3>Customer Details</h3>
+          <p><strong>Name:</strong> Demo Customer</p>
+          <p><strong>Email:</strong> demo@example.com</p>
+          <p><strong>Phone:</strong> +84 900 123 456</p>
+          <p><strong>Address:</strong> 123 Demo Street, District 1, HCMC</p>
+          <label for="view" class="btn close-btn">Close</label>
+        </div>
       </div>
     </section>
 
@@ -274,69 +407,36 @@ $customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
       </div>
     </section>
 
+    <!-- ======= Stock ======= -->
+    <section id="stock" class="section">
+      <header><h1>Inventory Management</h1></header>
+      <div class="user-actions">
+        <a href="add_entry_form.php" class="btn">Add Stock Receipt</a>
+        <a href="edit_entry_form.php" class="btn">Edit Stock Receipt</a>
+        <a href="stocking_management.php" class="btn">Stocking Management</a>
+      </div>
+    </section>
+
   </div><!-- /.content -->
 
-  <!-- ── Delete Product Popup ── -->
-  <div class="popup" id="deleteProductPopup">
-    <div class="popup-content">
-      <h3>Delete Product</h3>
-      <p>Are you sure you want to delete <strong id="deleteProductName"></strong>?</p>
-      <button class="btn" id="confirmDeleteProductBtn">Yes, Delete</button>
-      <button class="btn secondary" onclick="closePopup('deleteProductPopup')" style="margin-left:10px;">Cancel</button>
-    </div>
-  </div>
-
-  <!-- ── View Customer Popup ── -->
-  <div class="popup" id="viewCustomerPopup">
-    <div class="popup-content">
-      <h3>Customer Details</h3>
-      <p><strong>Name:</strong> <span id="viewCustName"></span></p>
-      <p><strong>Email:</strong> <span id="viewCustEmail"></span></p>
-      <p><strong>Status:</strong> <span id="viewCustStatus"></span></p>
-      <button class="btn secondary" onclick="closePopup('viewCustomerPopup')" style="margin-top:15px;">Close</button>
-    </div>
-  </div>
-
-  <!-- ── Confirm Action Popup ── -->
-  <div class="popup" id="confirmActionPopup">
-    <div class="popup-content">
-      <h3 id="confirmActionTitle">Confirm</h3>
-      <p id="confirmActionMsg">Are you sure?</p>
-      <button class="btn" id="confirmActionOkBtn">Confirm</button>
-      <button class="btn secondary" onclick="closePopup('confirmActionPopup')" style="margin-left:10px;">Cancel</button>
-    </div>
-  </div>
-
-  <!-- ── Toast ── -->
-  <div id="toast" class="toast"></div>
-
   <style>
-    .status-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
-    .status-badge.active  { background:#e8f5e9; color:#2e7d32; }
-    .status-badge.locked  { background:#ffebee; color:#c62828; }
     .logout-btn {
-      display:inline-flex; align-items:center; gap:10px; padding:12px 24px;
-      background:linear-gradient(135deg,#d9534f,#c9302c); color:white;
-      text-decoration:none; border-radius:8px; font-weight:600; transition:all 0.3s;
-      box-shadow:0 4px 10px rgba(217,83,79,0.3); border:none; cursor:pointer;
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #d9534f, #c9302c);
+      color: white; text-decoration: none; border-radius: 8px;
+      font-weight: 600; transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(217,83,79,0.3); border: none; cursor: pointer;
     }
-    .logout-btn:hover { transform:translateY(-2px); box-shadow:0 6px 15px rgba(217,83,79,0.4); }
-    .popup { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);
-             display:none; justify-content:center; align-items:center; z-index:999; }
-    .popup.active { display:flex; }
-    .popup-content { background:white; border-radius:10px; padding:28px 32px; max-width:420px;
-                     width:90%; box-shadow:0 5px 20px rgba(0,0,0,0.2); text-align:center; }
-    .popup-content h3 { margin-bottom:12px; color:#8e4b00; }
-    .btn.secondary { background:#e0e0e0; color:#333; }
-    .btn.secondary:hover { background:#c0c0c0; }
-    .toast { position:fixed; bottom:30px; right:30px; background:#8e4b00; color:#f8ce86;
-             padding:14px 22px; border-radius:8px; opacity:0; pointer-events:none;
-             transform:translateY(20px); transition:all 0.4s ease; z-index:1000; font-weight:600; }
-    .toast.show { opacity:1; transform:translateY(0); }
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(217,83,79,0.4);
+      background: linear-gradient(135deg, #c9302c, #ac2925);
+    }
+    .logout-btn i { font-size: 18px; }
   </style>
 
   <script>
-    // ── Tab switching ──
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -346,6 +446,7 @@ $customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
         localStorage.setItem('activeTabProducts', tab.dataset.tab);
       });
     });
+
     window.addEventListener('load', () => {
       const activeTab = localStorage.getItem('activeTabProducts');
       if (activeTab) {
@@ -357,82 +458,6 @@ $customers = $cust_result ? $cust_result->fetch_all(MYSQLI_ASSOC) : [];
         if (contentEl) contentEl.classList.add('active');
       }
     });
-
-    // ── Popup helpers ──
-    function openPopup(id)  { document.getElementById(id).classList.add('active'); }
-    function closePopup(id) { document.getElementById(id).classList.remove('active'); }
-
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2800);
-    }
-
-    // ── Delete Product ──
-    let pendingDeleteId = '';
-    document.querySelectorAll('.delete-product-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        pendingDeleteId = btn.dataset.id;
-        document.getElementById('deleteProductName').textContent = btn.dataset.name;
-        openPopup('deleteProductPopup');
-      });
-    });
-    document.getElementById('confirmDeleteProductBtn').addEventListener('click', () => {
-      fetch('Administration_menu.php', {
-        method: 'POST',
-        headers: {'Content-Type':'application/x-www-form-urlencoded'},
-        body: `action=delete_product&product_id=${encodeURIComponent(pendingDeleteId)}`
-      })
-      .then(r => r.json())
-      .then(data => {
-        closePopup('deleteProductPopup');
-        showToast(data.message);
-        if (data.success) setTimeout(() => location.reload(), 1500);
-      });
-    });
-
-    // ── View Customer ──
-    document.querySelectorAll('.view-customer-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.getElementById('viewCustName').textContent   = btn.dataset.name;
-        document.getElementById('viewCustEmail').textContent  = btn.dataset.email;
-        document.getElementById('viewCustStatus').textContent = btn.dataset.status;
-        openPopup('viewCustomerPopup');
-      });
-    });
-
-    // ── Customer Actions (lock / unlock / reset) ──
-    let pendingAction = '', pendingUid = '';
-    document.querySelectorAll('.action-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        pendingAction = btn.dataset.action;
-        pendingUid    = btn.dataset.uid;
-        const titles = { reset:'Reset Password', lock:'Lock Account', unlock:'Unlock Account' };
-        const msgs   = {
-          reset:  'Reset this customer\'s password to "default123"?',
-          lock:   'Are you sure you want to lock this account?',
-          unlock: 'Are you sure you want to unlock this account?',
-        };
-        document.getElementById('confirmActionTitle').textContent = titles[pendingAction] || 'Confirm';
-        document.getElementById('confirmActionMsg').textContent   = msgs[pendingAction]   || 'Are you sure?';
-        openPopup('confirmActionPopup');
-      });
-    });
-    document.getElementById('confirmActionOkBtn').addEventListener('click', () => {
-      fetch('search_customer.php', {
-        method: 'POST',
-        headers: {'Content-Type':'application/x-www-form-urlencoded'},
-        body: `action=${encodeURIComponent(pendingAction)}&user_id=${encodeURIComponent(pendingUid)}`
-      })
-      .then(r => r.json())
-      .then(data => {
-        closePopup('confirmActionPopup');
-        showToast(data.message);
-        if (data.success) setTimeout(() => location.reload(), 1500);
-      });
-    });
   </script>
-
 </body>
 </html>
