@@ -16,8 +16,130 @@ require_once __DIR__ . '/../../config/config.php';
 if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL',  BASE_URL . 'images/');
 
-// ── Link helpers ──────────────────────────────────────────────
-$link_home    = BASE_URL . 'User/users/index.php';
+// ... phần còn lại
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: " . BASE_URL . "User/Login.php");
+    exit();
+}
+$user_id = $_SESSION['user_id'];
+
+// Lấy thông tin người dùng
+$stmt = $conn->prepare("
+    SELECT u.email, c.full_name, c.phone, c.address
+    FROM users u
+    LEFT JOIN customers c ON u.id = c.user_id
+    WHERE u.id = ?
+");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$user = $stmt->get_result()->fetch_assoc();
+if (!$user) $user = ['email' => '', 'full_name' => '', 'phone' => '', 'address' => ''];
+
+// Lấy giỏ hàng và sản phẩm
+$cart_items = [];
+$total_amount = 0;
+$cart_stmt = $conn->prepare("SELECT product_id, quantity FROM cart WHERE user_id = ?");
+$cart_stmt->bind_param("i", $user_id);
+$cart_stmt->execute();
+$cart_result = $cart_stmt->get_result();
+$product_ids = [];
+$cart_qty = [];
+while ($row = $cart_result->fetch_assoc()) {
+    $product_ids[] = $row['product_id'];
+    $cart_qty[$row['product_id']] = $row['quantity'];
+}
+if (!empty($product_ids)) {
+    $placeholders = implode(',', array_fill(0, count($product_ids), '?'));
+    $types = str_repeat('s', count($product_ids));
+    $sql_products = "SELECT id, name, price FROM products WHERE id IN ($placeholders)";
+    $prod_stmt = $conn->prepare($sql_products);
+    $prod_stmt->bind_param($types, ...$product_ids);
+    $prod_stmt->execute();
+    $prod_result = $prod_stmt->get_result();
+    while ($prod = $prod_result->fetch_assoc()) {
+        $qty = $cart_qty[$prod['id']];
+        $item_total = $prod['price'] * $qty;
+        $cart_items[] = [
+            'id' => $prod['id'],
+            'name' => $prod['name'],
+            'price' => $prod['price'],
+            'quantity' => $qty,
+            'total' => $item_total
+        ];
+        $total_amount += $item_total;
+    }
+}
+
+// Xử lý submit form
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $full_name = trim($_POST['fullname'] ?? $user['full_name']);
+    $phone = trim($_POST['phone'] ?? $user['phone']);
+    $address_option = $_POST['addressOption'] ?? 'saved';
+    if ($address_option === 'saved') {
+        $address = $user['address'];
+    } else {
+        $address = trim($_POST['c_address'] ?? '');
+    }
+    $payment_method = $_POST['payment'] ?? 'cod';
+
+    if (empty($full_name) || empty($phone) || empty($address)) {
+        $error = "Please fill all required fields.";
+    } elseif (empty($cart_items)) {
+        $error = "Your cart is empty.";
+    } else {
+        $conn->begin_transaction();
+        try {
+            // Lấy hoặc tạo customer
+            $cust_stmt = $conn->prepare("SELECT id FROM customers WHERE user_id = ?");
+            $cust_stmt->bind_param("i", $user_id);
+            $cust_stmt->execute();
+            $cust_result = $cust_stmt->get_result();
+            if ($cust_result->num_rows === 0) {
+                $insert_cust = $conn->prepare("INSERT INTO customers (user_id, full_name, phone, address) VALUES (?, ?, ?, ?)");
+                $insert_cust->bind_param("isss", $user_id, $full_name, $phone, $address);
+                $insert_cust->execute();
+                $customer_id = $conn->insert_id;
+            } else {
+                $customer_id = $cust_result->fetch_assoc()['id'];
+                $update_cust = $conn->prepare("UPDATE customers SET full_name=?, phone=?, address=? WHERE id=?");
+                $update_cust->bind_param("sssi", $full_name, $phone, $address, $customer_id);
+                $update_cust->execute();
+            }
+
+            // Tạo đơn hàng
+            $order_number = 'ORD' . date('Ymd') . '-' . rand(1000, 9999);
+            $order_date = date('Y-m-d');
+            $status = 'Pending';
+            $insert_order = $conn->prepare("INSERT INTO orders (order_number, customer_id, order_date, total_amount, status) VALUES (?, ?, ?, ?, ?)");
+            $insert_order->bind_param("sisds", $order_number, $customer_id, $order_date, $total_amount, $status);
+            $insert_order->execute();
+            $order_id = $conn->insert_id;
+
+            // Thêm chi tiết đơn hàng
+            $insert_item = $conn->prepare("INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)");
+            foreach ($cart_items as $item) {
+                $insert_item->bind_param("issidd", $order_id, $item['id'], $item['name'], $item['quantity'], $item['price'], $item['total']);
+                $insert_item->execute();
+            }
+
+            // Xóa giỏ hàng
+            $delete_cart = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
+            $delete_cart->bind_param("i", $user_id);
+            $delete_cart->execute();
+
+            $conn->commit();
+            header("Location: order_success.php?order_id=" . $order_id);
+            exit();
+        } catch (Exception $e) {
+            $conn->rollback();
+            $error = "Error placing order. Please try again.";
+        }
+    }
+}
+
+
+$link_home    = BASE_URL . 'User/index.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
