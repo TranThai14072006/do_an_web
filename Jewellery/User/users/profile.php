@@ -17,7 +17,7 @@ $sql = "SELECT u.username, u.email,
         LEFT JOIN customers c ON u.id = c.user_id
         WHERE u.id = ?";
 
-$stmt = $conn_user->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -35,7 +35,7 @@ $order_sql = "SELECT o.id, o.status
               ORDER BY o.created_at DESC
               LIMIT 3";
 
-$order_stmt = $conn_user->prepare($order_sql);
+$order_stmt = $conn->prepare($order_sql);
 $order_stmt->bind_param("i", $user_id);
 $order_stmt->execute();
 $order_result = $order_stmt->get_result();
