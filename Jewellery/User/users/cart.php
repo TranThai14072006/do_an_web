@@ -1,7 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../config/config.php'; // nếu cart.php ở User/
-
+require_once "../../config/config.php";
 define('BASE_URL', '/do_an_web/Jewellery/');
 define('IMG_URL', BASE_URL . 'images/');
 
@@ -21,12 +20,12 @@ if (isset($_POST['ajax_action'])) {
         $product_id = (int)$_POST['product_id'];
         $quantity = (int)$_POST['quantity'];
         if ($product_id > 0 && $quantity >= 1) {
-            $stmt = $conn_user->prepare("UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?");
+            $stmt = $conn->prepare("UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?");
             $stmt->bind_param("iii", $quantity, $user_id, $product_id);
             $stmt->execute();
             if ($stmt->affected_rows === 0) {
                 // Chưa có thì thêm mới
-                $stmt2 = $conn_user->prepare("INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)");
+                $stmt2 = $conn->prepare("INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)");
                 $stmt2->bind_param("iii", $user_id, $product_id, $quantity);
                 $stmt2->execute();
                 $stmt2->close();
@@ -39,7 +38,7 @@ if (isset($_POST['ajax_action'])) {
     } elseif ($_POST['ajax_action'] === 'remove' && isset($_POST['product_id'])) {
         $product_id = (int)$_POST['product_id'];
         if ($product_id > 0) {
-            $stmt = $conn_user->prepare("DELETE FROM cart WHERE user_id = ? AND product_id = ?");
+            $stmt = $conn->prepare("DELETE FROM cart WHERE user_id = ? AND product_id = ?");
             $stmt->bind_param("ii", $user_id, $product_id);
             $stmt->execute();
             $stmt->close();
@@ -55,16 +54,21 @@ if (isset($_POST['ajax_action'])) {
 
 // Lấy giỏ hàng
 $sql_cart = "SELECT product_id, quantity FROM cart WHERE user_id = ?";
-$stmt = $conn_user->prepare($sql_cart);
-$stmt->bind_param("i", $user_id);
+$stmt = $conn->prepare($sql_cart);
+
+if (!$stmt) {
+    die("SQL Error: " . $conn->error);
+}
 $stmt->execute();
-$result = $stmt->get_result();
+
+$stmt->bind_result($product_id, $quantity);
 
 $cart_items = [];
 $product_ids = [];
-while ($row = $result->fetch_assoc()) {
-    $cart_items[$row['product_id']] = $row['quantity'];
-    $product_ids[] = $row['product_id'];
+
+while ($stmt->fetch()) {
+    $cart_items[$product_id] = $quantity;
+    $product_ids[] = $product_id;
 }
 
 if (!empty($product_ids)) {
@@ -100,13 +104,13 @@ if (!empty($product_ids)) {
 
 $stmt->close();
 $conn->close();
-$conn_user->close();
+
 
 // Link helpers
-$link_home    = BASE_URL . 'User/users/index.php';
-$link_login   = BASE_URL . 'User/login.php';
-$link_cart    = BASE_URL . 'User/cart.php';
-$link_profile = BASE_URL . 'User/profile.php';
+$link_home    = BASE_URL . 'User/index.php';
+$link_login   = BASE_URL . 'User/users/Login.php';
+$link_cart    = BASE_URL . 'User/users/cart.php';
+$link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
 $link_detail  = BASE_URL . 'User/users/product_detail.php';
 ?>
@@ -116,6 +120,7 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart | 36 Jewelry</title>
+    <link rel="stylesheet" href="../jewelry-cart.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/normalize.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>fonts/icomoon.css">
     <link href="<?= BASE_URL ?>bootstrap-5.3.0-dist/css/bootstrap.min.css" rel="stylesheet">
@@ -140,26 +145,53 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
 <body>
 
 <header class="header-container">
-    <div class="search-bar">
-        <div class="left"><a href="<?= $link_home ?>" class="home-btn"><i class="fas fa-home"></i> Home</a></div>
-        <div class="center">
-            <a href="<?= $link_home ?>"><img src="<?= IMG_URL ?>36-logo.png" class="header-logo" style="width:80px;height:auto;"></a>
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="Search products..." onkeydown="if(event.key==='Enter') doSearch()">
-                <button onclick="doSearch()"><i class="fas fa-search"></i></button>
-            </div>
-        </div>
-        <div class="right">
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <a href="<?= $link_cart ?>" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
-                <a href="<?= $link_profile ?>" class="icon-link"><i class="fas fa-user"></i><span class="ms-1 d-none d-md-inline"><?= htmlspecialchars($_SESSION['username'] ?? '') ?></span></a>
-                <a href="<?= $link_logout ?>" class="icon-link"><i class="fas fa-sign-out-alt"></i></a>
-            <?php else: ?>
-                <a href="<?= $link_login ?>" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
-                <a href="<?= $link_login ?>" class="icon-link"><i class="fas fa-user"></i></a>
-            <?php endif; ?>
-        </div>
+  <div class="search-bar">
+
+    <div class="left">
+      <a href="<?= $link_home ?>" class="home-btn">
+        <i class="fas fa-home"></i> Home
+      </a>
     </div>
+
+    <div class="center">
+      <a href="<?= $link_home ?>">
+        <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+      </a>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search products..."
+               onkeydown="if(event.key==='Enter') doSearch()">
+        <button onclick="doSearch()">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Header phải: luôn hiển thị trạng thái đã đăng nhập -->
+    <div class="right" style="display:flex; align-items:center; gap:20px;">
+
+  <!-- Giỏ hàng -->
+  <a href="<?= $link_cart ?>" class="icon-link" title="Giỏ hàng"
+     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
+    <i class="fas fa-shopping-cart" style="font-size:18px;"></i>
+  </a>
+
+  <!-- Tên tài khoản + icon profile -->
+  <a href="<?= $link_profile ?>" class="icon-link" title="Trang cá nhân"
+     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
+      <i class="fas fa-user-circle user-icon"></i>
+    <span style="font-size:13px; font-weight:600; white-space:nowrap; color:#333;">
+      <?= $logged_in_name ?>
+    </span>
+  </a>
+
+  <!-- Đăng xuất -->
+  <a href="<?= $link_logout ?>" class="icon-link" title="Đăng xuất"
+     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:#c0392b;">
+    <i class="fas fa-sign-out-alt" style="font-size:18px;"></i>
+    <span style="font-size:12px; font-weight:500;"></span>
+  </a>
+
+</div>
 </header>
 
 <main class="main-content">

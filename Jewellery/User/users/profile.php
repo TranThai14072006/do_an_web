@@ -17,7 +17,12 @@ $sql = "SELECT u.username, u.email,
         LEFT JOIN customers c ON u.id = c.user_id
         WHERE u.id = ?";
 
-$stmt = $conn_user->prepare($sql);
+
+$stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    die("SQL Error: " . $conn->error);
+}
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -35,7 +40,7 @@ $order_sql = "SELECT o.id, o.status
               ORDER BY o.created_at DESC
               LIMIT 3";
 
-$order_stmt = $conn_user->prepare($order_sql);
+$order_stmt = $conn->prepare($order_sql);
 $order_stmt->bind_param("i", $user_id);
 $order_stmt->execute();
 $order_result = $order_stmt->get_result();
@@ -54,9 +59,14 @@ while ($row = $order_result->fetch_assoc()) {
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<style>
-<?php echo file_get_contents("profile.css"); ?>
-</style>
+<?php
+$cssPath = __DIR__ . '/../profile.css';
+if (file_exists($cssPath)) {
+    echo '<style>' . PHP_EOL . file_get_contents($cssPath) . PHP_EOL . '</style>' . PHP_EOL;
+} else {
+    error_log('Unable to load profile.css at ' . $cssPath);
+}
+?>
 
 </head>
 <body>
@@ -69,7 +79,7 @@ while ($row = $order_result->fetch_assoc()) {
 
     <div class="center">
       <a href="../index.php">
-        <img src="../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+        <img src="../../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
       </a>
 
       <div class="search-box">
@@ -81,7 +91,7 @@ while ($row = $order_result->fetch_assoc()) {
     </div>
 
     <div class="right">
-      <a href="cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="Jewelry-cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
       <a href="profile.php" class="icon-link"><i class="fas fa-user"></i></a>
     </div>
   </div>
