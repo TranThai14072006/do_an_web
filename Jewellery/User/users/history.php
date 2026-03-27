@@ -38,7 +38,7 @@ define('IMG_URL', BASE_URL . 'images/');
 
 // Link helpers
 $link_home    = BASE_URL . 'User/index.php';
-$link_login   = BASE_URL . 'User/Login.php';
+$link_login   = BASE_URL . 'User/users/Login.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
