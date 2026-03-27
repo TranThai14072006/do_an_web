@@ -27,7 +27,7 @@
       </div>
     </div>
     <div class="right">
-      <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="../Cart/Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
       <a href="profile.html" class="icon-link"><i class="fas fa-user"></i></a>
     </div>
   </div>
@@ -248,10 +248,10 @@ async function addToCart(productId, productName, btn) {
   btn.textContent = 'Adding...';
 
   try {
-    const res = await fetch('add_to_cart.php', {
+    const res = await fetch('../Cart/jewelry_cart.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      body: JSON.stringify({ action: 'add', product_id: productId, quantity: 1 }),
     });
 
     const data = await res.json();
