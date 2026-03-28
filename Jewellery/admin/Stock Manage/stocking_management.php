@@ -40,9 +40,14 @@ $where1_sql = $where1 ? 'WHERE ' . implode(' AND ', $where1) : '';
 
 // Lấy danh sách sản phẩm cơ bản
 $stmt1 = $conn->prepare("SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC");
+if ($stmt1 === false) {
+    // Nếu query lỗi (thiều cột), fallback không lọc
+    $stmt1 = $conn->prepare("SELECT id, name, image, '' AS category, 0 AS stock FROM products ORDER BY id ASC");
+}
 if ($params1) $stmt1->bind_param($types1, ...$params1);
 $stmt1->execute();
-$base_products = $stmt1->get_result()->fetch_all(MYSQLI_ASSOC);
+$res1 = $stmt1->get_result();
+$base_products = $res1 ? $res1->fetch_all(MYSQLI_ASSOC) : [];
 $stmt1->close();
 
 // Nếu có ngày → tính tồn tại ngày đó
@@ -144,7 +149,10 @@ krsort($date_map);
 
 $stock_sql = "SELECT COALESCE(SUM(stock),0) AS total_stock FROM products" . ($report_product !== '' ? " WHERE name LIKE ?" : "");
 $stmt_stock = $conn->prepare($stock_sql);
-if ($report_product !== '') $stmt_stock->bind_param('s', '%'.$report_product.'%');
+if ($report_product !== '') {
+    $stock_like = '%' . $report_product . '%';
+    $stmt_stock->bind_param('s', $stock_like);
+}
 $stmt_stock->execute();
 $current_stock = (int)$stmt_stock->get_result()->fetch_assoc()['total_stock'];
 $stmt_stock->close();
@@ -247,14 +255,14 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
     <h2>Luxury Jewelry Admin</h2>
   </div>
   <div class="menu">
-    <a href="../Administration_menu.html#products">Jewelry List</a>
-      <a href="../Administration_menu.html#product-manage">Product Management</a>
-      <a href="../Administration_menu.html#users">Customers</a>
-      <a href="../Price Manage/pricing.php">Pricing Management</a>
-      <a href="../Import_product/import_management.php">Import Management</a>
-      <a href="../Order Manage/order_management.php">Order Management</a>
-      <a href="stocking_management.php" class="active">Stocking Management</a>
-      <a href="../Administration_menu.html#settings">Settings</a>>
+    <a href="../Administration_menu.php#products">Jewelry List</a>
+    <a href="../product_management.php">Product Management</a>
+    <a href="../Administration_menu.php#users">Customers</a>
+    <a href="../Price Manage/pricing.php">Pricing Management</a>
+    <a href="../Import_product/import_management.php">Import Management</a>
+    <a href="../Order Manage/order_management.php">Order Management</a>
+    <a href="stocking_management.php" class="active">Stocking Management</a>
+    <a href="../Administration_menu.php#settings">Settings</a>
   </div>
 </div>
 

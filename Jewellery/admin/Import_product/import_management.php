@@ -176,9 +176,9 @@ function build_url($page, $params = []) {
     <h2>Luxury Jewelry Admin</h2>
   </div>
   <div class="menu">
-    <a href="../Administration_menu.html#products">Jewelry List</a>
-    <a href="../Administration_menu.html#product-manage">Product Management</a>
-    <a href="../Administration_menu.html#users">Customers</a>
+    <a href="../Administration_menu.php#products">Jewelry List</a>
+    <a href="../product_management.php">Product Management</a>
+    <a href="../Administration_menu.php#users">Customers</a>
     <a href="../Price Manage/pricing.php">Pricing Management</a>
     <a href="import_management.php" class="active">Import Management</a>
     <a href="../Order Manage/order_management.php">Order Management</a>

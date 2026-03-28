@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($username === '' || $password === '') {
         $error = "Vui lòng nhập đầy đủ thông tin!";
     } else {
-        $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
+        $stmt = $conn->prepare("SELECT id, username, password, status FROM users WHERE username = ? AND role = 'user'");
         if (!$stmt) {
             die("SQL error: " . $conn->error);
         }
@@ -26,16 +26,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows === 1) {
             $user = $result->fetch_assoc();
 
-            if (password_verify($password, $user['password'])) {
-                session_regenerate_id(true);
-
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-
-                header("Location: ../indexprofile.php");
-                exit();
+            if (strtolower($user['status']) === 'locked') {
+                $error = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.";
             } else {
-                $error = "Sai mật khẩu!";
+                $valid = false;
+                if (password_verify($password, $user['password'])) {
+                    $valid = true;
+                } elseif ($password === $user['password']) {
+                    $valid = true;
+                    // Auto-upgrade password to hash
+                    $newHash = password_hash($password, PASSWORD_DEFAULT);
+                    $upd = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                    $upd->bind_param('si', $newHash, $user['id']);
+                    $upd->execute();
+                }
+
+                if ($valid) {
+                    session_regenerate_id(true);
+
+                    $_SESSION['user_id']  = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+
+                    header("Location: ../indexprofile.php");
+                    exit();
+                } else {
+                    $error = "Sai mật khẩu!";
+                }
             }
         } else {
             $error = "Tài khoản không tồn tại!";

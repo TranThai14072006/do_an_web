@@ -24,7 +24,7 @@ $action = $data['action'] ?? '';
 // ===== GET CART =====
 if ($action === 'get') {
 
-    $sql = "SELECT c.product_id, c.quantity, p.name, p.image, p.price, p.profit_percent, p.stock
+    $sql = "SELECT c.product_id, c.quantity, c.size, p.name, p.image, p.price, p.profit_percent, p.stock
             FROM cart c
             JOIN products p ON c.product_id = p.id";
 
@@ -56,7 +56,8 @@ if ($action === 'get') {
             'name' => $row['name'],
             'image' => $row['image'],
             'price' => $sale_price,
-            'quantity' => $row['quantity']
+            'quantity' => $row['quantity'],
+            'size' => $row['size'] ?? ''
         ];
     }
 
@@ -66,8 +67,9 @@ if ($action === 'get') {
 
 // ===== ADD =====
 if ($action === 'add') {
-    $id = $data['product_id'] ?? '';
+    $id  = $data['product_id'] ?? '';
     $qty = (int)($data['quantity'] ?? 1);
+    $size = $conn->real_escape_string($data['size'] ?? '');
 
     if (!$id) {
         echo json_encode(['success' => false, 'message' => 'Missing product_id']);
@@ -77,9 +79,9 @@ if ($action === 'add') {
     $check = $conn->query("SELECT * FROM cart WHERE product_id = '$id'");
 
     if ($check && $check->num_rows > 0) {
-        $conn->query("UPDATE cart SET quantity = quantity + $qty WHERE product_id = '$id'");
+        $conn->query("UPDATE cart SET quantity = quantity + $qty, size = '$size' WHERE product_id = '$id'");
     } else {
-        $conn->query("INSERT INTO cart (product_id, quantity) VALUES ('$id', $qty)");
+        $conn->query("INSERT INTO cart (product_id, quantity, size) VALUES ('$id', $qty, '$size')");
     }
 
     echo json_encode(['success' => true]);
