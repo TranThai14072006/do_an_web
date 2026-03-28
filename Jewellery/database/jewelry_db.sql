@@ -204,9 +204,6 @@ UNLOCK TABLES;
 -- Table structure for table `products`
 --
 
-DROP TABLE IF EXISTS `products`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `products` (
   `id` varchar(50) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
@@ -216,22 +213,27 @@ CREATE TABLE `products` (
   `profit_percent` int(11) DEFAULT 0,
   `stock` int(11) DEFAULT 0,
   `category` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `gender` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `products`
+-- Đang đổ dữ liệu cho bảng `products`
 --
 
-LOCK TABLES `products` WRITE;
-/*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES ('B001','Luxury Gold Bracelet',0.00,'B001.jpg',2000.00,50,0,'Unisex'),('E001','Pearl Drop Earrings',0.00,'E001.jpg',500.00,40,0,'Unisex'),('E002','Crystal Stud Earrings',0.00,'E002.jpg',300.00,35,0,'Unisex'),('N001','Diamond Heart Necklace',0.00,'N001.jpg',1500.00,30,0,'Unisex'),('N002','Gold Chain Necklace',0.00,'N002.jpg',1100.00,25,0,'Unisex'),('R001','Kane Moissanite Ring',0.00,'R001.jpg',1020.00,30,9,'Unisex'),('R002','Winston Anchor Ring',0.00,'R002.jpg',1220.00,40,2,'Unisex'),('R003','Ula Opal Teardrop Ring',0.00,'R003.jpg',39.50,25,0,'Unisex'),('R004','Platinum Clover Charm Ring',0.00,'R004.jpg',1210.00,35,0,'Unisex'),('R005','Paisley Moissanite Ring',0.00,'R005.jpg',980.00,20,0,'Unisex');
-/*!40000 ALTER TABLE `products` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO `products` (`id`, `name`, `price`, `image`, `cost_price`, `profit_percent`, `stock`, `category`, `gender`) VALUES
+('R001', 'Kane Moissanite Ring', 1326.00, 'R001.jpg', 1020.00, 30, 10, 'Ring', 'Male'),
+('R002', 'Winston Anchor Ring', 1708.00, 'R002.jpg', 1220.00, 40, 5, 'Ring', 'Male'),
+('R003', 'Ula Opal Teardrop Ring', 49.38, 'R003.jpg', 39.50, 25, 15, 'Ring', 'Female'),
+('R004', 'Platinum Clover Charm Ring', 1633.50, 'R004.jpg', 1210.00, 35, 8, 'Ring', 'Female'),
+('R005', 'Paisley Moissanite Ring', 1176.00, 'R005.jpg', 980.00, 20, 12, 'Ring', 'Female'),
+('R006', 'Niche Crown Stack Ring', 120.00, 'R006.jpg', 60.00, 100, 10, 'Ring', 'Female'),
+('R007', 'The Zenith Ring', 130.00, 'R007.jpg', 70.00, 85, 15, 'Ring', 'Male'),
+('R008', 'Silver Eminence Ring', 150.00, 'R008.jpg', 90.00, 67, 8, 'Ring', 'Male'),
+('R009', 'Elysian Flow', 200.00, 'R009.jpg', 120.00, 67, 5, 'Ring', 'Unisex'),
+('R010', 'Onyx Edge', 95.00, 'R010.jpg', 50.00, 90, 12, 'Ring', 'Unisex');
 
-<<<<<<< HEAD
-
+ALTER TABLE `products`
+  ADD PRIMARY KEY (`id`);
 -- --------------------------------------------------------
 Cấu trúc bảng cho bảng `product_details`
 --
@@ -283,8 +285,6 @@ CREATE TABLE `cart` (
 ALTER TABLE `cart`
   ADD PRIMARY KEY (`product_id`);
 ALTER TABLE cart ADD COLUMN size VARCHAR(10) DEFAULT '';
-=======
->>>>>>> 74b9b53 (Refactor: Decouple Customer Management from Admin Menu, implement real DB pagination, and enforce secure Role-Based Access Control (RBAC) across all login portals)
 --
 -- Table structure for table `receipt_details`
 --
