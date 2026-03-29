@@ -1,31 +1,35 @@
 <?php
 session_start();
-require_once "../../config/config.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/do_an_web/Jewellery/config/config.php";
 
 if (isset($_SESSION['user_id'])) {
-    header("Location:../index.php");
+    header("Location: ../index.php");
     exit();
 }
 
 $error = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
     $fullname = trim($_POST['fullname'] ?? '');
-    $email = trim($_POST['email'] ?? '');
+    $email    = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
     $confirm  = trim($_POST['confirmPassword'] ?? '');
     $phone    = trim($_POST['phone'] ?? '');
     $address  = trim($_POST['address'] ?? '');
 
-    // Validate
     if ($fullname === '' || $email === '' || $password === '' || $phone === '' || $address === '') {
         $error = "Please fill in all required fields!";
-    } elseif ($password !== $confirm) {
+    } 
+    elseif ($password !== $confirm) {
         $error = "Passwords do not match!";
-    } elseif (!preg_match('/^0[0-9]{9,10}$/', $phone)) {
-        $error = "Invalid phone number (must start with 0 and have 10-11 digits)!";
-    } else {
-        // Check email exists
+    } 
+    elseif (!preg_match('/^0[0-9]{9,10}$/', $phone)) {
+        $error = "Invalid phone number!";
+    } 
+    else {
+
+        // ✅ SỬA Ở ĐÂY
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -34,41 +38,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows > 0) {
             $error = "Email already exists!";
             $stmt->close();
-        } else {
+        } 
+        else {
 
-            // ✅ mã hóa password
+            $stmt->close();
+
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            $username = $email; // use email as username
+            $username = $email;
 
+            // ✅ SỬA Ở ĐÂY
             $conn->begin_transaction();
 
             try {
-                // Insert into users
-                $stmt = $conn->prepare("INSERT INTO users(username, email, password, role, status) VALUES (?, ?, ?, 'user', 'active')");
+
+                // ✅ SỬA Ở ĐÂY
+                $stmt = $conn->prepare("INSERT INTO users(username, email, password) VALUES (?, ?, ?)");
                 $stmt->bind_param("sss", $username, $email, $hash);
                 $stmt->execute();
+
                 $user_id = $stmt->insert_id;
                 $stmt->close();
 
-                // Insert into customers
+                // ✅ SỬA Ở ĐÂY
                 $stmt = $conn->prepare("INSERT INTO customers(user_id, full_name, phone, address) VALUES (?, ?, ?, ?)");
                 $stmt->bind_param("isss", $user_id, $fullname, $phone, $address);
                 $stmt->execute();
                 $stmt->close();
 
+                // ✅ SỬA Ở ĐÂY
                 $conn->commit();
 
-                $_SESSION['user_id']  = $user_id;
-                $_SESSION['username'] = $fullname;
-                header("Location: login.php");
+                header("Location: login.php?success=1");
                 exit();
+
             } catch (Exception $e) {
+                // ✅ SỬA Ở ĐÂY
                 $conn->rollback();
-                $error = "Registration failed. Please try again.";
+                $error = "Registration failed.";
             }
         }
-
-        $stmt->close();
     }
 }
 ?>
@@ -531,7 +539,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="right">
       <div class="icons">
-        <a href="Jewelry-cart.php" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+        <a href="Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
         <a href="login.php" class="icon-link"><i class="fas fa-user"></i></a>
       </div>
     </div>
@@ -581,7 +589,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
              placeholder="Enter your password" required>
     </div>
 
-    <div class="input-group">
+    <div class="input-group"> 
       <label>Confirm Password</label>
       <input type="password" name="confirmPassword" required>
     </div>

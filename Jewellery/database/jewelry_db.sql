@@ -280,11 +280,11 @@ ALTER TABLE `product_details`
 
 CREATE TABLE `cart` (
   `product_id` varchar(50) NOT NULL,
-  `quantity` int(11) DEFAULT NULL
+  `quantity` int(11) DEFAULT NULL,
+  `size` varchar(10) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ALTER TABLE `cart`
-  ADD PRIMARY KEY (`product_id`);
-ALTER TABLE cart ADD COLUMN size VARCHAR(10) DEFAULT '';
+  ADD PRIMARY KEY (`product_id`,`size`);
 --
 -- Table structure for table `receipt_details`
 --

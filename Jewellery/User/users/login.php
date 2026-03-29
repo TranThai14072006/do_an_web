@@ -1,10 +1,14 @@
 <?php
 session_start();
 require_once "../../config/config.php";
+
+// If already logged in → go to profile
 if (isset($_SESSION['user_id'])) {
-    header("Location:../index.php");
+    header("Location: ../indexprofile.php");
     exit();
 }
+
+$error = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
@@ -12,8 +16,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = trim($_POST['password'] ?? '');
 
     if ($username === '' || $password === '') {
-        $error = "Vui lòng nhập đầy đủ thông tin!";
+        $error = "Please enter all required fields!";
     } else {
+
         $stmt = $conn->prepare("SELECT id, username, password, status FROM users WHERE username = ? AND role = 'user'");
         if (!$stmt) {
             die("SQL error: " . $conn->error);
@@ -24,24 +29,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $result = $stmt->get_result();
 
         if ($result->num_rows === 1) {
+
             $user = $result->fetch_assoc();
 
+            // 🚫 Check if account is locked
             if (strtolower($user['status']) === 'locked') {
-                $error = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.";
-            } else {
+                $error = "Your account has been locked. Please contact admin.";
+            } 
+            else {
+
                 $valid = false;
+
+                // ✅ Hashed password
                 if (password_verify($password, $user['password'])) {
                     $valid = true;
-                } elseif ($password === $user['password']) {
+                } 
+                // ⚠️ Plain text password (old data) → upgrade to hash
+                elseif ($password === $user['password']) {
                     $valid = true;
-                    // Auto-upgrade password to hash
+
                     $newHash = password_hash($password, PASSWORD_DEFAULT);
                     $upd = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-                    $upd->bind_param('si', $newHash, $user['id']);
+                    $upd->bind_param("si", $newHash, $user['id']);
                     $upd->execute();
                 }
 
                 if ($valid) {
+
                     session_regenerate_id(true);
 
                     $_SESSION['user_id']  = $user['id'];
@@ -50,11 +64,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     header("Location: ../indexprofile.php");
                     exit();
                 } else {
-                    $error = "Sai mật khẩu!";
+                    $error = "Incorrect password!";
                 }
             }
+
         } else {
-            $error = "Tài khoản không tồn tại!";
+            $error = "Account does not exist!";
         }
 
         $stmt->close();

@@ -55,6 +55,7 @@
     <thead>
       <tr>
         <th>Product</th>
+        <th>Size</th>
         <th>Price</th>
         <th>Quantity</th>
         <th>Total</th>
@@ -62,9 +63,7 @@
       </tr>
     </thead>
 
-    <!-- 🔥 QUAN TRỌNG: tbody rỗng -->
     <tbody id="cart-body"></tbody>
-
   </table>
 
   <div class="cart-summary">
@@ -95,7 +94,7 @@ async function loadCart() {
     if (data.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" style="text-align:center;padding:40px;font-size:20px;">
+          <td colspan="6" style="text-align:center;padding:40px;font-size:20px;">
             Your cart is empty.
           </td>
         </tr>`;
@@ -105,17 +104,24 @@ async function loadCart() {
     data.forEach(item => {
       const tr = document.createElement('tr');
 
+      // Hiển thị size — nếu không có thì ghi dấu gạch
+      const sizeDisplay = item.size ? item.size : '—';
+
       tr.innerHTML = `
         <td class="product-info">
           <img src="../../images/${item.image}" class="product-thumb">
           <span>${item.name}</span>
         </td>
 
+        <td class="size-cell">${sizeDisplay}</td>
+
         <td class="price">$${Number(item.price).toFixed(2)}</td>
 
         <td class="quantity-cell">
           <input type="number" value="${item.quantity}" min="1"
-                 class="quantity-input" data-id="${item.id}">
+                 class="quantity-input"
+                 data-id="${item.id}"
+                 data-size="${item.size ?? ''}">
         </td>
 
         <td class="item-total">$0.00</td>
@@ -127,7 +133,7 @@ async function loadCart() {
           </button>
 
           <button class="remove-btn"
-            onclick="removeItem('${item.id}', this)">
+            onclick="removeItem('${item.id}', '${item.size ?? ''}', this)">
             Remove
           </button>
         </td>
@@ -141,7 +147,7 @@ async function loadCart() {
 
   } catch (err) {
     document.getElementById('cart-body').innerHTML =
-      `<tr><td colspan="5" style="text-align:center;color:red;">
+      `<tr><td colspan="6" style="text-align:center;color:red;">
         Error loading cart
       </td></tr>`;
   }
@@ -152,12 +158,17 @@ function updateTotals() {
   let total = 0;
 
   document.querySelectorAll('#cart-body tr').forEach(row => {
-    const price = parseFloat(row.querySelector('.price').textContent.replace('$',''));
-    const qty = parseInt(row.querySelector('.quantity-input').value);
+    const priceEl  = row.querySelector('.price');
+    const qtyEl    = row.querySelector('.quantity-input');
+    const totalEl  = row.querySelector('.item-total');
 
+    if (!priceEl || !qtyEl || !totalEl) return;
+
+    const price    = parseFloat(priceEl.textContent.replace('$', ''));
+    const qty      = parseInt(qtyEl.value);
     const itemTotal = price * qty;
-    row.querySelector('.item-total').textContent = '$' + itemTotal.toFixed(2);
 
+    totalEl.textContent = '$' + itemTotal.toFixed(2);
     total += itemTotal;
   });
 
@@ -165,6 +176,7 @@ function updateTotals() {
 }
 
 // ===== UPDATE QUANTITY =====
+// Truyền thêm data-size để backend update đúng dòng (product_id + size)
 function attachEvents() {
   document.querySelectorAll('.quantity-input').forEach(input => {
     input.addEventListener('change', async () => {
@@ -173,9 +185,10 @@ function attachEvents() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'update',
+          action:     'update',
           product_id: input.dataset.id,
-          quantity: input.value
+          size:       input.dataset.size,   // <-- FIX: gửi size
+          quantity:   input.value
         })
       });
 
@@ -185,14 +198,16 @@ function attachEvents() {
 }
 
 // ===== REMOVE =====
-async function removeItem(id, btn) {
+// Truyền thêm size để backend xoá đúng dòng (product_id + size)
+async function removeItem(id, size, btn) {
 
   await fetch('jewelry_cart.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      action: 'remove',
-      product_id: id
+      action:     'remove',
+      product_id: id,
+      size:       size    // <-- FIX: gửi size
     })
   });
 
