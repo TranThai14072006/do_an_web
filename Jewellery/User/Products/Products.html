@@ -189,6 +189,22 @@ function renderPage(page) {
 });
 }
 
+function doSearch() {
+  const keyword = document.getElementById('search-input').value.trim();
+
+  if (!keyword) return;
+
+  fetch(`../search/search-api.php?q=${encodeURIComponent(keyword)}`)
+    .then(res => res.json())
+    .then(data => {
+      allProducts = data;
+      currentPage = 1;
+      renderPage(currentPage);
+      renderPagination();
+    })
+    .catch(err => console.error(err));
+}
+
 function renderPagination() {
   const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
   const pagination = document.getElementById('pagination');
