@@ -1,8 +1,16 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../config/config.php';
-if (!isset($_SESSION['user_id'])) { header("Location: " . BASE_URL . "User/Login.php"); exit(); }
-$user_id = $_SESSION['user_id'];
+
+// Định nghĩa hằng TRƯỚC khi dùng
+if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ' . BASE_URL . 'User/users/login.php');
+    exit();
+}
+$user_id = (int)$_SESSION['user_id'];
 
 // Lấy thông tin khách hàng
 $stmt = $conn->prepare("SELECT u.email, c.full_name, c.phone, c.address, c.id as customer_id FROM users u LEFT JOIN customers c ON u.id = c.user_id WHERE u.id = ?");
@@ -27,12 +35,12 @@ if ($user_info['customer_id']) {
     }
 }
 
-define('BASE_URL', '/do_an_web/Jewellery/');
-define('IMG_URL', BASE_URL . 'images/');
-$link_home = BASE_URL . 'User/index.php';
-$link_cart = BASE_URL . 'User/users/cart.php';
+// Links (BASE_URL already defined above)
+$link_home    = BASE_URL . 'User/indexprofile.php';
+$link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
-$link_search = BASE_URL . 'User/users/search.php';
+$link_logout  = BASE_URL . 'User/users/logout.php';
+$link_search  = BASE_URL . 'User/users/search.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -30,6 +30,7 @@ CREATE TABLE `customers` (
   `address` text DEFAULT NULL,
   `birthday` date DEFAULT NULL,
   `gender` enum('Male','Female','Other') DEFAULT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_id` (`user_id`),
@@ -279,12 +280,12 @@ ALTER TABLE `product_details`
   ADD CONSTRAINT `product_details_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE;
 
 CREATE TABLE `cart` (
+  `user_id` int(11) NOT NULL DEFAULT 0,
   `product_id` varchar(50) NOT NULL,
-  `quantity` int(11) DEFAULT NULL
+  `quantity` int(11) DEFAULT NULL,
+  `size` varchar(10) DEFAULT '',
+  PRIMARY KEY (`user_id`, `product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-ALTER TABLE `cart`
-  ADD PRIMARY KEY (`product_id`);
-ALTER TABLE cart ADD COLUMN size VARCHAR(10) DEFAULT '';
 --
 -- Table structure for table `receipt_details`
 --
