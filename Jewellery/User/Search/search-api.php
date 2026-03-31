@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 
 $host = 'localhost';
-$db   = 'shop_db';
+$db   = 'jewelry_db'; // ✅ FIX DB
 $user = 'root';
 $pass = '';
 
@@ -21,46 +21,46 @@ try {
     exit;
 }
 
-// Lấy danh sách sản phẩm
-$gender = isset($_GET['gender']) ? $_GET['gender'] : 'all';
+// ✅ LẤY KEYWORD SEARCH
+$q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-if ($gender !== 'all') {
-    $stmt = $pdo->prepare(
-        "SELECT id, name, price AS cost_price, profit_percent, stock, image, gender 
-         FROM products WHERE gender = :gender ORDER BY id ASC"
-    );
-    $stmt->execute(['gender' => $gender]);
+if ($q !== '') {
+    $stmt = $pdo->prepare("
+        SELECT id, name, price AS cost_price, profit_percent, stock, image, gender 
+        FROM products 
+        WHERE name LIKE :q
+        ORDER BY id ASC
+    ");
+    $stmt->execute(['q' => "%$q%"]);
 } else {
-    $stmt = $pdo->query(
-        "SELECT id, name, price AS cost_price, profit_percent, stock, image, gender 
-         FROM products ORDER BY id ASC"
-    );
+    $stmt = $pdo->query("
+        SELECT id, name, price AS cost_price, profit_percent, stock, image, gender 
+        FROM products
+        ORDER BY id ASC
+    ");
 }
 
 $rows = $stmt->fetchAll();
 
-// Pre-load phiếu nhập (goods_receipt_items)
+// ===== TÍNH GIÁ =====
 $receiptItems = [];
 foreach ($pdo->query("SELECT product_id, quantity, unit_price FROM goods_receipt_items")->fetchAll() as $r) {
     $receiptItems[$r['product_id']][] = $r;
 }
 
-// Tính giá bán weighted average + profit_percent
 $products = [];
 foreach ($rows as $p) {
     $pid            = $p['id'];
     $current_stock  = (int)$p['stock'];
     $current_cost   = (float)$p['cost_price'];
-    $profit_percent = isset($p['profit_percent']) ? (float)$p['profit_percent'] : 0;
+    $profit_percent = (float)$p['profit_percent'];
 
     $total_quantity = $current_stock;
     $total_cost     = $current_cost * $current_stock;
 
     foreach ($receiptItems[$pid] ?? [] as $r) {
-        $qty_new   = (int)$r['quantity'];
-        $price_new = (float)$r['unit_price'];
-        $total_cost += $qty_new * $price_new;
-        $total_quantity += $qty_new;
+        $total_cost += $r['quantity'] * $r['unit_price'];
+        $total_quantity += $r['quantity'];
     }
 
     $avg_cost   = $total_quantity > 0 ? $total_cost / $total_quantity : $current_cost;
@@ -71,7 +71,7 @@ foreach ($rows as $p) {
         'name'       => $p['name'],
         'gender'     => $p['gender'],
         'sale_price' => $sale_price,
-        'image'      => !empty($p['image']) ? $p['image'] : 'placeholder.png',
+        'image'      => $p['image'] ?: 'placeholder.png',
     ];
 }
 

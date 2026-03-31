@@ -87,8 +87,8 @@ ALTER TABLE `products`
 CREATE TABLE `cart` (
   `product_id` varchar(50) NOT NULL,
   `quantity` int(11) DEFAULT NULL,
-  `size` varchar(10) DEFAULT ''
+  `size` varchar(10) NOT NULL DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 ALTER TABLE `cart`
-  ADD PRIMARY KEY (`product_id`);
+  ADD PRIMARY KEY (`product_id`,`size`);
 COMMIT;

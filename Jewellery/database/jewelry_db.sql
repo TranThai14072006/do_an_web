@@ -283,9 +283,16 @@ CREATE TABLE `cart` (
   `user_id` int(11) NOT NULL DEFAULT 0,
   `product_id` varchar(50) NOT NULL,
   `quantity` int(11) DEFAULT NULL,
+<<<<<<< HEAD
   `size` varchar(10) DEFAULT '',
   PRIMARY KEY (`user_id`, `product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+=======
+  `size` varchar(10) NOT NULL DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ALTER TABLE `cart`
+  ADD PRIMARY KEY (`product_id`,`size`);
+>>>>>>> 229c907dce550c6fab450472dc9e0a1971e366e7
 --
 -- Table structure for table `receipt_details`
 --
