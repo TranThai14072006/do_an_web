@@ -621,12 +621,6 @@ $link_shop    = BASE_URL . 'User/Products/Products.html';
   crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 <script>
-  function doSearch() {
-    const keyword = document.getElementById('search-input').value.trim();
-    if (keyword !== '') {
-      window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(keyword);
-    }
-  }
 
   const productSwiper = new Swiper('.product-swiper', {
     slidesPerView: 3,
@@ -647,6 +641,23 @@ $link_shop    = BASE_URL . 'User/Products/Products.html';
     loop: true,
     pagination: { el: '.swiper-pagination', clickable: true }
   });
+
+  function doSearch() {
+  const keyword = document.getElementById('search-input').value.trim();
+
+  if (!keyword) return;
+
+  fetch(`search/search-api.php?q=${encodeURIComponent(keyword)}`)
+    .then(res => res.json())
+    .then(data => {
+      allProducts = data;
+      currentPage = 1;
+      renderPage(currentPage);
+      renderPagination();
+    })
+    .catch(err => console.error(err));
+}
+
 </script>
 
 </body>
