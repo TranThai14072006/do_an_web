@@ -7,10 +7,132 @@
   <link rel="stylesheet" href="../../style.css">
   <link rel="stylesheet" href="Product.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ===== SIZE MODAL ===== */
+    .size-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .size-modal-overlay.open {
+      display: flex;
+    }
+    .size-modal {
+      background: #fff;
+      border-radius: 10px;
+      padding: 32px 28px 24px;
+      width: 340px;
+      max-width: 92vw;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      position: relative;
+      animation: modalIn .18s ease;
+    }
+    @keyframes modalIn {
+      from { transform: translateY(30px); opacity: 0; }
+      to   { transform: translateY(0);   opacity: 1; }
+    }
+    .size-modal h3 {
+      margin: 0 0 6px;
+      font-size: 17px;
+      font-weight: 700;
+      color: #2d1a0e;
+    }
+    .size-modal .modal-product-name {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+    .size-modal .size-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 10px;
+    }
+    .size-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .size-options button {
+      width: 46px;
+      height: 46px;
+      border: 1.5px solid #ddd;
+      background: #fafafa;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #444;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .size-options button:hover {
+      border-color: #c9a96e;
+      color: #8a5e2d;
+      background: #fff8f0;
+    }
+    .size-options button.selected {
+      border-color: #c9a96e;
+      background: #c9a96e;
+      color: #fff;
+    }
+    .size-modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .size-modal-actions .btn-cancel {
+      flex: 1;
+      padding: 11px;
+      border: 1.5px solid #ddd;
+      background: #fff;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #666;
+    }
+    .size-modal-actions .btn-confirm {
+      flex: 2;
+      padding: 11px;
+      border: none;
+      background: #c9a96e;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .size-modal-actions .btn-confirm:hover { background: #b8945f; }
+    .size-modal-actions .btn-confirm:disabled {
+      background: #ddd;
+      cursor: not-allowed;
+    }
+    .size-modal .close-modal {
+      position: absolute;
+      top: 12px; right: 14px;
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: #aaa;
+      cursor: pointer;
+    }
+    .no-size-option {
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 18px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body class="homepage bg-accent-light">
-
-  
 
 <header class="header-container">
   <div class="search-bar">
@@ -38,7 +160,6 @@
     <!-- RIGHT -->
     <div class="right">
 
-
       <!-- CART -->
       <a href="../Cart/Jewelry-cart.html" class="icon-link" title="Giỏ hàng">
         <i class="fas fa-shopping-cart"></i>
@@ -55,12 +176,16 @@
         <i class="fas fa-sign-out-alt"></i>
       </a>
 
+<<<<<<< HEAD
+=======
+      <a href="../Cart/Jewelry-cart.html" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
+      <a href="../users/profile.php" class="icon-link"><i class="fas fa-user"></i></a>
+>>>>>>> 41d26349101901d44bf1772d070b0b7868440fe5
 
     </div>
 
   </div>
 </header>
-
 
 <section id="page-banner" class="padding-large no-padding-top position-relative">
   <div class="page-container">
@@ -122,6 +247,23 @@
   </div>
 </footer>
 
+<!-- ===== SIZE MODAL ===== -->
+<div class="size-modal-overlay" id="size-modal-overlay">
+  <div class="size-modal">
+    <button class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    <h3>Select Ring Size</h3>
+    <p class="modal-product-name" id="modal-product-name"></p>
+    <p class="size-label">Ring Size (US)</p>
+    <div class="size-options" id="size-options"></div>
+    <p class="no-size-option" onclick="confirmNoSize()">Skip — add without size</p>
+    <div class="size-modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" id="btn-confirm-size" disabled onclick="confirmSize()">Add to Cart</button>
+    </div>
+  </div>
+</div>
+
+<!-- CART NOTIFICATION -->
 <div class="cart-notification" id="cart-notification">
   <div class="notification-content">
     <div class="notification-icon">
@@ -143,6 +285,121 @@ let allProducts = [];
 let currentPage = 1;
 let currentGender = 'all';
 
+// ===== SIZE MODAL STATE =====
+const RING_SIZES = [5, 6, 7 ,8 ,9];
+let pendingProductId   = null;
+let pendingProductName = null;
+let pendingBtn         = null;
+let selectedSize       = null;
+
+// ===== OPEN MODAL =====
+function openSizeModal(productId, productName, btn) {
+  pendingProductId   = productId;
+  pendingProductName = productName;
+  pendingBtn         = btn;
+  selectedSize       = null;
+
+  document.getElementById('modal-product-name').textContent = productName;
+  document.getElementById('btn-confirm-size').disabled = true;
+
+  const container = document.getElementById('size-options');
+  container.innerHTML = '';
+  RING_SIZES.forEach(size => {
+    const b = document.createElement('button');
+    b.textContent = size;
+    b.addEventListener('click', () => {
+      container.querySelectorAll('button').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      selectedSize = String(size);
+      document.getElementById('btn-confirm-size').disabled = false;
+    });
+    container.appendChild(b);
+  });
+
+  document.getElementById('size-modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('size-modal-overlay').classList.remove('open');
+  if (pendingBtn) {
+    pendingBtn.disabled = false;
+    pendingBtn.textContent = 'Add to Cart';
+  }
+  pendingProductId = pendingProductName = pendingBtn = selectedSize = null;
+}
+
+function confirmSize() {
+  if (!selectedSize) return;
+  doAddToCart(pendingProductId, pendingProductName, selectedSize, pendingBtn);
+  document.getElementById('size-modal-overlay').classList.remove('open');
+}
+
+function confirmNoSize() {
+  doAddToCart(pendingProductId, pendingProductName, '', pendingBtn);
+  document.getElementById('size-modal-overlay').classList.remove('open');
+}
+
+// Đóng khi click overlay bên ngoài
+document.getElementById('size-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ===== ADD TO CART =====
+function addToCart(productId, productName, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Select size...';
+  openSizeModal(productId, productName, btn);
+}
+
+async function doAddToCart(productId, productName, size, btn) {
+  try {
+    const res = await fetch('../Cart/jewelry_cart.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action:     'add',
+        product_id: productId,
+        quantity:   1,
+        size:       size
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showNotification(productName, size);
+    } else {
+      alert(data.message || 'Failed to add to cart');
+    }
+  } catch (err) {
+    alert('Network error, please try again.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Add to Cart';
+    }
+  }
+}
+
+// ===== NOTIFICATION =====
+function showNotification(productName, size) {
+  const notification = document.getElementById('cart-notification');
+  const textEl = notification.querySelector('.notification-text h3');
+  textEl.textContent = size
+    ? `"${productName}" (Size ${size}) added!`
+    : `"${productName}" added to cart!`;
+  notification.classList.add('show');
+  clearTimeout(notification.timeout);
+  notification.timeout = setTimeout(() => notification.classList.remove('show'), 3000);
+}
+
+function closeNotification() {
+  const notification = document.getElementById('cart-notification');
+  notification.classList.remove('show');
+  clearTimeout(notification.timeout);
+}
+
+// ===== LOAD PRODUCTS =====
 async function loadProducts(gender) {
   try {
     const url = gender === 'all' ? 'products.php' : `products.php?gender=${gender}`;
@@ -161,8 +418,7 @@ function renderPage(page) {
   grid.innerHTML = '';
 
   const start = (page - 1) * ITEMS_PER_PAGE;
-  const end = start + ITEMS_PER_PAGE;
-  const pageProducts = allProducts.slice(start, end);
+  const pageProducts = allProducts.slice(start, start + ITEMS_PER_PAGE);
 
   pageProducts.forEach(product => {
     const card = document.createElement('article');
@@ -179,18 +435,17 @@ function renderPage(page) {
     `;
     grid.appendChild(card);
   });
+
   document.querySelectorAll('.btn-add').forEach(btn => {
-  btn.addEventListener('click', function () {
-    addToCart(this.dataset.id, this.dataset.name, this);
+    btn.addEventListener('click', function () {
+      addToCart(this.dataset.id, this.dataset.name, this);
+    });
   });
-});
 }
 
 function doSearch() {
   const keyword = document.getElementById('search-input').value.trim();
-
   if (!keyword) return;
-
   fetch(`../search/search-api.php?q=${encodeURIComponent(keyword)}`)
     .then(res => res.json())
     .then(data => {
@@ -207,56 +462,36 @@ function renderPagination() {
   const pagination = document.getElementById('pagination');
   pagination.innerHTML = '';
 
-  // Nút <
   const prev = document.createElement('a');
-  prev.href = '#';
-  prev.textContent = '<';
+  prev.href = '#'; prev.textContent = '<';
   if (currentPage === 1) prev.classList.add('disabled');
-  prev.addEventListener('click', function(e) {
+  prev.addEventListener('click', e => {
     e.preventDefault();
-    if (currentPage > 1) {
-      currentPage--;
-      renderPage(currentPage);
-      renderPagination();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (currentPage > 1) { currentPage--; renderPage(currentPage); renderPagination(); window.scrollTo({top:0,behavior:'smooth'}); }
   });
   pagination.appendChild(prev);
 
-  // Số trang
   for (let i = 1; i <= totalPages; i++) {
     const a = document.createElement('a');
-    a.href = '#';
-    a.textContent = i;
+    a.href = '#'; a.textContent = i;
     if (i === currentPage) a.classList.add('active');
-    a.addEventListener('click', function(e) {
+    a.addEventListener('click', e => {
       e.preventDefault();
-      currentPage = i;
-      renderPage(currentPage);
-      renderPagination();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      currentPage = i; renderPage(currentPage); renderPagination(); window.scrollTo({top:0,behavior:'smooth'});
     });
     pagination.appendChild(a);
   }
 
-  // Nút >
   const next = document.createElement('a');
-  next.href = '#';
-  next.textContent = '>';
+  next.href = '#'; next.textContent = '>';
   if (currentPage === totalPages || totalPages === 0) next.classList.add('disabled');
-  next.addEventListener('click', function(e) {
+  next.addEventListener('click', e => {
     e.preventDefault();
-    if (currentPage < totalPages) {
-      currentPage++;
-      renderPage(currentPage);
-      renderPagination();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (currentPage < totalPages) { currentPage++; renderPage(currentPage); renderPagination(); window.scrollTo({top:0,behavior:'smooth'}); }
   });
   pagination.appendChild(next);
 }
 
-// Xử lý click tab filter
 document.querySelectorAll('.filter-tab').forEach(tab => {
   tab.addEventListener('click', function(e) {
     e.preventDefault();
@@ -267,52 +502,7 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   });
 });
 
-// Load lần đầu
 loadProducts('all');
-</script>
-
-<script>
-function showNotification(productName) {
-  const notification = document.getElementById('cart-notification');
-  const textEl = notification.querySelector('.notification-text h3');
-  textEl.textContent = `"${productName}" added to cart!`;
-  notification.classList.add('show');
-  clearTimeout(notification.timeout);
-  notification.timeout = setTimeout(() => {
-    notification.classList.remove('show');
-  }, 3000);
-}
-
-function closeNotification() {
-  const notification = document.getElementById('cart-notification');
-  notification.classList.remove('show');
-  clearTimeout(notification.timeout);
-}
-async function addToCart(productId, productName, btn) {
-  btn.disabled = true;
-  btn.textContent = 'Adding...';
-
-  try {
-    const res = await fetch('../Cart/jewelry_cart.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'add', product_id: productId, quantity: 1 }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      showNotification(productName);
-    } else {
-      alert(data.message || 'Failed to add to cart');
-    }
-  } catch (err) {
-    alert('Network error, please try again.');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Add to Cart';
-  }
-}
 </script>
 
 </body>

@@ -121,6 +121,7 @@ if ($product) {
     <option value="6">Size 6</option>
     <option value="7">Size 7</option>
     <option value="8">Size 8</option>
+    <option value="9">Size 9</option>
   </select>
 </div>
 

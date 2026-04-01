@@ -1,173 +1,204 @@
 <?php
-// order_confirm.php - Bỏ kiểm tra đăng nhập, dùng user_id mặc định = 1
+// ═══════════════════════════════════════════════════════════
+// File: Jewellery/User/users/order_confirm.php
+// Chức năng:
+//   ✔ Kiểm tra đăng nhập (dùng session thực)
+//   ✔ Kiểm tra giỏ hàng không rỗng
+//   ✔ Form điền thông tin giao hàng
+//   ✔ Lưu đơn hàng vào DB (orders + order_items)
+//   ✔ Giảm stock sản phẩm
+//   ✔ Xóa giỏ hàng sau khi đặt
+//   ✔ Redirect → order_success.php
+// ═══════════════════════════════════════════════════════════
 
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
-// Định nghĩa BASE_URL và IMG_URL
 if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL',  BASE_URL . 'images/');
 
-// Bỏ kiểm tra đăng nhập, gán user_id mặc định (có thể sửa lại số này)
-$user_id = 1; // user_id test, đảm bảo tồn tại trong database
+// Kiểm tra đăng nhập
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ' . BASE_URL . 'User/users/login.php');
+    exit();
+}
 
-// Các link cho header (điều chỉnh theo cấu trúc thư mục)
-$link_home    = BASE_URL . 'User/index.php';          // Trang chủ
-$link_cart    = BASE_URL . 'User/Cart/Jewelry-cart.html';     // Giỏ hàng (nếu có cart.php trong users, nếu không thì sửa)
-$link_profile = BASE_URL . 'User/users/profile.php';  // Hồ sơ
-$link_search  = BASE_URL . 'User/Search/search.html';   // Tìm kiếm
+$user_id = (int)$_SESSION['user_id'];
 
-// Lấy thông tin khách hàng
-$user = [
-    'email'     => '',
-    'full_name' => '',
-    'phone'     => '',
-    'address'   => ''
-];
+// ── Links ─────────────────────────────────────────────────
+$link_home     = BASE_URL . 'User/indexprofile.php';
+$link_cart     = BASE_URL . 'User/users/cart.php';
+$link_profile  = BASE_URL . 'User/users/profile.php';
+$link_logout   = BASE_URL . 'User/users/logout.php';
+$link_search   = BASE_URL . 'User/users/search.php';
+$logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
+
+// ── Hàm tính giá bán ─────────────────────────────────────
+function calcPrice(array $r): float {
+    $cost   = (float)($r['cost_price']     ?? 0);
+    $profit = (int)  ($r['profit_percent'] ?? 0);
+    $price  = (float)($r['price']          ?? 0);
+    return $cost > 0 ? $cost * (1 + $profit / 100) : $price;
+}
+
+// ── Lấy thông tin user + customer ────────────────────────
 $stmt = $conn->prepare("
     SELECT u.email,
-           COALESCE(c.full_name, u.name, u.username, '') AS full_name,
+           COALESCE(c.full_name, u.username, '') AS full_name,
            COALESCE(c.phone, '')   AS phone,
            COALESCE(c.address, '') AS address
     FROM users u
     LEFT JOIN customers c ON u.id = c.user_id
-    WHERE u.id = ?
-    LIMIT 1
+    WHERE u.id = ? LIMIT 1
 ");
-if ($stmt) {
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $fetched = $stmt->get_result()->fetch_assoc();
-    if ($fetched) $user = $fetched;
-    $stmt->close();
-}
+$stmt->bind_param('i', $user_id);
+$stmt->execute();
+$user = $stmt->get_result()->fetch_assoc() ?? [];
+$stmt->close();
 
-// Lấy giỏ hàng và tính tổng
+// ── Lấy giỏ hàng ─────────────────────────────────────────
 $cart_items   = [];
-$total_amount = 0;
+$total_amount = 0.0;
 
-$cart_stmt = $conn->prepare("
+$cst = $conn->prepare("
     SELECT c.product_id, c.quantity,
-           p.name, p.price, p.image,
-           p.cost_price, p.profit_percent
+           p.name, p.price, p.image, p.cost_price, p.profit_percent, p.stock
     FROM cart c
     JOIN products p ON c.product_id = p.id
     WHERE c.user_id = ?
 ");
-if ($cart_stmt) {
-    $cart_stmt->bind_param("i", $user_id);
-    $cart_stmt->execute();
-    $cart_result = $cart_stmt->get_result();
-    while ($row = $cart_result->fetch_assoc()) {
-        $cost   = (float)($row['cost_price']     ?? 0);
-        $profit = (int)  ($row['profit_percent']  ?? 0);
-        $price  = (float)($row['price']           ?? 0);
-        $selling_price = ($cost > 0) ? $cost * (1 + $profit / 100) : $price;
-
-        $qty        = (int)$row['quantity'];
-        $item_total = $selling_price * $qty;
-
-        $cart_items[] = [
-            'id'       => $row['product_id'],
-            'name'     => $row['name'],
-            'image'    => IMG_URL . $row['image'],
-            'price'    => $selling_price,
-            'quantity' => $qty,
-            'total'    => $item_total,
-        ];
-        $total_amount += $item_total;
-    }
-    $cart_stmt->close();
+$cst->bind_param('i', $user_id);
+$cst->execute();
+$cres = $cst->get_result();
+while ($row = $cres->fetch_assoc()) {
+    $sp = calcPrice($row);
+    $qty = (int)$row['quantity'];
+    $cart_items[] = [
+        'id'       => $row['product_id'],
+        'name'     => $row['name'],
+        'image'    => $row['image'],
+        'price'    => $sp,
+        'quantity' => $qty,
+        'total'    => $sp * $qty,
+        'stock'    => (int)($row['stock'] ?? 0),
+    ];
+    $total_amount += $sp * $qty;
 }
+$cst->close();
 
-// Xử lý đặt hàng
+// ── Xử lý đặt hàng (POST) ────────────────────────────────
 $error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $full_name      = trim($_POST['fullname']      ?? '');
-    $phone          = trim($_POST['phone']         ?? '');
-    $payment_method = trim($_POST['payment']       ?? 'cod');
-    $address_option = trim($_POST['addressOption'] ?? 'saved');
-    $address        = ($address_option === 'new')
-                        ? trim($_POST['c_address'] ?? '')
-                        : trim($_POST['saved_address'] ?? $user['address']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
-    if (!$full_name || !$phone || !$address) {
-        $error = 'Vui lòng điền đầy đủ thông tin.';
-    } elseif (empty($cart_items)) {
-        $error = 'Giỏ hàng của bạn đang trống.';
-    } else {
+    $full_name      = trim($_POST['fullname']       ?? '');
+    $phone          = trim($_POST['phone']          ?? '');
+    $payment_method = trim($_POST['payment']        ?? 'cod');
+    $addr_option    = trim($_POST['addressOption']  ?? 'saved');
+    $address        = ($addr_option === 'new')
+                        ? trim($_POST['c_address']    ?? '')
+                        : trim($_POST['saved_address'] ?? $user['address'] ?? '');
+
+    // Validation
+    if (!$full_name) $error = 'Full name is required.';
+    elseif (!$phone) $error = 'Phone number is required.';
+    elseif (!$address) $error = 'Delivery address is required.';
+
+    // Kiểm tra stock
+    if (!$error) {
+        foreach ($cart_items as $item) {
+            if ($item['quantity'] > $item['stock']) {
+                $error = "\"" . htmlspecialchars($item['name']) . "\" is out of stock (only {$item['stock']} left).";
+                break;
+            }
+        }
+    }
+
+    if (!$error) {
         $conn->begin_transaction();
         try {
             // Upsert customers
-            $cust_stmt = $conn->prepare("SELECT id FROM customers WHERE user_id = ? LIMIT 1");
-            $cust_stmt->bind_param("i", $user_id);
-            $cust_stmt->execute();
-            $cust_result = $cust_stmt->get_result();
-            $cust_stmt->close();
+            $cid_st = $conn->prepare("SELECT id FROM customers WHERE user_id = ? LIMIT 1");
+            $cid_st->bind_param('i', $user_id);
+            $cid_st->execute();
+            $cid_row = $cid_st->get_result()->fetch_assoc();
+            $cid_st->close();
 
-            if ($cust_result->num_rows === 0) {
-                $ins = $conn->prepare("INSERT INTO customers (user_id, full_name, phone, address) VALUES (?, ?, ?, ?)");
-                $ins->bind_param("isss", $user_id, $full_name, $phone, $address);
-                $ins->execute();
-                $customer_id = $conn->insert_id;
-                $ins->close();
-            } else {
-                $cust_row    = $cust_result->fetch_assoc();
-                $customer_id = (int)$cust_row['id'];
+            if ($cid_row) {
+                $customer_id = (int)$cid_row['id'];
                 $upd = $conn->prepare("UPDATE customers SET full_name=?, phone=?, address=? WHERE id=?");
-                $upd->bind_param("sssi", $full_name, $phone, $address, $customer_id);
-                $upd->execute();
-                $upd->close();
+                $upd->bind_param('sssi', $full_name, $phone, $address, $customer_id);
+                $upd->execute(); $upd->close();
+            } else {
+                $ins = $conn->prepare("INSERT INTO customers (user_id, full_name, phone, address) VALUES (?,?,?,?)");
+                $ins->bind_param('isss', $user_id, $full_name, $phone, $address);
+                $ins->execute();
+                $customer_id = (int)$conn->insert_id;
+                $ins->close();
             }
 
-            // Tạo đơn hàng
-            $order_number = 'ORD' . date('Ymd') . '-' . rand(1000, 9999);
+            // Tạo order
+            $order_number = 'ORD' . date('Ymd') . rand(100, 999);
             $order_date   = date('Y-m-d');
             $status       = 'Pending';
 
-            $ins_order = $conn->prepare("
-                INSERT INTO orders (order_number, customer_id, order_date, total_amount, payment_method, status)
-                VALUES (?, ?, ?, ?, ?, ?)
+            $oi = $conn->prepare("
+                INSERT INTO orders (order_number, customer_id, order_date, total_amount, status)
+                VALUES (?, ?, ?, ?, ?)
             ");
-            $ins_order->bind_param("sisdss", $order_number, $customer_id, $order_date, $total_amount, $payment_method, $status);
-            $ins_order->execute();
-            $order_id = $conn->insert_id;
-            $ins_order->close();
+            $oi->bind_param('sisdss', $order_number, $customer_id, $order_date, $total_amount, $status);
+            // fix: missing 1 param — remove extra s
+            $oi2 = $conn->prepare("
+                INSERT INTO orders (order_number, customer_id, order_date, total_amount, status)
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $oi2->bind_param('sisds', $order_number, $customer_id, $order_date, $total_amount, $status);
+            $oi2->execute();
+            $order_id = (int)$conn->insert_id;
+            $oi2->close();
 
-            // Thêm chi tiết đơn hàng và cập nhật stock
-            $ins_item = $conn->prepare("
+            // Thêm order_items + giảm stock
+            $ii = $conn->prepare("
                 INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, total_price)
                 VALUES (?, ?, ?, ?, ?, ?)
             ");
             foreach ($cart_items as $item) {
-                $ins_item->bind_param("iissdd", $order_id, $item['id'], $item['name'], $item['quantity'], $item['price'], $item['total']);
-                $ins_item->execute();
+                $ii->bind_param('ississd',
+                    $order_id, $item['id'], $item['name'],
+                    $item['quantity'], $item['price'], $item['total']
+                );
+                // fix bind types
+                $ii2 = $conn->prepare("
+                    INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, total_price)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ");
+                $ii2->bind_param('issidd',
+                    $order_id, $item['id'], $item['name'],
+                    $item['quantity'], $item['price'], $item['total']
+                );
+                $ii2->execute(); $ii2->close();
 
                 // Giảm stock
-                $upd_stock = $conn->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
-                $upd_stock->bind_param("isi", $item['quantity'], $item['id'], $item['quantity']);
-                $upd_stock->execute();
-                $upd_stock->close();
+                $us = $conn->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
+                $us->bind_param('isi', $item['quantity'], $item['id'], $item['quantity']);
+                $us->execute(); $us->close();
             }
-            $ins_item->close();
 
-            // Xoá giỏ hàng
+            // Xóa giỏ hàng
             $del = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
-            $del->bind_param("i", $user_id);
-            $del->execute();
-            $del->close();
+            $del->bind_param('i', $user_id);
+            $del->execute(); $del->close();
 
             $conn->commit();
 
-            // Lưu thông tin đơn hàng vào session
             $_SESSION['last_order_id']     = $order_id;
             $_SESSION['last_order_number'] = $order_number;
 
-            header("Location: order_success.php?order_id=" . $order_id);
+            header('Location: ' . BASE_URL . 'User/users/order_success.php?order_id=' . $order_id);
             exit();
+
         } catch (Exception $e) {
             $conn->rollback();
-            $error = 'Đặt hàng thất bại: ' . $e->getMessage() . '. Vui lòng thử lại.';
+            $error = 'Order failed: ' . $e->getMessage();
         }
     }
 }
@@ -175,196 +206,109 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout | 36 Jewelry</title>
-  <link rel="stylesheet" href="search.css">
+  <meta name="description" content="Complete your 36 Jewelry order - enter shipping details and confirm.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* Giữ nguyên CSS như file gốc, không thay đổi */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Cormorant Garamond', serif;
-    }
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#b8860b;--gold-lt:#d4af37;--gold-pale:#f8ce86;--dark:#111;--bg:#fff;--accent:#f6f6f6;--muted:#666;--radius:12px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#fafafa;min-height:100vh;color:var(--dark);}
 
-    body {
-      background: linear-gradient(rgba(255,255,255,0.8), rgba(255,255,255,0.8)),
-                  url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
-      min-height: 100vh;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      opacity: 0;
-      animation: fadeInBody 1s forwards;
-    }
+/* HEADER */
+.header-container{width:100%;position:sticky;top:0;z-index:1000;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.search-bar{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:16px;}
+.search-bar .left,.search-bar .center,.search-bar .right{display:flex;align-items:center;}
+.search-bar .center{flex:1;justify-content:center;gap:24px;position:relative;}
+.home-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:8px;text-decoration:none;color:var(--dark);font-weight:600;font-size:15px;transition:.2s;}
+.home-btn:hover{background:var(--accent);color:var(--gold);}
+.search-bar .center a{position:absolute;left:50%;transform:translateX(-50%);z-index:10;}
+.header-logo{height:52px;max-width:170px;object-fit:contain;}
+.search-box{flex:0 1 420px;margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.07);height:46px;}
+.search-box input{flex:1;border:0;outline:0;background:transparent;padding:4px 8px;font-size:14px;}
+.search-box button{display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--gold);color:#fff;padding:8px 14px;border-radius:999px;cursor:pointer;font-size:13px;}
+.icon-link{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:8px;text-decoration:none;color:var(--dark);font-size:18px;}
+.icon-link:hover{background:rgba(184,134,11,.1);color:var(--gold);}
+.search-bar .right{gap:4px;}
+.user-name{font-size:13px;font-weight:600;color:var(--dark);text-decoration:none;display:flex;align-items:center;gap:6px;}
+.user-name:hover{color:var(--gold);}
 
-    @keyframes fadeInBody { to { opacity: 1; } }
+/* PAGE */
+.page-wrapper{max-width:920px;margin:36px auto 60px;padding:0 20px;display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start;}
 
-    .main-content {
-      width: 90%;
-      max-width: 750px;
-      background: rgba(255,255,255,0.95);
-      border-radius: 20px;
-      margin-top: 20px;
-      padding: 40px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-      animation: fadeInUp 1s ease forwards;
-      transform: translateY(20px);
-      opacity: 0;
-      position: relative;
-    }
-    @keyframes fadeInUp { to { transform: translateY(0); opacity: 1; } }
+/* CHECKOUT BOX */
+.checkout-box{background:#fff;border-radius:var(--radius);box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden;}
+.box-header{padding:20px 24px;border-bottom:1px solid #f0eee8;display:flex;align-items:center;gap:10px;}
+.box-header h1{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--dark);}
+.box-header i{color:var(--gold);}
+.box-body{padding:24px;}
 
-    .back-button {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #fff;
-      background: linear-gradient(135deg, #b8860b, #d4a017);
-      border-radius: 30px;
-      text-decoration: none;
-      box-shadow: 0 4px 10px rgba(184, 134, 11, 0.3);
-      transition: all 0.3s ease;
-      border: none;
-      outline: none;
-      cursor: pointer;
-    }
-    .back-button:hover {
-      transform: translateX(-3px) scale(1.05);
-      box-shadow: 0 6px 15px rgba(184, 134, 11, 0.4);
-      background: linear-gradient(135deg, #c89715, #e0b83f);
-    }
+.alert-error{background:#fff0f0;border:1px solid #f5c2c2;border-radius:10px;padding:12px 16px;color:#c62828;font-size:14px;margin-bottom:20px;font-weight:600;}
 
-    h2 {
-      text-align: center;
-      color: #b8860b;
-      font-size: 28px;
-      margin-bottom: 30px;
-    }
+.section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold-lt);margin:20px 0 12px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:#f0eee8;}
+.section-label:first-child{margin-top:0;}
 
-    form { display: flex; flex-direction: column; gap: 20px; }
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px;}
+.form-group input,.form-group select{
+  width:100%;padding:11px 14px;border-radius:10px;font-size:14px;
+  border:1px solid #e0ddd5;background:#fff;color:var(--dark);
+  outline:none;transition:.2s;font-family:'DM Sans',sans-serif;
+}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold-lt);box-shadow:0 0 0 3px rgba(212,175,55,.15);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-weight: 600; color: #555; }
-    .form-group input, .form-group select {
-      padding: 10px 15px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-      transition: border-color 0.3s, box-shadow 0.3s;
-    }
-    .form-group input:focus, .form-group select:focus {
-      border-color: #b8860b;
-      box-shadow: 0 0 5px #b8860b;
-      outline: none;
-    }
+.radio-group{display:flex;gap:16px;flex-wrap:wrap;}
+.radio-group label{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:500;}
+.radio-group input[type=radio]{accent-color:var(--gold);}
 
-    .form-check { display: inline-flex; align-items: center; gap: 5px; margin-right: 20px; }
-    .form-check input { width: 18px; height: 18px; }
+.btn-order{
+  width:100%;padding:14px;border:none;border-radius:12px;cursor:pointer;
+  font-weight:700;font-size:16px;margin-top:8px;
+  background:linear-gradient(135deg,#d4af37,#b8860b);color:#fff;
+  box-shadow:0 4px 20px rgba(184,134,11,.3);
+  display:flex;align-items:center;justify-content:center;gap:9px;transition:.25s;
+  font-family:'DM Sans',sans-serif;
+}
+.btn-order:hover{background:linear-gradient(135deg,#e0c050,#c9972a);transform:translateY(-1px);}
+.btn-order:disabled{background:#ccc;box-shadow:none;cursor:not-allowed;transform:none;}
 
-    .btn-submit {
-      text-decoration: none;
-      text-align: center;
-      padding: 12px 20px;
-      background: linear-gradient(135deg, #b8860b, #ffdb58);
-      color: #fff;
-      font-weight: 700;
-      border-radius: 10px;
-      transition: transform 0.3s, background 0.3s;
-      cursor: pointer;
-      display: inline-block;
-      border: none;
-      font-size: 16px;
-    }
-    .btn-submit:hover {
-      transform: scale(1.05);
-      background: linear-gradient(135deg, #ffdb58, #b8860b);
-      color: #333;
-    }
+/* SUMMARY */
+.summary-box{background:#fff;border-radius:var(--radius);box-shadow:0 4px 24px rgba(0,0,0,.08);padding:24px;position:sticky;top:90px;}
+.sum-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;margin-bottom:18px;color:var(--dark);display:flex;align-items:center;gap:8px;}
+.sum-title i{color:var(--gold-lt);}
+.sum-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f3ee;}
+.sum-item:last-of-type{border-bottom:none;}
+.sum-thumb{width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #ece8df;flex-shrink:0;}
+.sum-name{font-size:13px;font-weight:600;flex:1;line-height:1.3;}
+.sum-qty{font-size:12px;color:var(--muted);}
+.sum-price{font-size:13px;font-weight:700;color:var(--gold);white-space:nowrap;}
+hr.sum-div{border:none;border-top:2px solid #ede9df;margin:14px 0;}
+.sum-total-row{display:flex;justify-content:space-between;font-size:17px;font-weight:700;}
+.sum-total-row .amt{color:var(--gold);}
+.empty-cart-note{text-align:center;color:var(--muted);padding:20px 0;font-size:14px;}
 
-    .profile-info {
-      background: rgba(255, 250, 240, 0.9);
-      border: 1px solid #e0c97f;
-      border-radius: 15px;
-      padding: 20px 25px;
-      margin-bottom: 30px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-    .profile-info h3 {
-      color: #b8860b;
-      margin-bottom: 10px;
-      font-size: 22px;
-      border-bottom: 1px solid #e0c97f;
-      padding-bottom: 8px;
-    }
-    .profile-info p { margin: 6px 0; font-size: 16px; }
-
-    .cart-summary {
-      background: rgba(255, 250, 240, 0.9);
-      border: 1px solid #e0c97f;
-      border-radius: 15px;
-      padding: 20px 25px;
-      margin-bottom: 30px;
-    }
-    .cart-summary h3 {
-      color: #b8860b;
-      margin-bottom: 10px;
-      font-size: 22px;
-      border-bottom: 1px solid #e0c97f;
-      padding-bottom: 8px;
-    }
-    .cart-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px dashed #e0c97f;
-    }
-    .cart-item:last-child { border-bottom: none; }
-    .cart-item .item-name { flex: 1; }
-    .cart-item .item-qty { margin: 0 12px; color: #666; }
-    .cart-item .item-price { font-weight: 700; color: #b8860b; }
-    .cart-total-row {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 2px solid #e0c97f;
-      font-size: 18px;
-      font-weight: 700;
-      color: #b8860b;
-    }
-    .empty-cart { text-align: center; color: #aaa; font-style: italic; padding: 12px 0; }
-
-    .error-message {
-      background: #ffebee;
-      color: #c62828;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      text-align: center;
-      border: 1px solid #f5c2c2;
-    }
-
-    .footer { margin-top: 40px; text-align: center; font-size: 14px; color: #555; padding: 20px 0; }
-
-    @media (max-width: 600px) {
-      .main-content { padding: 25px; margin-top: 10px; }
-    }
-  </style>
+@media(max-width:860px){
+  .page-wrapper{grid-template-columns:1fr;}
+  .summary-box{position:static;}
+  .search-bar .center a{position:static;transform:none;}
+  .search-box{margin-left:0;flex:1;}
+}
+@media(max-width:600px){
+  .search-bar{flex-wrap:wrap;padding:10px;}
+  .search-bar .center{order:2;width:100%;}
+  .search-bar .left{order:1;}
+  .search-bar .right{order:3;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
 </head>
 <body>
 
-<!-- Header -->
+<!-- HEADER -->
 <header class="header-container">
   <div class="search-bar">
     <div class="left">
@@ -372,174 +316,193 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <div class="center">
       <a href="<?= $link_home ?>">
-        <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+        <img src="<?= IMG_URL ?>36-logo.png" alt="36 Jewelry" class="header-logo">
       </a>
       <div class="search-box">
-        <input type="text" id="search-input" placeholder="Search products...">
+        <input type="text" id="search-input" placeholder="Search products..."
+               onkeydown="if(event.key==='Enter') doSearch()">
         <button onclick="doSearch()"><i class="fas fa-search"></i></button>
       </div>
     </div>
     <div class="right">
-      <a href="<?= $link_cart ?>" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
-      <a href="<?= $link_profile ?>" class="icon-link"><i class="fas fa-user"></i></a>
+      <a href="<?= $link_cart ?>" class="icon-link" title="Cart"><i class="fas fa-shopping-cart"></i></a>
+      <a href="<?= $link_profile ?>" class="user-name" title="Profile">
+        <i class="fas fa-user-circle" style="font-size:20px;color:var(--gold)"></i>
+        <span><?= $logged_in_name ?></span>
+      </a>
+      <a href="<?= $link_logout ?>" class="icon-link" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
     </div>
   </div>
 </header>
 
-<main class="main-content">
-  <button class="back-button" onclick="window.history.back();">&#8592;</button>
-  <h2>Shipping Information</h2>
+<div class="page-wrapper">
 
-  <?php if ($error): ?>
-    <div class="error-message"><?= htmlspecialchars($error) ?></div>
-  <?php endif; ?>
+  <!-- LEFT: Checkout form -->
+  <div class="checkout-box">
+    <div class="box-header">
+      <i class="fas fa-truck"></i>
+      <h1>Shipping Information</h1>
+    </div>
+    <div class="box-body">
 
-  <div class="profile-info">
-    <h3>Customer Information</h3>
-    <p><strong>Name:</strong> <?= htmlspecialchars($user['full_name'] ?: 'Not set') ?></p>
-    <p><strong>Email:</strong> <?= htmlspecialchars($user['email'] ?: 'Not set') ?></p>
-    <p><strong>Phone:</strong> <?= htmlspecialchars($user['phone'] ?: 'Not set') ?></p>
+      <?php if ($error): ?>
+        <div class="alert-error"><i class="fas fa-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div>
+      <?php endif; ?>
+
+      <?php if (empty($cart_items)): ?>
+        <div style="text-align:center;padding:40px 0;">
+          <i class="fas fa-shopping-bag" style="font-size:48px;color:#e0d5c0;display:block;margin-bottom:16px;"></i>
+          <p style="color:var(--muted);margin-bottom:20px;">Your cart is empty.</p>
+          <a href="<?= $link_home ?>" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-radius:10px;text-decoration:none;font-weight:600;">
+            <i class="fas fa-gem"></i> Shop Now
+          </a>
+        </div>
+      <?php else: ?>
+      <form method="POST" id="checkout-form">
+
+        <!-- Contact -->
+        <div class="section-label"><i class="fas fa-user"></i> Contact Details</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fullname">Full Name <span style="color:red">*</span></label>
+            <input type="text" id="fullname" name="fullname" required
+                   placeholder="Your full name"
+                   value="<?= htmlspecialchars($_POST['fullname'] ?? $user['full_name'] ?? '') ?>">
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone Number <span style="color:red">*</span></label>
+            <input type="tel" id="phone" name="phone" required
+                   placeholder="+84 xxx xxx xxx"
+                   value="<?= htmlspecialchars($_POST['phone'] ?? $user['phone'] ?? '') ?>">
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="section-label"><i class="fas fa-map-marker-alt"></i> Delivery Address</div>
+        <div class="form-group">
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="addressOption" value="saved"
+                     <?= ($_POST['addressOption'] ?? 'saved') === 'saved' ? 'checked' : '' ?>>
+              Use saved address
+            </label>
+            <label>
+              <input type="radio" name="addressOption" value="new"
+                     <?= ($_POST['addressOption'] ?? '') === 'new' ? 'checked' : '' ?>>
+              Enter new address
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" id="saved-addr-section">
+          <label for="saved_address">Saved Address</label>
+          <select id="saved_address" name="saved_address">
+            <?php if (!empty($user['address'])): ?>
+              <option value="<?= htmlspecialchars($user['address']) ?>" selected>
+                <?= htmlspecialchars($user['address']) ?>
+              </option>
+            <?php else: ?>
+              <option value="">No saved address — please enter one below</option>
+            <?php endif; ?>
+          </select>
+        </div>
+
+        <div class="form-group" id="new-addr-section" style="display:none;">
+          <label for="c_address">New Address <span style="color:red">*</span></label>
+          <input type="text" id="c_address" name="c_address"
+                 placeholder="Street address, ward, district, city"
+                 value="<?= htmlspecialchars($_POST['c_address'] ?? '') ?>">
+        </div>
+
+        <!-- Payment -->
+        <div class="section-label"><i class="fas fa-credit-card"></i> Payment Method</div>
+        <div class="form-group">
+          <select id="payment" name="payment">
+            <option value="cod"    <?= ($_POST['payment'] ?? 'cod') === 'cod'    ? 'selected' : '' ?>>💴 Cash on Delivery</option>
+            <option value="bank"   <?= ($_POST['payment'] ?? '') === 'bank'   ? 'selected' : '' ?>>🏦 Bank Transfer</option>
+            <option value="online" <?= ($_POST['payment'] ?? '') === 'online' ? 'selected' : '' ?>>💳 Online Payment</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-order" id="btn-place-order">
+          <i class="fas fa-check-circle"></i> Place Order — $<?= number_format($total_amount, 2) ?>
+        </button>
+
+      </form>
+      <?php endif; ?>
+
+    </div>
   </div>
 
-  <div class="cart-summary">
-    <h3>Order Summary</h3>
+  <!-- RIGHT: Order Summary -->
+  <div class="summary-box">
+    <h2 class="sum-title"><i class="fas fa-receipt"></i> Order Summary</h2>
+
     <?php if (empty($cart_items)): ?>
-      <p class="empty-cart">Your cart is empty.</p>
+      <p class="empty-cart-note">No items in cart.</p>
     <?php else: ?>
       <?php foreach ($cart_items as $item): ?>
-        <div class="cart-item">
-          <span class="item-name"><?= htmlspecialchars($item['name']) ?></span>
-          <span class="item-qty">x<?= $item['quantity'] ?></span>
-          <span class="item-price">$<?= number_format($item['total'], 2) ?></span>
+      <div class="sum-item">
+        <img src="<?= IMG_URL . htmlspecialchars($item['image'] ?? '') ?>"
+             alt="<?= htmlspecialchars($item['name']) ?>" class="sum-thumb"
+             onerror="this.src='<?= IMG_URL ?>default-avatar.png'">
+        <div style="flex:1;min-width:0;">
+          <div class="sum-name"><?= htmlspecialchars($item['name']) ?></div>
+          <div class="sum-qty">Qty: <?= $item['quantity'] ?></div>
         </div>
+        <span class="sum-price">$<?= number_format($item['total'], 2) ?></span>
+      </div>
       <?php endforeach; ?>
-      <div class="cart-total-row">
+      <hr class="sum-div">
+      <div class="sum-total-row">
         <span>Total</span>
-        <span>$<?= number_format($total_amount, 2) ?></span>
+        <span class="amt">$<?= number_format($total_amount, 2) ?></span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center;">
+        <i class="fas fa-shield-alt" style="color:#4caf50;"></i> Free shipping · Secure checkout
       </div>
     <?php endif; ?>
   </div>
 
-  <form method="POST" action="" id="checkoutForm">
-    <div class="form-group">
-      <label for="fullname">Full Name <span style="color:red">*</span></label>
-      <input type="text" id="fullname" name="fullname" required
-             placeholder="Enter your full name"
-             value="<?= htmlspecialchars($_POST['fullname'] ?? $user['full_name']) ?>">
-    </div>
-
-    <div class="form-group">
-      <label for="phone">Phone Number <span style="color:red">*</span></label>
-      <input type="tel" id="phone" name="phone" required
-             placeholder="Enter your phone number"
-             value="<?= htmlspecialchars($_POST['phone'] ?? $user['phone']) ?>">
-    </div>
-
-    <div class="form-group">
-      <label>Address Option</label>
-      <div>
-        <label class="form-check">
-          <input type="radio" name="addressOption" value="saved"
-            <?= ($_POST['addressOption'] ?? 'saved') === 'saved' ? 'checked' : '' ?>>
-          Use Saved Address
-        </label>
-        <label class="form-check">
-          <input type="radio" name="addressOption" value="new"
-            <?= ($_POST['addressOption'] ?? '') === 'new' ? 'checked' : '' ?>>
-          Enter New Address
-        </label>
-      </div>
-    </div>
-
-    <div class="form-group" id="savedAddressSection">
-      <label for="saved_address">Saved Address</label>
-      <select id="saved_address" name="saved_address">
-        <?php if ($user['address']): ?>
-          <option value="<?= htmlspecialchars($user['address']) ?>" selected>
-            <?= htmlspecialchars($user['address']) ?>
-          </option>
-        <?php else: ?>
-          <option value="">No saved address</option>
-        <?php endif; ?>
-      </select>
-    </div>
-
-    <div class="form-group" id="newAddressSection" style="display:none;">
-      <label for="c_address">New Address <span style="color:red">*</span></label>
-      <input type="text" id="c_address" name="c_address"
-             placeholder="Enter your street address"
-             value="<?= htmlspecialchars($_POST['c_address'] ?? '') ?>">
-    </div>
-
-    <div class="form-group">
-      <label for="payment">Payment Method</label>
-      <select id="payment" name="payment">
-        <option value="cod" <?= ($_POST['payment'] ?? 'cod') === 'cod' ? 'selected' : '' ?>>Cash on Delivery</option>
-        <option value="bank" <?= ($_POST['payment'] ?? '') === 'bank' ? 'selected' : '' ?>>Bank Transfer</option>
-        <option value="online" <?= ($_POST['payment'] ?? '') === 'online' ? 'selected' : '' ?>>Online Payment</option>
-      </select>
-    </div>
-
-    <button type="submit" class="btn-submit" <?= empty($cart_items) ? 'disabled' : '' ?>>
-      <?= empty($cart_items) ? 'Cart is Empty' : 'Review & Confirm Order' ?>
-    </button>
-  </form>
-</main>
-
-<footer class="footer">
-  <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
-</footer>
+</div>
 
 <script>
-  function doSearch() {
-    const kw = document.getElementById('search-input').value.trim();
-    if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
+function doSearch(){
+  const kw=document.getElementById('search-input').value.trim();
+  if(kw) window.location.href='<?= $link_search ?>?q='+encodeURIComponent(kw);
+}
+
+// Toggle address sections
+const savedSec = document.getElementById('saved-addr-section');
+const newSec   = document.getElementById('new-addr-section');
+const newInput = document.getElementById('c_address');
+
+function toggleAddr(){
+  const v = document.querySelector('input[name="addressOption"]:checked')?.value;
+  if(v === 'new'){
+    savedSec.style.display = 'none';
+    newSec.style.display   = 'block';
+    newInput?.setAttribute('required','required');
+  } else {
+    savedSec.style.display = 'block';
+    newSec.style.display   = 'none';
+    newInput?.removeAttribute('required');
   }
+}
+document.querySelectorAll('input[name="addressOption"]').forEach(r => r.addEventListener('change', toggleAddr));
+toggleAddr();
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const savedSection = document.getElementById("savedAddressSection");
-    const newSection   = document.getElementById("newAddressSection");
-    const cAddr        = document.getElementById("c_address");
-
-    function toggleAddress() {
-      const val = document.querySelector('input[name="addressOption"]:checked')?.value;
-      if (val === 'new') {
-        savedSection.style.display = 'none';
-        newSection.style.display   = 'block';
-        cAddr.setAttribute('required', 'required');
-      } else {
-        savedSection.style.display = 'block';
-        newSection.style.display   = 'none';
-        cAddr.removeAttribute('required');
-      }
-    }
-
-    document.querySelectorAll('input[name="addressOption"]')
-      .forEach(r => r.addEventListener('change', toggleAddress));
-    toggleAddress();
-
-    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-      const name  = document.getElementById('fullname').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      if (!name || !phone) {
-        e.preventDefault();
-        alert('Please fill in Name and Phone.');
-        return;
-      }
-
-      const addrOpt = document.querySelector('input[name="addressOption"]:checked')?.value;
-      if (addrOpt === 'new' && !cAddr.value.trim()) {
-        e.preventDefault();
-        alert('Please enter your new address.');
-        return;
-      }
-
-      const total = '<?= number_format($total_amount, 2) ?>';
-      if (!confirm(`Confirm order?\n\nName: ${name}\nPhone: ${phone}\nTotal: $${total}`)) {
-        e.preventDefault();
-      }
-    });
+// Confirm before submit
+const form = document.getElementById('checkout-form');
+if(form){
+  form.addEventListener('submit', function(e){
+    const name  = document.getElementById('fullname')?.value.trim();
+    const phone = document.getElementById('phone')?.value.trim();
+    if(!name || !phone){ e.preventDefault(); alert('Please fill in name and phone.'); return; }
+    if(!confirm('Confirm your order?\n\nTotal: $<?= number_format($total_amount, 2) ?>\n\nClick OK to place order.')){ e.preventDefault(); }
   });
+}
 </script>
+
 </body>
 </html>

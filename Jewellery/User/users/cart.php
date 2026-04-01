@@ -1,326 +1,542 @@
 <?php
+// ═══════════════════════════════════════════════════════════
+// File: Jewellery/User/users/cart.php
+// Chức năng đầy đủ:
+//   ✔ Kiểm tra đăng nhập
+//   ✔ Xử lý thêm sản phẩm vào giỏ (GET action=add&id=)
+//   ✔ AJAX: cập nhật số lượng, xóa sản phẩm
+//   ✔ Hiển thị giỏ hàng với ảnh & giá thực
+//   ✔ Tính tổng tiền realtime
+//   ✔ Nút Checkout → order_confirm.php
+// ═══════════════════════════════════════════════════════════
+
 session_start();
-require_once "../../config/config.php";
-define('BASE_URL', '/do_an_web/Jewellery/');
-define('IMG_URL', BASE_URL . 'images/');
+require_once __DIR__ . '/../../config/config.php';
+
+if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('IMG_URL'))  define('IMG_URL',  BASE_URL . 'images/');
 
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['user_id'])) {
-    header("Location: " . BASE_URL . "User/login.php");
+    header('Location: ' . BASE_URL . 'User/users/login.php');
     exit();
 }
-$user_id = $_SESSION['user_id'];
 
-// Xử lý AJAX
-if (isset($_POST['ajax_action'])) {
-    header('Content-Type: application/json');
-    $response = ['success' => false, 'message' => 'Invalid action'];
+$user_id = (int)$_SESSION['user_id'];
 
-    if ($_POST['ajax_action'] === 'update' && isset($_POST['product_id'], $_POST['quantity'])) {
-        $product_id = (int)$_POST['product_id'];
-        $quantity = (int)$_POST['quantity'];
-        if ($product_id > 0 && $quantity >= 1) {
-            $stmt = $conn->prepare("UPDATE cart SET quantity = ? WHERE user_id = ? AND product_id = ?");
-            $stmt->bind_param("iii", $quantity, $user_id, $product_id);
-            $stmt->execute();
-            if ($stmt->affected_rows === 0) {
-                // Chưa có thì thêm mới
-                $stmt2 = $conn->prepare("INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)");
-                $stmt2->bind_param("iii", $user_id, $product_id, $quantity);
-                $stmt2->execute();
-                $stmt2->close();
-            }
-            $stmt->close();
-            $response = ['success' => true, 'message' => 'Updated'];
-        } else {
-            $response = ['success' => false, 'message' => 'Invalid data'];
-        }
-    } elseif ($_POST['ajax_action'] === 'remove' && isset($_POST['product_id'])) {
-        $product_id = (int)$_POST['product_id'];
-        if ($product_id > 0) {
-            $stmt = $conn->prepare("DELETE FROM cart WHERE user_id = ? AND product_id = ?");
-            $stmt->bind_param("ii", $user_id, $product_id);
-            $stmt->execute();
-            $stmt->close();
-            $response = ['success' => true, 'message' => 'Removed'];
-        } else {
-            $response = ['success' => false, 'message' => 'Invalid product'];
-        }
-    }
-
-    echo json_encode($response);
-    exit;
-}
-
-$logged_in_name = $_SESSION['username'] ?? 'User';
-
-// Lấy giỏ hàng
-$sql_cart = "SELECT product_id, quantity FROM cart WHERE user_id = ?";
-$stmt = $conn->prepare($sql_cart);
-
-if (!$stmt) {
-    die("SQL Error: " . $conn->error);
-}
-$stmt->execute();
-
-$stmt->bind_result($product_id, $quantity);
-
-$cart_items = [];
-$product_ids = [];
-
-while ($stmt->fetch()) {
-    $cart_items[$product_id] = $quantity;
-    $product_ids[] = $product_id;
-}
-
-if (!empty($product_ids)) {
-    $placeholders = implode(',', array_fill(0, count($product_ids), '?'));
-    $types = str_repeat('i', count($product_ids));
-    $sql_products = "SELECT id, name, price, image FROM products WHERE id IN ($placeholders)";
-    $stmt_prod = $conn->prepare($sql_products);
-    $stmt_prod->bind_param($types, ...$product_ids);
-    $stmt_prod->execute();
-    $result_prod = $stmt_prod->get_result();
-
-    $products_info = [];
-    while ($prod = $result_prod->fetch_assoc()) {
-        $products_info[$prod['id']] = $prod;
-    }
-
-    $full_cart = [];
-    $total = 0;
-    foreach ($cart_items as $pid => $qty) {
-        if (isset($products_info[$pid])) {
-            $item = $products_info[$pid];
-            $item['quantity'] = $qty;
-            $item['item_total'] = $item['price'] * $qty;
-            $total += $item['item_total'];
-            $full_cart[] = $item;
-        }
-    }
-    $cart_items = $full_cart;
-} else {
-    $cart_items = [];
-    $total = 0;
-}
-
-$stmt->close();
-$conn->close();
-
-
-// Link helpers
-$link_home    = BASE_URL . 'User/index.php';
-$link_login   = BASE_URL . 'User/users/Login.php';
+// ── Link helpers ──────────────────────────────────────────
+$link_home    = BASE_URL . 'User/indexprofile.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
+$link_search  = BASE_URL . 'User/users/search.php';
 $link_detail  = BASE_URL . 'User/users/product_detail.php';
+$link_checkout = BASE_URL . 'User/users/order_confirm.php';
+$logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
+
+// ─────────────────────────────────────────────────────────
+// HÀM TÍNH GIÁ BÁN
+// ─────────────────────────────────────────────────────────
+function sellingPrice(array $row): float {
+    $cost   = (float)($row['cost_price']     ?? 0);
+    $profit = (int)  ($row['profit_percent'] ?? 0);
+    $price  = (float)($row['price']          ?? 0);
+    return ($cost > 0) ? $cost * (1 + $profit / 100) : $price;
+}
+
+// ─────────────────────────────────────────────────────────
+// XỬ LÝ AJAX (update qty / remove)
+// ─────────────────────────────────────────────────────────
+if (isset($_POST['ajax_action'])) {
+    header('Content-Type: application/json');
+    $action = $_POST['ajax_action'];
+
+    if ($action === 'update' && isset($_POST['product_id'], $_POST['quantity'])) {
+        $pid = $_POST['product_id'];     // varchar – không ép int
+        $qty = max(1, (int)$_POST['quantity']);
+
+        $st = $conn->prepare("
+            INSERT INTO cart (user_id, product_id, quantity)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)
+        ");
+        $st->bind_param('isi', $user_id, $pid, $qty);
+        $st->execute();
+        $st->close();
+        echo json_encode(['success' => true, 'qty' => $qty]);
+
+    } elseif ($action === 'remove' && isset($_POST['product_id'])) {
+        $pid = $_POST['product_id'];
+        $st  = $conn->prepare("DELETE FROM cart WHERE user_id = ? AND product_id = ?");
+        $st->bind_param('is', $user_id, $pid);
+        $st->execute();
+        $st->close();
+        echo json_encode(['success' => true]);
+
+    } else {
+        echo json_encode(['success' => false, 'msg' => 'Invalid action']);
+    }
+    exit();
+}
+
+// ─────────────────────────────────────────────────────────
+// THÊM VÀO GIỎ (GET action=add&id=xxx)
+// ─────────────────────────────────────────────────────────
+if (isset($_GET['action']) && $_GET['action'] === 'add' && !empty($_GET['id'])) {
+    $pid = trim($_GET['id']);
+    // Kiểm tra sản phẩm tồn tại
+    $chk = $conn->prepare("SELECT id FROM products WHERE id = ? LIMIT 1");
+    $chk->bind_param('s', $pid);
+    $chk->execute();
+    if ($chk->get_result()->num_rows > 0) {
+        $st = $conn->prepare("
+            INSERT INTO cart (user_id, product_id, quantity)
+            VALUES (?, ?, 1)
+            ON DUPLICATE KEY UPDATE quantity = quantity + 1
+        ");
+        $st->bind_param('is', $user_id, $pid);
+        $st->execute();
+        $st->close();
+    }
+    $chk->close();
+    header('Location: ' . $link_cart . '?added=1');
+    exit();
+}
+
+// ─────────────────────────────────────────────────────────
+// LẤY GIỎ HÀNG
+// ─────────────────────────────────────────────────────────
+$cart_rows = [];
+$total     = 0.0;
+$item_count = 0;
+
+$st = $conn->prepare("
+    SELECT c.product_id, c.quantity, c.size,
+           p.name, p.price, p.image, p.cost_price, p.profit_percent, p.stock
+    FROM cart c
+    JOIN products p ON c.product_id = p.id
+    WHERE c.user_id = ?
+    ORDER BY c.product_id ASC
+");
+$st->bind_param('i', $user_id);
+$st->execute();
+$res = $st->get_result();
+while ($row = $res->fetch_assoc()) {
+    $sp = sellingPrice($row);
+    $qty = (int)$row['quantity'];
+    $row['selling_price'] = $sp;
+    $row['item_total']    = $sp * $qty;
+    $total     += $row['item_total'];
+    $item_count += $qty;
+    $cart_rows[] = $row;
+}
+$st->close();
+
+$added_flash = isset($_GET['added']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping Cart | 36 Jewelry</title>
-    <link rel="stylesheet" href="../jewelry-cart.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>css/normalize.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>fonts/icomoon.css">
-    <link href="<?= BASE_URL ?>bootstrap-5.3.0-dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= BASE_URL ?>style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .main-content { max-width: 1200px; margin: 40px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
-        .back-button { background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-bottom: 20px; }
-        .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .cart-table th, .cart-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        .product-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; margin-right: 10px; vertical-align: middle; }
-        .quantity-input { width: 60px; padding: 5px; text-align: center; }
-        .remove-btn, .view-details-btn { padding: 5px 10px; margin: 0 5px; border: none; border-radius: 4px; cursor: pointer; }
-        .remove-btn { background: #dc3545; color: white; }
-        .view-details-btn { background: #007bff; color: white; }
-        .cart-summary { text-align: right; margin-top: 20px; }
-        .total { font-size: 1.2rem; margin-bottom: 15px; }
-        .checkout-btn { display: inline-block; background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; }
-        .alert-message { position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(-20px); z-index: 1000; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart | 36 Jewelry</title>
+  <meta name="description" content="Your 36 Jewelry shopping cart - review items and proceed to checkout.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════ RESET ═══ */
+:root {
+  --gold:#b8860b; --gold-lt:#d4af37; --gold-pale:#f8ce86;
+  --dark:#111; --bg:#fff; --accent:#f6f6f6; --muted:#666;
+  --radius:12px; --shadow:0 4px 24px rgba(0,0,0,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:#fafafa;min-height:100vh;color:var(--dark);}
+
+/* ═══════════════════════════════ HEADER ═══ */
+.header-container{width:100%;position:sticky;top:0;z-index:1000;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.search-bar{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:16px;}
+.search-bar .left,.search-bar .center,.search-bar .right{display:flex;align-items:center;}
+.search-bar .center{flex:1;justify-content:center;gap:24px;position:relative;}
+.home-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:8px;text-decoration:none;color:var(--dark);font-weight:600;font-size:15px;transition:.2s;}
+.home-btn:hover{background:var(--accent);color:var(--gold);}
+.search-bar .center a{position:absolute;left:50%;transform:translateX(-50%);z-index:10;}
+.header-logo{height:52px;max-width:170px;object-fit:contain;}
+.search-box{flex:0 1 420px;margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.07);height:46px;}
+.search-box input{flex:1;border:0;outline:0;background:transparent;padding:4px 8px;font-size:14px;color:var(--dark);}
+.search-box button{display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--gold);color:#fff;padding:8px 14px;border-radius:999px;cursor:pointer;font-size:13px;transition:.2s;}
+.search-box button:hover{background:var(--gold-lt);}
+.icon-link{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:8px;text-decoration:none;color:var(--dark);transition:.18s;font-size:18px;position:relative;}
+.icon-link:hover{background:rgba(184,134,11,.1);color:var(--gold);}
+.cart-badge{position:absolute;top:4px;right:4px;background:var(--gold);color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;line-height:1;}
+.search-bar .right{gap:4px;}
+.user-name{font-size:13px;font-weight:600;color:var(--dark);text-decoration:none;display:flex;align-items:center;gap:6px;}
+.user-name:hover{color:var(--gold);}
+
+/* ═══════════════════════════════ FLASH ═══ */
+.flash{background:linear-gradient(135deg,#d4af37,#b8860b);color:#fff;text-align:center;padding:12px;font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;}
+
+/* ═══════════════════════════════ PAGE ═══ */
+.page-wrapper{max-width:1100px;margin:36px auto;padding:0 20px 60px;display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start;}
+
+/* ═══════════════════════════════ CART TABLE ═══ */
+.cart-box{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+.cart-box-header{padding:20px 24px;border-bottom:1px solid #f0eee8;display:flex;align-items:center;justify-content:space-between;}
+.cart-box-header h1{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--dark);display:flex;align-items:center;gap:10px;}
+.cart-box-header h1 i{color:var(--gold);}
+.item-count-badge{background:var(--accent);color:var(--muted);padding:4px 10px;border-radius:20px;font-size:13px;font-weight:600;}
+
+/* Empty state */
+.empty-cart{text-align:center;padding:60px 20px;}
+.empty-cart i{font-size:56px;color:#e0d5c0;display:block;margin-bottom:16px;}
+.empty-cart p{font-size:17px;color:var(--muted);margin-bottom:24px;}
+.btn-shop{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;transition:.25s;}
+.btn-shop:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(184,134,11,.35);}
+
+/* Cart items */
+.cart-table{width:100%;border-collapse:collapse;}
+.cart-table thead tr{background:#faf8f3;border-bottom:2px solid #ede9df;}
+.cart-table th{padding:12px 16px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.cart-table th:last-child{text-align:right;}
+.cart-table tbody tr{border-bottom:1px solid #f5f3ee;transition:.15s;}
+.cart-table tbody tr:hover{background:#fffdf7;}
+.cart-table tbody tr:last-child{border-bottom:none;}
+.cart-table td{padding:16px;}
+
+/* Product cell */
+.product-cell{display:flex;align-items:center;gap:14px;}
+.product-thumb{width:68px;height:68px;object-fit:cover;border-radius:10px;border:1px solid #ece8df;flex-shrink:0;}
+.product-name{font-weight:600;font-size:15px;color:var(--dark);text-decoration:none;display:block;margin-bottom:3px;}
+.product-name:hover{color:var(--gold);}
+.product-id{font-size:12px;color:var(--muted);}
+
+/* Qty input */
+.qty-wrapper{display:flex;align-items:center;gap:0;border:1px solid #ddd;border-radius:8px;overflow:hidden;width:fit-content;}
+.qty-btn{width:32px;height:32px;border:none;background:var(--accent);cursor:pointer;font-size:16px;font-weight:600;color:var(--dark);display:flex;align-items:center;justify-content:center;transition:.15s;}
+.qty-btn:hover{background:var(--gold);color:#fff;}
+.qty-input{width:44px;height:32px;border:none;border-left:1px solid #ddd;border-right:1px solid #ddd;text-align:center;font-size:14px;font-weight:600;outline:none;color:var(--dark);background:#fff;}
+
+/* Price cells */
+.price-cell{font-size:14px;color:var(--muted);}
+.total-cell{font-size:15px;font-weight:700;color:var(--gold);text-align:right;}
+
+/* Remove btn */
+.remove-btn{background:none;border:none;cursor:pointer;color:#ccc;font-size:17px;padding:6px;border-radius:6px;transition:.2s;display:flex;}
+.remove-btn:hover{color:#e53935;background:#fff0f0;}
+
+/* ═══════════════════════════════ SUMMARY PANEL ═══ */
+.summary-box{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;position:sticky;top:90px;}
+.summary-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;margin-bottom:20px;color:var(--dark);display:flex;align-items:center;gap:8px;}
+.summary-title i{color:var(--gold-lt);}
+.summary-row{display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid #f5f3ee;}
+.summary-row:last-of-type{border-bottom:none;}
+.summary-row .label{color:var(--muted);}
+.summary-row .value{font-weight:600;color:var(--dark);}
+.summary-divider{border:none;border-top:2px solid #ede9df;margin:12px 0;}
+.summary-total{display:flex;justify-content:space-between;font-size:18px;font-weight:700;margin:4px 0 20px;}
+.summary-total .amt{color:var(--gold);}
+
+.btn-checkout{
+  display:block;width:100%;padding:14px;text-align:center;
+  background:linear-gradient(135deg,#d4af37,#b8860b);
+  color:#fff;font-size:16px;font-weight:700;border-radius:10px;
+  text-decoration:none;border:none;cursor:pointer;
+  box-shadow:0 4px 20px rgba(184,134,11,.3);transition:.25s;
+  font-family:'DM Sans',sans-serif;
+}
+.btn-checkout:hover{background:linear-gradient(135deg,#e0c050,#c9972a);transform:translateY(-1px);box-shadow:0 6px 24px rgba(184,134,11,.4);}
+.btn-checkout:disabled{background:#ccc;box-shadow:none;cursor:not-allowed;transform:none;}
+
+.btn-continue{display:block;text-align:center;margin-top:12px;color:var(--muted);font-size:13px;text-decoration:none;transition:.2s;}
+.btn-continue:hover{color:var(--gold);}
+
+/* Secure badge */
+.secure-note{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;font-size:12px;color:var(--muted);}
+.secure-note i{color:#4caf50;}
+
+/* Alert */
+.alert-toast{position:fixed;top:80px;right:20px;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px;color:#fff;opacity:0;transform:translateY(-10px);transition:.3s;z-index:9999;min-width:200px;text-align:center;}
+.alert-toast.show{opacity:1;transform:translateY(0);}
+.alert-toast.success{background:linear-gradient(135deg,#43a047,#2e7d32);}
+.alert-toast.error{background:linear-gradient(135deg,#e53935,#b71c1c);}
+
+/* ═══════════════════════════════ RESPONSIVE ═══ */
+@media(max-width:900px){
+  .page-wrapper{grid-template-columns:1fr;}
+  .summary-box{position:static;}
+  .search-bar .center a{position:static;transform:none;}
+  .search-box{margin-left:0;flex:1;}
+}
+@media(max-width:600px){
+  .search-bar{flex-wrap:wrap;padding:10px;}
+  .search-bar .center{order:2;width:100%;}
+  .search-bar .left{order:1;}
+  .search-bar .right{order:3;}
+  .cart-table th:nth-child(2),.cart-table td:nth-child(2){display:none;} /* hide unit price on mobile */
+  .product-thumb{width:52px;height:52px;}
+}
+</style>
 </head>
 <body>
 
+<!-- ══ HEADER ════════════════════════════════════════════ -->
 <header class="header-container">
   <div class="search-bar">
-
     <div class="left">
-      <a href="<?= $link_home ?>" class="home-btn">
-        <i class="fas fa-home"></i> Home
-      </a>
+      <a href="<?= $link_home ?>" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
-
     <div class="center">
       <a href="<?= $link_home ?>">
-        <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+        <img src="<?= IMG_URL ?>36-logo.png" alt="36 Jewelry" class="header-logo">
       </a>
       <div class="search-box">
         <input type="text" id="search-input" placeholder="Search products..."
                onkeydown="if(event.key==='Enter') doSearch()">
-        <button onclick="doSearch()">
-          <i class="fas fa-search"></i>
-        </button>
+        <button onclick="doSearch()"><i class="fas fa-search"></i></button>
       </div>
     </div>
-
-    <!-- Header phải: luôn hiển thị trạng thái đã đăng nhập -->
-    <div class="right" style="display:flex; align-items:center; gap:20px;">
-
-  <!-- Giỏ hàng -->
-  <a href="<?= $link_cart ?>" class="icon-link" title="Giỏ hàng"
-     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
-    <i class="fas fa-shopping-cart" style="font-size:18px;"></i>
-  </a>
-
-  <!-- Tên tài khoản + icon profile -->
-  <a href="<?= $link_profile ?>" class="icon-link" title="Trang cá nhân"
-     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
-      <i class="fas fa-user-circle user-icon"></i>
-    <span style="font-size:13px; font-weight:600; white-space:nowrap; color:#333;">
-      <?= $logged_in_name ?>
-    </span>
-  </a>
-
-  <!-- Đăng xuất -->
-  <a href="<?= $link_logout ?>" class="icon-link" title="Đăng xuất"
-     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:#c0392b;">
-    <i class="fas fa-sign-out-alt" style="font-size:18px;"></i>
-    <span style="font-size:12px; font-weight:500;"></span>
-  </a>
-
-</div>
+    <div class="right">
+      <a href="<?= $link_cart ?>" class="icon-link" title="Cart">
+        <i class="fas fa-shopping-cart"></i>
+        <?php if ($item_count > 0): ?>
+          <span class="cart-badge"><?= $item_count > 9 ? '9+' : $item_count ?></span>
+        <?php endif; ?>
+      </a>
+      <a href="<?= $link_profile ?>" class="user-name" title="Profile">
+        <i class="fas fa-user-circle" style="font-size:20px;color:var(--gold)"></i>
+        <span><?= $logged_in_name ?></span>
+      </a>
+      <a href="<?= $link_logout ?>" class="icon-link" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </div>
 </header>
 
-<main class="main-content">
-    <button class="back-button" onclick="window.history.back()">←</button>
-    <h2>Your Shopping Cart</h2>
+<?php if ($added_flash): ?>
+<div class="flash"><i class="fas fa-check-circle"></i> Item added to your cart!</div>
+<?php endif; ?>
 
-    <div id="alert-message" class="alert-message"></div>
+<!-- ══ MAIN ══════════════════════════════════════════════ -->
+<div class="page-wrapper">
 
-    <table class="cart-table">
+  <!-- LEFT: Cart items -->
+  <div class="cart-box">
+    <div class="cart-box-header">
+      <h1><i class="fas fa-shopping-cart"></i> My Cart</h1>
+      <span class="item-count-badge">
+        <?= count($cart_rows) ?> <?= count($cart_rows) === 1 ? 'item' : 'items' ?>
+      </span>
+    </div>
+
+    <?php if (empty($cart_rows)): ?>
+      <div class="empty-cart">
+        <i class="fas fa-shopping-bag"></i>
+        <p>Your cart is empty. Start shopping!</p>
+        <a href="<?= $link_home ?>" class="btn-shop"><i class="fas fa-gem"></i> Browse Products</a>
+      </div>
+    <?php else: ?>
+      <table class="cart-table" id="cart-table">
         <thead>
-            <tr><th>Product</th><th>Price</th><th>Quantity</th><th>Total</th><th>Action</th></tr>
+          <tr>
+            <th>Product</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th style="text-align:right">Total</th>
+            <th style="width:48px"></th>
+          </tr>
         </thead>
         <tbody id="cart-body">
-        <?php if (count($cart_items) > 0): ?>
-            <?php foreach ($cart_items as $item): ?>
-            <tr data-product-id="<?= $item['id'] ?>">
-                <td class="product-info">
-                    <img src="<?= IMG_URL . $item['image'] ?>" class="product-thumb" onerror="this.src='<?= IMG_URL ?>placeholder.jpg'">
-                    <span><?= htmlspecialchars($item['name']) ?></span>
-                </td>
-                <td class="price">$<?= number_format($item['price'],2) ?></td>
-                <td class="quantity-cell">
-                    <input type="number" value="<?= $item['quantity'] ?>" min="1" class="quantity-input" data-id="<?= $item['id'] ?>">
-                </td>
-                <td class="item-total">$<?= number_format($item['item_total'],2) ?></td>
-                <td class="action-cell">
-                    <button class="view-details-btn" onclick="location.href='<?= $link_detail ?>?id=<?= $item['id'] ?>'">View</button>
-                    <button class="remove-btn" data-id="<?= $item['id'] ?>">Remove</button>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <tr><td colspan="5">Cart is empty</td></tr>
-        <?php endif; ?>
+          <?php foreach ($cart_rows as $item): ?>
+          <tr id="row-<?= htmlspecialchars($item['product_id']) ?>"
+              data-pid="<?= htmlspecialchars($item['product_id']) ?>"
+              data-price="<?= $item['selling_price'] ?>">
+            <td>
+              <div class="product-cell">
+                <img src="<?= IMG_URL . htmlspecialchars($item['image'] ?? '') ?>"
+                     alt="<?= htmlspecialchars($item['name']) ?>"
+                     class="product-thumb"
+                     onerror="this.src='<?= IMG_URL ?>default-avatar.png'">
+                <div>
+                  <a href="<?= $link_detail ?>?id=<?= urlencode($item['product_id']) ?>"
+                     class="product-name"><?= htmlspecialchars($item['name']) ?></a>
+                  <span class="product-id">SKU: <?= htmlspecialchars($item['product_id']) ?></span>
+                </div>
+              </div>
+            </td>
+            <td class="price-cell">$<?= number_format($item['selling_price'], 2) ?></td>
+            <td>
+              <div class="qty-wrapper">
+                <button class="qty-btn qty-dec" type="button">−</button>
+                <input type="number" class="qty-input"
+                       value="<?= (int)$item['quantity'] ?>"
+                       min="1" max="<?= (int)($item['stock'] ?? 99) ?>"
+                       data-pid="<?= htmlspecialchars($item['product_id']) ?>">
+                <button class="qty-btn qty-inc" type="button">+</button>
+              </div>
+            </td>
+            <td class="total-cell item-total">$<?= number_format($item['item_total'], 2) ?></td>
+            <td>
+              <button class="remove-btn" data-pid="<?= htmlspecialchars($item['product_id']) ?>"
+                      title="Remove item"><i class="fas fa-trash-alt"></i></button>
+            </td>
+          </tr>
+          <?php endforeach; ?>
         </tbody>
-    </table>
+      </table>
+    <?php endif; ?>
+  </div>
 
-    <div class="cart-summary">
-        <p class="total">Total: <strong id="cart-total">$<?= number_format($total,2) ?></strong></p>
-        <a href="order_confirm.php" class="checkout-btn">Proceed to Checkout</a>
+  <!-- RIGHT: Summary -->
+  <div class="summary-box">
+    <h2 class="summary-title"><i class="fas fa-receipt"></i> Order Summary</h2>
+
+    <div class="summary-row">
+      <span class="label">Subtotal (<?= $item_count ?> items)</span>
+      <span class="value" id="subtotal">$<?= number_format($total, 2) ?></span>
     </div>
-</main>
+    <div class="summary-row">
+      <span class="label">Shipping</span>
+      <span class="value" style="color:#4caf50">Free</span>
+    </div>
 
-<footer class="footer"><p>&copy; 2025 36 Jewelry. All rights reserved.</p></footer>
+    <hr class="summary-divider">
+    <div class="summary-total">
+      <span>Total</span>
+      <span class="amt" id="grand-total">$<?= number_format($total, 2) ?></span>
+    </div>
 
-<script src="<?= BASE_URL ?>js/jquery-1.11.0.min.js"></script>
+    <?php if (!empty($cart_rows)): ?>
+      <a href="<?= $link_checkout ?>" class="btn-checkout" id="btn-checkout">
+        <i class="fas fa-lock"></i> Proceed to Checkout
+      </a>
+    <?php else: ?>
+      <button class="btn-checkout" disabled>Cart is Empty</button>
+    <?php endif; ?>
+
+    <a href="<?= $link_home ?>" class="btn-continue">← Continue Shopping</a>
+
+    <div class="secure-note">
+      <i class="fas fa-shield-alt"></i> Secure 256-bit SSL encrypted checkout
+    </div>
+  </div>
+
+</div><!-- /.page-wrapper -->
+
+<!-- Toast -->
+<div class="alert-toast" id="toast"></div>
+
 <script>
+// ── Toast ───────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = 'alert-toast ' + type + ' show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Search ──────────────────────────────────────────────
 function doSearch() {
-    let kw = document.getElementById('search-input').value.trim();
-    if (kw) window.location.href = '<?= BASE_URL ?>User/users/search.php?q=' + encodeURIComponent(kw);
+  const kw = document.getElementById('search-input').value.trim();
+  if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
 }
 
-function showAlert(message, isError = false) {
-    const alertBox = document.getElementById('alert-message');
-    alertBox.textContent = message;
-    alertBox.style.backgroundColor = isError ? '#dc3545' : '#28a745';
-    alertBox.style.opacity = '1';
-    alertBox.style.transform = 'translateY(0)';
-    setTimeout(() => {
-        alertBox.style.opacity = '0';
-        alertBox.style.transform = 'translateY(-20px)';
-    }, 2000);
+// ── Recalculate totals ──────────────────────────────────
+function recalcTotals() {
+  let total = 0, count = 0;
+  document.querySelectorAll('#cart-body tr[data-pid]').forEach(row => {
+    const price = parseFloat(row.dataset.price) || 0;
+    const qty   = parseInt(row.querySelector('.qty-input').value) || 1;
+    const itemTotal = price * qty;
+    row.querySelector('.item-total').textContent = '$' + itemTotal.toFixed(2);
+    total += itemTotal;
+    count += qty;
+  });
+  document.getElementById('subtotal').textContent   = '$' + total.toFixed(2);
+  document.getElementById('grand-total').textContent = '$' + total.toFixed(2);
 }
 
-function updateTotals() {
-    let total = 0;
-    document.querySelectorAll('#cart-body tr[data-product-id]').forEach(row => {
-        const price = parseFloat(row.querySelector('.price').textContent.replace('$','').replace(',',''));
-        const qty = parseInt(row.querySelector('.quantity-input').value);
-        const itemTotal = price * qty;
-        row.querySelector('.item-total').textContent = '$' + itemTotal.toFixed(2);
-        total += itemTotal;
-    });
-    document.getElementById('cart-total').textContent = '$' + total.toFixed(2);
+// ── AJAX helper ─────────────────────────────────────────
+function cartAjax(data) {
+  return fetch(window.location.href, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: new URLSearchParams(data).toString()
+  }).then(r => r.json());
 }
 
-// Cập nhật số lượng (AJAX)
-document.querySelectorAll('.quantity-input').forEach(input => {
-    input.addEventListener('change', function() {
-        const productId = this.dataset.id;
-        const quantity = this.value;
-        fetch(window.location.href, {
-            method: 'POST',
-            headers: {'Content-Type':'application/x-www-form-urlencoded'},
-            body: `ajax_action=update&product_id=${productId}&quantity=${quantity}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateTotals();
-                showAlert('Updated quantity!');
-            } else {
-                showAlert(data.message, true);
-            }
-        })
-        .catch(() => showAlert('Error updating quantity', true));
-    });
+// ── Qty +/- buttons ─────────────────────────────────────
+document.querySelectorAll('.qty-dec').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = btn.nextElementSibling;
+    if (parseInt(input.value) > 1) {
+      input.value = parseInt(input.value) - 1;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
+});
+document.querySelectorAll('.qty-inc').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = btn.previousElementSibling;
+    const max   = parseInt(input.max) || 99;
+    if (parseInt(input.value) < max) {
+      input.value = parseInt(input.value) + 1;
+      input.dispatchEvent(new Event('change'));
+    }
+  });
 });
 
-// Xóa sản phẩm (AJAX)
+// ── Update quantity ──────────────────────────────────────
+document.querySelectorAll('.qty-input').forEach(input => {
+  let debounce;
+  input.addEventListener('change', function() {
+    clearTimeout(debounce);
+    const pid = this.dataset.pid;
+    const qty = Math.max(1, parseInt(this.value) || 1);
+    this.value = qty;
+    recalcTotals();
+    debounce = setTimeout(() => {
+      cartAjax({ajax_action: 'update', product_id: pid, quantity: qty})
+        .then(d => showToast(d.success ? 'Quantity updated!' : 'Update failed', d.success ? 'success' : 'error'))
+        .catch(() => showToast('Network error', 'error'));
+    }, 600);
+  });
+});
+
+// ── Remove item ──────────────────────────────────────────
 document.querySelectorAll('.remove-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const productId = this.dataset.id;
-        fetch(window.location.href, {
-            method: 'POST',
-            headers: {'Content-Type':'application/x-www-form-urlencoded'},
-            body: `ajax_action=remove&product_id=${productId}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const row = this.closest('tr');
-                row.remove();
-                updateTotals();
-                showAlert('Removed!');
-                if (document.querySelectorAll('#cart-body tr').length === 0) {
-                    document.getElementById('cart-body').innerHTML = '<tr><td colspan="5">Cart is empty</td></tr>';
-                }
-            } else {
-                showAlert(data.message, true);
+  btn.addEventListener('click', function() {
+    const pid    = this.dataset.pid;
+    const row    = document.getElementById('row-' + pid);
+    cartAjax({ajax_action: 'remove', product_id: pid})
+      .then(d => {
+        if (d.success) {
+          row.style.transition = 'opacity .3s';
+          row.style.opacity    = '0';
+          setTimeout(() => {
+            row.remove();
+            recalcTotals();
+            // Nếu giỏ trống
+            if (!document.querySelector('#cart-body tr[data-pid]')) {
+              document.getElementById('cart-body').innerHTML = '';
+              document.getElementById('cart-table').remove();
+              document.querySelector('.cart-box').insertAdjacentHTML('beforeend',
+                `<div class="empty-cart">
+                   <i class="fas fa-shopping-bag"></i>
+                   <p>Your cart is empty.</p>
+                   <a href="<?= $link_home ?>" class="btn-shop"><i class="fas fa-gem"></i> Browse Products</a>
+                 </div>`);
+              document.getElementById('btn-checkout')?.setAttribute('disabled', 'disabled');
             }
-        })
-        .catch(() => showAlert('Error removing item', true));
-    });
+          }, 300);
+          showToast('Item removed!');
+        }
+      })
+      .catch(() => showToast('Failed to remove', 'error'));
+  });
 });
-
-updateTotals();
 </script>
+
 </body>
 </html>
