@@ -133,7 +133,7 @@ if ($product) {
     </div>
 
     <div class="right">
-      <a href="../Cart/Jewelry-cart.html" class="icon-link">
+      <a href="../users/cart.php" class="icon-link">
         <i class="fas fa-shopping-cart"></i>
       </a>
       <a href="../users/profile.php" class="icon-link">
