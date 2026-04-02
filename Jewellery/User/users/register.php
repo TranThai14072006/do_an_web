@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once $_SERVER['DOCUMENT_ROOT'] . "/do_an_web/Jewellery/config/config.php";
+require_once __DIR__ . '/../../config/config.php';
 
 if (isset($_SESSION['user_id'])) {
-    header("Location: ../index.php");
+    header("Location: ../indexprofile.php");
     exit();
 }
 
@@ -44,7 +44,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->close();
 
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            $username = $email;
+            // Tạo username từ email (bỏ domain), đảm bảo unique
+            $base_username = strtolower(explode('@', $email)[0]);
+            $username = $base_username;
+            // Kiểm tra nếu username đã tồn tại thì thêm số ngẫu nhiên
+            $chk_u = $conn->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+            $chk_u->bind_param('s', $username);
+            $chk_u->execute();
+            if ($chk_u->get_result()->num_rows > 0) {
+                $username = $base_username . rand(100, 999);
+            }
+            $chk_u->close();
 
             // ✅ SỬA Ở ĐÂY
             $conn->begin_transaction();
@@ -606,9 +616,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <script>
   // Search
   document.getElementById("searchBtn").onclick = function() {
-    let key = document.getElementById("searchInput").value;
-    if (key.trim()) alert("Searching: " + key);
+    let key = document.getElementById("searchInput").value.trim();
+    if (key) window.location.href = '/do_an_web/Jewellery/User/Search/search.html?q=' + encodeURIComponent(key);
   };
+  document.getElementById("searchInput").addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('searchBtn').click();
+  });
 </script>
 
 </body>

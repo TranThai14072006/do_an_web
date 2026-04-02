@@ -22,7 +22,7 @@ if (isset($_SESSION['user_id'])) {
 
 $link_home  = BASE_URL . 'User/index.php';
 $link_login = BASE_URL . 'User/users/login.php';
-$link_search = BASE_URL . 'User/users/search.php';
+$link_search = BASE_URL . 'User/Search/search.html';
 
 $errors  = [];
 $success = '';

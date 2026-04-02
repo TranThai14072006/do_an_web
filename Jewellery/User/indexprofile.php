@@ -1,18 +1,16 @@
-
-
 <?php
 // ═══════════════════════════════════════════════════════════════
-// File: Jewellery/User/users/index.php  (logged-in version)
+// File: Jewellery/User/indexprofile.php  (logged-in homepage)
 // Config: chỉ dùng $conn → jewelry_db (1 DB duy nhất)
 // ═══════════════════════════════════════════════════════════════
 
 session_start();
-require_once __DIR__ . '../../config/config.php';
+require_once __DIR__ . '/../config/config.php';
 // $conn đã có từ config.php (jewelry_db)
 
 // ── Đường dẫn gốc web ────────────────────────────────────────
-define('BASE_URL', '/do_an_web/Jewellery/');
-define('IMG_URL',  BASE_URL . 'images/');
+if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('IMG_URL'))  define('IMG_URL',  BASE_URL . 'images/');
 
 // ── Nhận diện user từ session ────────────────────────────────
 // Sau đăng nhập, session lưu user_id (hoặc id) + username / full_name
@@ -123,13 +121,13 @@ $categories = [
 ];
 
 // ── Link helpers ──────────────────────────────────────────────
-$link_home    = BASE_URL . 'User/users/index.php';
+$link_home    = BASE_URL . 'User/indexprofile.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
-$link_search  = BASE_URL . 'User/users/search.php';
+$link_search  = BASE_URL . 'User/Search/search.html';
 $link_detail  = BASE_URL . 'User/users/product_detail.php';
-$link_shop    = BASE_URL . 'User/Products/Products.html';
+$link_shop    = BASE_URL . 'User/indexprofile.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -295,6 +293,7 @@ $link_shop    = BASE_URL . 'User/Products/Products.html';
   </a>
 
 </div>
+  </div><!-- /.search-bar -->
 </header>
 
 <!-- ══ BANNER ═══════════════════════════════════════════════════ -->
@@ -643,23 +642,13 @@ $link_shop    = BASE_URL . 'User/Products/Products.html';
   });
 
   function doSearch() {
-  const keyword = document.getElementById('search-input').value.trim();
-
-  if (!keyword) return;
-
-  fetch(`search/search-api.php?q=${encodeURIComponent(keyword)}`)
-    .then(res => res.json())
-    .then(data => {
-      allProducts = data;
-      currentPage = 1;
-      renderPage(currentPage);
-      renderPagination();
-    })
-    .catch(err => console.error(err));
-}
+    const keyword = document.getElementById('search-input').value.trim();
+    if (keyword) {
+      window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(keyword);
+    }
+  }
 
 </script>
 
 </body>
-</html>
-<?php $conn->close(); ?>
+</html>

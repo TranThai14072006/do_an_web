@@ -328,7 +328,7 @@ function closeNotification() {
   clearTimeout(n._t);
 }
 
-// ===== LOAD PRODUCTS ===== (giữ nguyên)
+// ===== LOAD PRODUCTS =====
 window.addEventListener('DOMContentLoaded', () => loadProducts());
 
 async function loadProducts() {
@@ -337,8 +337,18 @@ async function loadProducts() {
     allProducts = await res.json();
     if (!Array.isArray(allProducts) && allProducts.products) allProducts = allProducts.products;
     filteredProducts = [...allProducts];
-    renderPage(currentPage);
-    renderPagination();
+
+    // ── Đọc keyword từ URL ?q= và tự điền + lọc ──────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const qParam = urlParams.get('q');
+    if (qParam && qParam.trim()) {
+      document.getElementById('search').value = qParam.trim();
+      document.getElementById('header-search').value = qParam.trim();
+      applyFilter(); // sẽ tự gọi renderPage + renderPagination
+    } else {
+      renderPage(currentPage);
+      renderPagination();
+    }
   } catch (err) {
     document.getElementById('products-grid').innerHTML =
       `<p style="grid-column:1/-1;text-align:center;padding:40px;color:#c00;">

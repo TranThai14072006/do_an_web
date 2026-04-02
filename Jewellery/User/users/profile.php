@@ -30,7 +30,7 @@ $link_home        = BASE_URL . 'User/indexprofile.php';
 $link_cart        = BASE_URL . 'User/users/cart.php';
 $link_profile     = BASE_URL . 'User/users/profile.php';
 $link_logout      = BASE_URL . 'User/users/logout.php';
-$link_search      = BASE_URL . 'User/users/search.php';
+$link_search      = BASE_URL . 'User/Search/search.html';
 $link_edit        = BASE_URL . 'User/users/edit_profile.php';
 $link_history     = BASE_URL . 'User/users/history.php';
 

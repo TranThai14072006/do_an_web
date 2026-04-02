@@ -53,7 +53,7 @@ $link_home    = BASE_URL . 'User/indexprofile.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
-$link_search  = BASE_URL . 'User/users/search.php';
+$link_search  = BASE_URL . 'User/Search/search.html';
 $link_history = BASE_URL . 'User/users/history.php';
 
 // Định dạng ngày
@@ -76,16 +76,14 @@ switch ($order['status']) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Order Details | 36 Jewelry</title>
-<link rel="stylesheet" href="search.css">
-<link rel="stylesheet" href="product-buttons.css">
-<link rel="stylesheet" type="text/css" href="../fonts/icomoon.css"> 
+<meta name="description" content="View details of your 36 Jewelry order.">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family:"Cormorant Garamond", serif; }
 
   body {
     background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)),
-                url("../images/chocolat/pfb10.jpg") no-repeat center center/cover;
+                url("<?= IMG_URL ?>profile background.jpg") no-repeat center center/cover;
     min-height:100vh;
     display:flex;
     flex-direction:column;

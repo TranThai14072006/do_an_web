@@ -2,6 +2,9 @@
 session_start();
 require_once "../../config/config.php";
 
+if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
+
 // If already logged in → go to profile
 if (isset($_SESSION['user_id'])) {
     header("Location: ../indexprofile.php");
@@ -81,12 +84,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Login</title>
+  <title>User Login | 36 Jewelry</title>
+  <meta name="description" content="Login to your 36 Jewelry account.">
   <link rel="stylesheet" href="../search.css">
   <link rel="stylesheet" href="../Login.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* FIX: giới hạn kích thước logo trong header */
     .header-container .center a img {
       width: 80px !important;
       height: auto !important;
@@ -107,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       </a>
       <div class="search-box">
         <input type="text" placeholder="Search products...">
-        <button onclick="window.location.href='search.php'">
+        <button onclick="window.location.href='../Search/search.html'">
           <i class="fas fa-search"></i>
         </button>
       </div>
@@ -148,7 +151,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   document.querySelector('.search-box button').addEventListener('click', function() {
     const searchTerm = document.querySelector('.search-box input').value;
     if (searchTerm.trim() !== '') {
-      window.location.href = 'search.php?q=' + encodeURIComponent(searchTerm);
+      window.location.href = '../Search/search.html?q=' + encodeURIComponent(searchTerm);
     }
   });
   document.querySelector('.search-box input').addEventListener('keypress', function(e) {
@@ -159,4 +162,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </script>
 </body>
 </html>
-

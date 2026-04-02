@@ -40,13 +40,13 @@ $link_home    = BASE_URL . 'User/indexprofile.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
-$link_search  = BASE_URL . 'User/users/search.php';
+$link_search  = BASE_URL . 'User/Search/search.html';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your Orders | 36 Jewelry</title>
-  <link rel="stylesheet" href="view_orders.css"><link rel="stylesheet" href="search.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     .back-btn { position: fixed; top: 90px; left: 20px; z-index: 9999; background: rgba(0,0,0,0.35); border: 1px solid #f8ce86; color: #f8ce86; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(6px); }
     .back-btn:hover { background: #f8ce86; color: #000; box-shadow: 0 0 10px rgba(248,206,134,0.6); transform: scale(1.05); }

@@ -2,13 +2,17 @@
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
+// Định nghĩa hằng TRƯỚC khi dùng
+if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
+
 // Kiểm tra đăng nhập
 if (!isset($_SESSION['user_id'])) {
-    header("Location: " . BASE_URL . "User/Login.php");
+    header('Location: ' . BASE_URL . 'User/users/login.php');
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = (int)$_SESSION['user_id'];
 
 // Lấy thông tin customer_id từ bảng customers
 $stmt = $conn->prepare("SELECT id FROM customers WHERE user_id = ?");
@@ -18,7 +22,7 @@ $result = $stmt->get_result();
 $customer = $result->fetch_assoc();
 
 if (!$customer) {
-    // Nếu chưa có thông tin khách hàng, có thể hiển thị thông báo hoặc để trống
+    // Nếu chưa có thông tin khách hàng
     $orders = [];
 } else {
     $customer_id = $customer['id'];
@@ -30,21 +34,14 @@ if (!$customer) {
 }
 $stmt->close();
 
-// Định nghĩa BASE_URL nếu chưa có (để dùng trong HTML)
-if (!defined('BASE_URL')) {
-    define('BASE_URL', '/do_an_web/Jewellery/');
-}
-define('IMG_URL', BASE_URL . 'images/');
-
 // Link helpers
-$link_home    = BASE_URL . 'User/index.php';
-$link_login   = BASE_URL . 'User/users/Login.php';
+$link_home    = BASE_URL . 'User/indexprofile.php';
+$link_login   = BASE_URL . 'User/users/login.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
-$link_search  = BASE_URL . 'User/users/search.php';
-$link_detail  = BASE_URL . 'User/users/product_detail.php';
-$link_history = BASE_URL . 'User/users/History.php';
+$link_search  = BASE_URL . 'User/Search/search.html';
+$link_history = BASE_URL . 'User/users/history.php';
 $link_view    = BASE_URL . 'User/users/view_details.php';
 ?>
 <!DOCTYPE html>
