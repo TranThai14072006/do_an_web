@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result && $result->num_rows === 1) {
             $user = $result->fetch_assoc();
 
-            if ($user['status'] !== 'active') {
+            if ($user['status'] !== 'Active') {
                 $error = 'Admin account is locked.';
             } else {
                 // Verify password (supports both plaintext for old data and bcrypt)
