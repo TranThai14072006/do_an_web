@@ -239,6 +239,85 @@ $link_shop    = BASE_URL . 'User/Products/products.html';
   border-radius: 50%;
 }
 
+/* ── SIZE MODAL ── */
+.size-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+.size-modal-overlay.active { display: flex; }
+.size-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px;
+  min-width: 320px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  animation: slideUp .25s ease;
+  position: relative;
+}
+@keyframes slideUp { from { transform:translateY(30px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.size-modal h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 6px;
+}
+.size-modal .modal-sub {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 20px;
+}
+.size-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.size-opt {
+  width: 50px;
+  height: 50px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: #fafafa;
+  font-size: 15px;
+  font-weight: 700;
+  color: #444;
+  cursor: pointer;
+  transition: .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.size-opt:hover { border-color: #b8972e; color: #b8972e; background: #fffbe8; }
+.size-opt.selected { border-color: #b8972e; background: #b8972e; color: #fff; }
+.size-modal-actions { display: flex; gap: 10px; }
+.size-modal-actions .btn-cancel {
+  flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 10px;
+  background: #fff; font-size: 14px; font-weight: 600; color: #666;
+  cursor: pointer; transition: .2s;
+}
+.size-modal-actions .btn-cancel:hover { border-color: #ccc; }
+.size-modal-actions .btn-confirm {
+  flex: 2; padding: 12px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg,#d4af37,#b8860b);
+  color: #fff; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: .2s;
+}
+.size-modal-actions .btn-confirm:hover { opacity: .9; transform: translateY(-1px); }
+.size-modal-actions .btn-confirm:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.size-modal-close {
+  position: absolute; top: 14px; right: 16px;
+  background: none; border: none; font-size: 20px;
+  color: #aaa; cursor: pointer; line-height: 1;
+}
+.size-modal-close:hover { color: #333; }
+
   </style>
 </head>
 
@@ -371,8 +450,10 @@ $link_shop    = BASE_URL . 'User/Products/products.html';
               <div class="cart-concern">
                 <div class="cart-button d-flex flex-wrap">
                   <div class="btn-left">
-                    <a href="<?= $link_cart ?>?action=add&id=<?= urlencode($p['id']) ?>"
-                       class="btn btn-medium btn-light">Add to Cart</a>
+                    <button type="button" class="btn btn-medium btn-light"
+                      onclick="openSizeModal('<?= htmlspecialchars(addslashes($p['name'])) ?>','<?= urlencode($p['id']) ?>')">
+                      Add to Cart
+                    </button>
                   </div>
                   <button type="button" class="btn btn-light view-btn d-flex"
                     onclick="window.location.href='<?= $link_detail ?>?id=<?= urlencode($p['id']) ?>'">
@@ -461,8 +542,10 @@ $link_shop    = BASE_URL . 'User/Products/products.html';
               <div class="cart-concern">
                 <div class="cart-button d-flex flex-wrap">
                   <div class="btn-left">
-                    <a href="<?= $link_cart ?>?action=add&id=<?= urlencode($p['id']) ?>"
-                       class="btn btn-medium btn-light">Add to Cart</a>
+                    <button type="button" class="btn btn-medium btn-light"
+                      onclick="openSizeModal('<?= htmlspecialchars(addslashes($p['name'])) ?>','<?= urlencode($p['id']) ?>')">
+                      Add to Cart
+                    </button>
                   </div>
                   <button type="button" class="btn btn-light view-btn d-flex"
                     onclick="window.location.href='<?= $link_detail ?>?id=<?= urlencode($p['id']) ?>'">
@@ -612,6 +695,25 @@ $link_shop    = BASE_URL . 'User/Products/products.html';
 </div>
 
 <!-- ══ SCRIPTS ══════════════════════════════════════════════════ -->
+<!-- ══ SIZE MODAL ══════════════════════════════════════════ -->
+<div class="size-modal-overlay" id="size-modal-overlay">
+  <div class="size-modal">
+    <button class="size-modal-close" onclick="closeSizeModal()">&#10005;</button>
+    <h3>Chọn size nhẫn</h3>
+    <p class="modal-sub" id="modal-product-name"></p>
+    <div class="size-options">
+      <?php foreach ([5,6,7,8,9] as $s): ?>
+      <button type="button" class="size-opt" data-size="<?= $s ?>"><?= $s ?></button>
+      <?php endforeach; ?>
+    </div>
+    <div class="size-modal-actions">
+      <button class="btn-cancel" onclick="closeSizeModal()">Huỷ</button>
+      <button class="btn-confirm" id="btn-confirm-size" disabled
+              onclick="confirmAddToCart()">Thêm vào giỏ hàng</button>
+    </div>
+  </div>
+</div>
+
 <script src="<?= BASE_URL ?>js/jquery-1.11.0.min.js"></script>
 <script src="<?= BASE_URL ?>js/plugins.js"></script>
 <script src="<?= BASE_URL ?>js/script.js"></script>
@@ -646,6 +748,45 @@ $link_shop    = BASE_URL . 'User/Products/products.html';
     if (keyword) {
       window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(keyword);
     }
+  }
+
+  // ── Size Modal ──────────────────────────────────────────
+  let _modalProductId = '';
+  let _selectedSize   = '';
+
+  function openSizeModal(name, productId) {
+    _modalProductId = productId;
+    _selectedSize   = '';
+    document.getElementById('modal-product-name').textContent = name;
+    document.querySelectorAll('.size-opt').forEach(btn => btn.classList.remove('selected'));
+    document.getElementById('btn-confirm-size').disabled = true;
+    document.getElementById('size-modal-overlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSizeModal() {
+    document.getElementById('size-modal-overlay').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Chọn size
+  document.querySelectorAll('.size-opt').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.size-opt').forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+      _selectedSize = this.dataset.size;
+      document.getElementById('btn-confirm-size').disabled = false;
+    });
+  });
+
+  // Đóng khi bấm backdrop
+  document.getElementById('size-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeSizeModal();
+  });
+
+  function confirmAddToCart() {
+    if (!_selectedSize || !_modalProductId) return;
+    window.location.href = '<?= $link_cart ?>?action=add&id=' + _modalProductId + '&size=' + encodeURIComponent(_selectedSize);
   }
 
 </script>

@@ -84,21 +84,29 @@ if (isset($_POST['ajax_action'])) {
 }
 
 // ─────────────────────────────────────────────────────────
-// THÊM VÀO GIỎ (GET action=add&id=xxx)
+// THÊM VÀO GIỎ (GET action=add&id=xxx&size=yyy)
 // ─────────────────────────────────────────────────────────
 if (isset($_GET['action']) && $_GET['action'] === 'add' && !empty($_GET['id'])) {
-  $pid = trim($_GET['id']);
+  $pid  = trim($_GET['id']);
+  $size = trim($_GET['size'] ?? '');
+
+  // Bắt buộc phải có size
+  if (empty($size)) {
+    header('Location: ' . $link_home . '?error=no_size');
+    exit();
+  }
+
   // Kiểm tra sản phẩm tồn tại
   $chk = $conn->prepare("SELECT id FROM products WHERE id = ? LIMIT 1");
   $chk->bind_param('s', $pid);
   $chk->execute();
   if ($chk->get_result()->num_rows > 0) {
     $st = $conn->prepare("
-            INSERT INTO cart (user_id, product_id, quantity)
-            VALUES (?, ?, 1)
+            INSERT INTO cart (user_id, product_id, quantity, size)
+            VALUES (?, ?, 1, ?)
             ON DUPLICATE KEY UPDATE quantity = quantity + 1
         ");
-    $st->bind_param('is', $user_id, $pid);
+    $st->bind_param('iss', $user_id, $pid, $size);
     $st->execute();
     $st->close();
   }
@@ -863,6 +871,7 @@ $added_flash = isset($_GET['added']);
           <thead>
             <tr>
               <th>Product</th>
+              <th>Size</th>
               <th>Unit Price</th>
               <th>Quantity</th>
               <th style="text-align:right">Total</th>
@@ -884,6 +893,16 @@ $added_flash = isset($_GET['added']);
                       <span class="product-id">SKU: <?= htmlspecialchars($item['product_id']) ?></span>
                     </div>
                   </div>
+                </td>
+                <td class="price-cell">
+                  <?php if (!empty($item['size'])): ?>
+                    <span style="display:inline-flex;align-items:center;gap:5px;background:#f8f4ec;border:1px solid #d4b896;color:#7a5c2e;font-size:12px;font-weight:600;padding:4px 10px;border-radius:4px;letter-spacing:.05em;">
+                      <i class="fas fa-ring" style="font-size:10px;color:#b8945f;"></i>
+                      Size <?= htmlspecialchars($item['size']) ?>
+                    </span>
+                  <?php else: ?>
+                    <span style="color:#ccc;font-size:12px;">—</span>
+                  <?php endif; ?>
                 </td>
                 <td class="price-cell">$<?= number_format($item['selling_price'], 2) ?></td>
                 <td>
