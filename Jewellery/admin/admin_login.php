@@ -2,6 +2,20 @@
 session_start();
 require_once '../config/config.php';
 
+// Logout
+if (isset($_GET['logout'])) {
+    session_unset();
+    session_destroy();
+    header('Location: admin_login.php');
+    exit;
+}
+
+// If already logged in, redirect to admin panel
+if (!empty($_SESSION['admin_logged_in'])) {
+    header('Location: Administration_menu.php');
+    exit;
+}
+
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -17,24 +31,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result && $result->num_rows === 1) {
             $user = $result->fetch_assoc();
 
-            if ($user['status'] !== 'active') {
+            if ($user['status'] !== 'Active') {
                 $error = 'Admin account is locked.';
             } else {
-                // Verify password (supports both plaintext for old data and bcrypt)
+                // Verify password (supports both legacy plaintext and bcrypt)
                 $valid = false;
                 if (password_verify($password, $user['password'])) {
                     $valid = true;
                 } elseif ($password === $user['password']) {
                     $valid = true;
-                    // Auto-upgrade password to hash
+                    // Auto-upgrade plaintext password to bcrypt hash
                     $newHash = password_hash($password, PASSWORD_DEFAULT);
                     $upd = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
                     $upd->bind_param('si', $newHash, $user['id']);
                     $upd->execute();
+                    $upd->close();
                 }
 
                 if ($valid) {
+                    session_regenerate_id(true); // Prevent session fixation
                     $_SESSION['admin_logged_in'] = true;
+                    $_SESSION['admin_id']        = $user['id'];
                     $_SESSION['admin_name']      = $user['username'];
                     header('Location: Administration_menu.php');
                     exit;
@@ -43,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         } else {
-            $error = 'Invalid admin username.';
+            $error = 'Admin username not found.';
         }
         $stmt->close();
     } else {

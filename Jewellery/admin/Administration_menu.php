@@ -2,6 +2,12 @@
 session_start();
 require_once '../config/config.php';
 
+// Guard: only logged-in admins can access this page
+if (empty($_SESSION['admin_logged_in'])) {
+    header('Location: admin_login.php');
+    exit;
+}
+
 // ──────────────────────────────────────────────
 // JEWELRY LIST — pagination per tab
 // ──────────────────────────────────────────────
@@ -16,6 +22,11 @@ $unisex_page = isset($_GET['unisex_page']) && is_numeric($_GET['unisex_page']) ?
 $male_name   = isset($_GET['male_name'])   ? trim($_GET['male_name'])   : '';
 $female_name = isset($_GET['female_name']) ? trim($_GET['female_name']) : '';
 $unisex_name = isset($_GET['unisex_name']) ? trim($_GET['unisex_name']) : '';
+
+// Customer search/pagination params (used in hidden inputs)
+$cust_page   = isset($_GET['cust_page'])   && is_numeric($_GET['cust_page'])   ? max(1,(int)$_GET['cust_page'])   : 1;
+$cust_name   = isset($_GET['cust_name'])   ? trim($_GET['cust_name'])   : '';
+$cust_status = isset($_GET['cust_status']) ? trim($_GET['cust_status']) : '';
 
 function fetchProducts($conn, $category, $search_name, $page, $limit) {
     $offset = ($page - 1) * $limit;
@@ -306,7 +317,7 @@ function pageUrl($overrides = []) {
     <section id="settings" class="section">
       <header><h1>System Settings</h1></header>
       <div class="user-actions">
-        <a href="admin_login.php" class="btn logout-btn">
+        <a href="admin_login.php?logout=1" class="btn logout-btn" onclick="return confirm('Are you sure you want to logout?')">
           <i class="fas fa-sign-out-alt"></i> Logout
         </a>
       </div>
