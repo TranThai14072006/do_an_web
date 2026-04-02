@@ -2,13 +2,13 @@
 // ═══════════════════════════════════════════════════════════
 // File: Jewellery/User/users/order_confirm.php
 // Chức năng:
-//   ✔ Kiểm tra đăng nhập (dùng session thực)
+//   ✔ Kiểm tra đăng nhập
 //   ✔ Kiểm tra giỏ hàng không rỗng
-//   ✔ Form điền thông tin giao hàng
-//   ✔ Lưu đơn hàng vào DB (orders + order_items)
+//   ✔ Lấy thông tin user/customer điền sẵn vào form
+//   ✔ Xử lý POST: validate → transaction → insert orders + order_items
 //   ✔ Giảm stock sản phẩm
-//   ✔ Xóa giỏ hàng sau khi đặt
-//   ✔ Redirect → order_success.php
+//   ✔ Xóa giỏ hàng sau khi đặt thành công
+//   ✔ Redirect → order_success.php?order_id=xxx
 // ═══════════════════════════════════════════════════════════
 
 session_start();
@@ -17,7 +17,7 @@ require_once __DIR__ . '/../../config/config.php';
 if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL',  BASE_URL . 'images/');
 
-// Kiểm tra đăng nhập
+// ── Kiểm tra đăng nhập ────────────────────────────────────
 if (!isset($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . 'User/users/login.php');
     exit();
@@ -26,11 +26,11 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = (int)$_SESSION['user_id'];
 
 // ── Links ─────────────────────────────────────────────────
-$link_home     = BASE_URL . 'User/indexprofile.php';
-$link_cart     = BASE_URL . 'User/users/cart.php';
-$link_profile  = BASE_URL . 'User/users/profile.php';
-$link_logout   = BASE_URL . 'User/users/logout.php';
-$link_search   = BASE_URL . 'User/users/search.php';
+$link_home    = BASE_URL . 'User/indexprofile.php';
+$link_cart    = BASE_URL . 'User/users/cart.php';
+$link_profile = BASE_URL . 'User/users/profile.php';
+$link_logout  = BASE_URL . 'User/users/logout.php';
+$link_search  = BASE_URL . 'User/users/search.php';
 $logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
 
 // ── Hàm tính giá bán ─────────────────────────────────────
@@ -66,12 +66,13 @@ $cst = $conn->prepare("
     FROM cart c
     JOIN products p ON c.product_id = p.id
     WHERE c.user_id = ?
+    ORDER BY c.product_id ASC
 ");
 $cst->bind_param('i', $user_id);
 $cst->execute();
 $cres = $cst->get_result();
 while ($row = $cres->fetch_assoc()) {
-    $sp = calcPrice($row);
+    $sp  = calcPrice($row);
     $qty = (int)$row['quantity'];
     $cart_items[] = [
         'id'       => $row['product_id'],
@@ -90,33 +91,38 @@ $cst->close();
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
-    $full_name      = trim($_POST['fullname']       ?? '');
-    $phone          = trim($_POST['phone']          ?? '');
-    $payment_method = trim($_POST['payment']        ?? 'cod');
-    $addr_option    = trim($_POST['addressOption']  ?? 'saved');
+    $full_name      = trim($_POST['fullname']      ?? '');
+    $phone          = trim($_POST['phone']         ?? '');
+    $payment_method = trim($_POST['payment']       ?? 'cod');
+    $addr_option    = trim($_POST['addressOption'] ?? 'saved');
     $address        = ($addr_option === 'new')
                         ? trim($_POST['c_address']    ?? '')
                         : trim($_POST['saved_address'] ?? $user['address'] ?? '');
 
     // Validation
-    if (!$full_name) $error = 'Full name is required.';
-    elseif (!$phone) $error = 'Phone number is required.';
-    elseif (!$address) $error = 'Delivery address is required.';
+    if (!$full_name) {
+        $error = 'Full name is required.';
+    } elseif (!$phone) {
+        $error = 'Phone number is required.';
+    } elseif (!$address) {
+        $error = 'Delivery address is required.';
+    }
 
     // Kiểm tra stock
     if (!$error) {
         foreach ($cart_items as $item) {
             if ($item['quantity'] > $item['stock']) {
-                $error = "\"" . htmlspecialchars($item['name']) . "\" is out of stock (only {$item['stock']} left).";
+                $error = '"' . htmlspecialchars($item['name']) . '" chỉ còn ' . $item['stock'] . ' sản phẩm trong kho.';
                 break;
             }
         }
     }
 
+    // Thực hiện đặt hàng
     if (!$error) {
         $conn->begin_transaction();
         try {
-            // Upsert customers
+            // ── 1. Upsert customer ────────────────────────
             $cid_st = $conn->prepare("SELECT id FROM customers WHERE user_id = ? LIMIT 1");
             $cid_st->bind_param('i', $user_id);
             $cid_st->execute();
@@ -127,7 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
                 $customer_id = (int)$cid_row['id'];
                 $upd = $conn->prepare("UPDATE customers SET full_name=?, phone=?, address=? WHERE id=?");
                 $upd->bind_param('sssi', $full_name, $phone, $address, $customer_id);
-                $upd->execute(); $upd->close();
+                $upd->execute();
+                $upd->close();
             } else {
                 $ins = $conn->prepare("INSERT INTO customers (user_id, full_name, phone, address) VALUES (?,?,?,?)");
                 $ins->bind_param('isss', $user_id, $full_name, $phone, $address);
@@ -136,60 +143,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
                 $ins->close();
             }
 
-            // Tạo order
-            $order_number = 'ORD' . date('Ymd') . rand(100, 999);
+            // ── 2. Tạo đơn hàng ──────────────────────────
+            $order_number = 'ORD' . date('Ymd') . strtoupper(substr(uniqid(), -4));
             $order_date   = date('Y-m-d');
             $status       = 'Pending';
 
-            $oi = $conn->prepare("
+            $ord = $conn->prepare("
                 INSERT INTO orders (order_number, customer_id, order_date, total_amount, status)
                 VALUES (?, ?, ?, ?, ?)
             ");
-            $oi->bind_param('sisdss', $order_number, $customer_id, $order_date, $total_amount, $status);
-            // fix: missing 1 param — remove extra s
-            $oi2 = $conn->prepare("
-                INSERT INTO orders (order_number, customer_id, order_date, total_amount, status)
-                VALUES (?, ?, ?, ?, ?)
-            ");
-            $oi2->bind_param('sisds', $order_number, $customer_id, $order_date, $total_amount, $status);
-            $oi2->execute();
+            // types: s=order_number, i=customer_id, s=order_date, d=total_amount, s=status
+            $ord->bind_param('sisds', $order_number, $customer_id, $order_date, $total_amount, $status);
+            $ord->execute();
             $order_id = (int)$conn->insert_id;
-            $oi2->close();
+            $ord->close();
 
-            // Thêm order_items + giảm stock
+            // ── 3. Thêm order_items + giảm stock ─────────
             $ii = $conn->prepare("
                 INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, total_price)
                 VALUES (?, ?, ?, ?, ?, ?)
             ");
+            $us = $conn->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
+
             foreach ($cart_items as $item) {
-                $ii->bind_param('ississd',
-                    $order_id, $item['id'], $item['name'],
-                    $item['quantity'], $item['price'], $item['total']
+                // types: i=order_id, s=product_id, s=product_name, i=quantity, d=unit_price, d=total_price
+                $ii->bind_param('issidd',
+                    $order_id,
+                    $item['id'],
+                    $item['name'],
+                    $item['quantity'],
+                    $item['price'],
+                    $item['total']
                 );
-                // fix bind types
-                $ii2 = $conn->prepare("
-                    INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price, total_price)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ");
-                $ii2->bind_param('issidd',
-                    $order_id, $item['id'], $item['name'],
-                    $item['quantity'], $item['price'], $item['total']
-                );
-                $ii2->execute(); $ii2->close();
+                $ii->execute();
 
                 // Giảm stock
-                $us = $conn->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?");
                 $us->bind_param('isi', $item['quantity'], $item['id'], $item['quantity']);
-                $us->execute(); $us->close();
+                $us->execute();
             }
+            $ii->close();
+            $us->close();
 
-            // Xóa giỏ hàng
+            // ── 4. Xóa giỏ hàng ──────────────────────────
             $del = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
             $del->bind_param('i', $user_id);
-            $del->execute(); $del->close();
+            $del->execute();
+            $del->close();
 
             $conn->commit();
 
+            // Lưu session để trang success đọc
             $_SESSION['last_order_id']     = $order_id;
             $_SESSION['last_order_number'] = $order_number;
 
@@ -198,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
         } catch (Exception $e) {
             $conn->rollback();
-            $error = 'Order failed: ' . $e->getMessage();
+            $error = 'Đặt hàng thất bại: ' . $e->getMessage();
         }
     }
 }
@@ -213,87 +216,153 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--gold:#b8860b;--gold-lt:#d4af37;--gold-pale:#f8ce86;--dark:#111;--bg:#fff;--accent:#f6f6f6;--muted:#666;--radius:12px;}
+/* ══ ROOT ══ */
+:root {
+  --gold:#b8860b; --gold-lt:#d4af37; --gold-pale:#f8ce86;
+  --dark:#111; --bg:#fff; --accent:#f6f6f6; --muted:#666;
+  --radius:12px; --shadow:0 4px 24px rgba(0,0,0,.08);
+}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:#fafafa;min-height:100vh;color:var(--dark);}
 
-/* HEADER */
+/* ══ HEADER ══ */
 .header-container{width:100%;position:sticky;top:0;z-index:1000;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);}
 .search-bar{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;gap:16px;}
 .search-bar .left,.search-bar .center,.search-bar .right{display:flex;align-items:center;}
-.search-bar .center{flex:1;justify-content:center;gap:24px;position:relative;}
+.search-bar .center{flex:1;justify-content:center;position:relative;}
 .home-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:8px;text-decoration:none;color:var(--dark);font-weight:600;font-size:15px;transition:.2s;}
 .home-btn:hover{background:var(--accent);color:var(--gold);}
 .search-bar .center a{position:absolute;left:50%;transform:translateX(-50%);z-index:10;}
 .header-logo{height:52px;max-width:170px;object-fit:contain;}
 .search-box{flex:0 1 420px;margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--accent);padding:4px 8px;border-radius:999px;border:1px solid rgba(0,0,0,.07);height:46px;}
-.search-box input{flex:1;border:0;outline:0;background:transparent;padding:4px 8px;font-size:14px;}
-.search-box button{display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--gold);color:#fff;padding:8px 14px;border-radius:999px;cursor:pointer;font-size:13px;}
-.icon-link{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:8px;text-decoration:none;color:var(--dark);font-size:18px;}
+.search-box input{flex:1;border:0;outline:0;background:transparent;padding:4px 8px;font-size:14px;color:var(--dark);}
+.search-box button{display:inline-flex;align-items:center;justify-content:center;border:0;background:var(--gold);color:#fff;padding:8px 14px;border-radius:999px;cursor:pointer;font-size:13px;transition:.2s;}
+.search-box button:hover{background:var(--gold-lt);}
+.icon-link{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:8px;text-decoration:none;color:var(--dark);font-size:18px;transition:.18s;}
 .icon-link:hover{background:rgba(184,134,11,.1);color:var(--gold);}
 .search-bar .right{gap:4px;}
 .user-name{font-size:13px;font-weight:600;color:var(--dark);text-decoration:none;display:flex;align-items:center;gap:6px;}
 .user-name:hover{color:var(--gold);}
 
-/* PAGE */
-.page-wrapper{max-width:920px;margin:36px auto 60px;padding:0 20px;display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start;}
+/* ══ BREADCRUMB ══ */
+.breadcrumb{max-width:1100px;margin:20px auto 0;padding:0 20px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:.15s;}
+.breadcrumb a:hover{color:var(--gold);}
+.breadcrumb .sep{color:#ccc;}
+.breadcrumb .current{color:var(--dark);font-weight:600;}
 
-/* CHECKOUT BOX */
-.checkout-box{background:#fff;border-radius:var(--radius);box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden;}
+/* ══ PROGRESS STEPS ══ */
+.steps{max-width:1100px;margin:20px auto 0;padding:0 20px;display:flex;align-items:center;}
+.step{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;}
+.step-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.step.done .step-num{background:var(--gold);color:#fff;}
+.step.active .step-num{background:var(--gold);color:#fff;box-shadow:0 0 0 4px rgba(212,175,55,.2);}
+.step.inactive .step-num{background:#e0e0e0;color:#999;}
+.step.active .step-label{color:var(--dark);}
+.step.done .step-label{color:var(--muted);}
+.step.inactive .step-label{color:#bbb;}
+.step-line{flex:1;height:2px;background:#e0e0e0;margin:0 10px;}
+.step-line.done{background:var(--gold);}
+
+/* ══ PAGE ══ */
+.page-wrapper{max-width:1100px;margin:24px auto 60px;padding:0 20px;display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start;}
+
+/* ══ CHECKOUT BOX ══ */
+.checkout-box{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
 .box-header{padding:20px 24px;border-bottom:1px solid #f0eee8;display:flex;align-items:center;gap:10px;}
 .box-header h1{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--dark);}
-.box-header i{color:var(--gold);}
+.box-header i{color:var(--gold);font-size:18px;}
 .box-body{padding:24px;}
 
-.alert-error{background:#fff0f0;border:1px solid #f5c2c2;border-radius:10px;padding:12px 16px;color:#c62828;font-size:14px;margin-bottom:20px;font-weight:600;}
+/* Alert */
+.alert-error{background:#fff0f0;border:1px solid #f5c2c2;border-radius:10px;padding:14px 16px;color:#c62828;font-size:14px;margin-bottom:20px;font-weight:500;display:flex;align-items:center;gap:10px;}
+.alert-error i{font-size:16px;}
 
-.section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold-lt);margin:20px 0 12px;display:flex;align-items:center;gap:8px;}
+/* Section labels */
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gold-lt);margin:24px 0 14px;display:flex;align-items:center;gap:8px;}
 .section-label::after{content:'';flex:1;height:1px;background:#f0eee8;}
 .section-label:first-child{margin-top:0;}
 
+/* Form */
 .form-group{margin-bottom:16px;}
-.form-group label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px;}
-.form-group input,.form-group select{
+.form-group label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:.2px;}
+.form-group input,
+.form-group select,
+.form-group textarea{
   width:100%;padding:11px 14px;border-radius:10px;font-size:14px;
-  border:1px solid #e0ddd5;background:#fff;color:var(--dark);
+  border:1.5px solid #e0ddd5;background:#fff;color:var(--dark);
   outline:none;transition:.2s;font-family:'DM Sans',sans-serif;
 }
-.form-group input:focus,.form-group select:focus{border-color:var(--gold-lt);box-shadow:0 0 0 3px rgba(212,175,55,.15);}
+.form-group input:focus,
+.form-group select:focus{border-color:var(--gold-lt);box-shadow:0 0 0 3px rgba(212,175,55,.12);}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 
-.radio-group{display:flex;gap:16px;flex-wrap:wrap;}
-.radio-group label{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:500;}
-.radio-group input[type=radio]{accent-color:var(--gold);}
+/* Radio cards */
+.radio-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.radio-card{position:relative;cursor:pointer;}
+.radio-card input[type=radio]{position:absolute;opacity:0;width:0;height:0;}
+.radio-card-inner{
+  border:2px solid #e0ddd5;border-radius:10px;padding:12px 14px;
+  display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;
+  transition:.2s;
+}
+.radio-card-inner i{width:20px;text-align:center;color:var(--muted);}
+.radio-card input:checked + .radio-card-inner{
+  border-color:var(--gold-lt);background:#fffdf5;color:var(--dark);
+}
+.radio-card input:checked + .radio-card-inner i{color:var(--gold);}
 
+/* Payment radio cards */
+.payment-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.p-card{position:relative;cursor:pointer;}
+.p-card input[type=radio]{position:absolute;opacity:0;width:0;height:0;}
+.p-card-inner{border:2px solid #e0ddd5;border-radius:10px;padding:14px 10px;text-align:center;transition:.2s;font-size:13px;font-weight:600;color:var(--muted);}
+.p-card-inner .p-icon{font-size:22px;margin-bottom:6px;display:block;}
+.p-card input:checked + .p-card-inner{border-color:var(--gold-lt);background:#fffdf5;color:var(--dark);}
+.p-card input:checked + .p-card-inner .p-icon{filter:none;}
+
+/* Place order btn */
 .btn-order{
-  width:100%;padding:14px;border:none;border-radius:12px;cursor:pointer;
-  font-weight:700;font-size:16px;margin-top:8px;
+  width:100%;padding:15px;border:none;border-radius:12px;cursor:pointer;
+  font-weight:700;font-size:16px;margin-top:12px;
   background:linear-gradient(135deg,#d4af37,#b8860b);color:#fff;
   box-shadow:0 4px 20px rgba(184,134,11,.3);
-  display:flex;align-items:center;justify-content:center;gap:9px;transition:.25s;
-  font-family:'DM Sans',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:.25s;font-family:'DM Sans',sans-serif;
 }
-.btn-order:hover{background:linear-gradient(135deg,#e0c050,#c9972a);transform:translateY(-1px);}
+.btn-order:hover{background:linear-gradient(135deg,#e0c050,#c9972a);transform:translateY(-1px);box-shadow:0 6px 28px rgba(184,134,11,.4);}
 .btn-order:disabled{background:#ccc;box-shadow:none;cursor:not-allowed;transform:none;}
+.btn-back{display:inline-flex;align-items:center;gap:6px;margin-top:12px;color:var(--muted);font-size:13px;text-decoration:none;transition:.2s;}
+.btn-back:hover{color:var(--gold);}
 
-/* SUMMARY */
-.summary-box{background:#fff;border-radius:var(--radius);box-shadow:0 4px 24px rgba(0,0,0,.08);padding:24px;position:sticky;top:90px;}
+/* ══ SUMMARY PANEL ══ */
+.summary-box{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;position:sticky;top:90px;}
 .sum-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;margin-bottom:18px;color:var(--dark);display:flex;align-items:center;gap:8px;}
 .sum-title i{color:var(--gold-lt);}
+.sum-items-list{max-height:320px;overflow-y:auto;margin-bottom:4px;}
 .sum-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f3ee;}
-.sum-item:last-of-type{border-bottom:none;}
-.sum-thumb{width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #ece8df;flex-shrink:0;}
-.sum-name{font-size:13px;font-weight:600;flex:1;line-height:1.3;}
-.sum-qty{font-size:12px;color:var(--muted);}
+.sum-item:last-child{border-bottom:none;}
+.sum-thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid #ece8df;flex-shrink:0;}
+.sum-info{flex:1;min-width:0;}
+.sum-name{font-size:13px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sum-qty{font-size:12px;color:var(--muted);margin-top:2px;}
 .sum-price{font-size:13px;font-weight:700;color:var(--gold);white-space:nowrap;}
 hr.sum-div{border:none;border-top:2px solid #ede9df;margin:14px 0;}
-.sum-total-row{display:flex;justify-content:space-between;font-size:17px;font-weight:700;}
+.sum-row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;}
+.sum-row .lbl{color:var(--muted);}
+.sum-row .val{font-weight:600;}
+.sum-total-row{display:flex;justify-content:space-between;font-size:18px;font-weight:700;margin-top:4px;}
 .sum-total-row .amt{color:var(--gold);}
-.empty-cart-note{text-align:center;color:var(--muted);padding:20px 0;font-size:14px;}
+.sum-note{font-size:12px;color:var(--muted);text-align:center;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:5px;}
+.sum-note i{color:#4caf50;}
+.empty-note{text-align:center;color:var(--muted);padding:20px 0;font-size:14px;}
 
+/* ══ RESPONSIVE ══ */
 @media(max-width:860px){
   .page-wrapper{grid-template-columns:1fr;}
-  .summary-box{position:static;}
+  .summary-box{position:static;order:-1;}
+  .steps{overflow-x:auto;}
+  .payment-cards{grid-template-columns:1fr 1fr 1fr;}
   .search-bar .center a{position:static;transform:none;}
   .search-box{margin-left:0;flex:1;}
 }
@@ -303,12 +372,14 @@ hr.sum-div{border:none;border-top:2px solid #ede9df;margin:14px 0;}
   .search-bar .left{order:1;}
   .search-bar .right{order:3;}
   .form-row{grid-template-columns:1fr;}
+  .radio-cards{grid-template-columns:1fr;}
+  .payment-cards{grid-template-columns:1fr 1fr;}
 }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- ══ HEADER ══════════════════════════════════════════════ -->
 <header class="header-container">
   <div class="search-bar">
     <div class="left">
@@ -335,6 +406,34 @@ hr.sum-div{border:none;border-top:2px solid #ede9df;margin:14px 0;}
   </div>
 </header>
 
+<!-- ══ BREADCRUMB ══ -->
+<div class="breadcrumb">
+  <a href="<?= $link_home ?>">Home</a>
+  <span class="sep"><i class="fas fa-chevron-right" style="font-size:10px"></i></span>
+  <a href="<?= $link_cart ?>">Cart</a>
+  <span class="sep"><i class="fas fa-chevron-right" style="font-size:10px"></i></span>
+  <span class="current">Checkout</span>
+</div>
+
+<!-- ══ PROGRESS STEPS ══ -->
+<div class="steps">
+  <div class="step done">
+    <span class="step-num"><i class="fas fa-check" style="font-size:11px"></i></span>
+    <span class="step-label">Cart</span>
+  </div>
+  <div class="step-line done"></div>
+  <div class="step active">
+    <span class="step-num">2</span>
+    <span class="step-label">Checkout</span>
+  </div>
+  <div class="step-line"></div>
+  <div class="step inactive">
+    <span class="step-num">3</span>
+    <span class="step-label">Confirmed</span>
+  </div>
+</div>
+
+<!-- ══ MAIN ══════════════════════════════════════════════ -->
 <div class="page-wrapper">
 
   <!-- LEFT: Checkout form -->
@@ -346,21 +445,22 @@ hr.sum-div{border:none;border-top:2px solid #ede9df;margin:14px 0;}
     <div class="box-body">
 
       <?php if ($error): ?>
-        <div class="alert-error"><i class="fas fa-exclamation-triangle"></i> <?= htmlspecialchars($error) ?></div>
+        <div class="alert-error"><i class="fas fa-exclamation-triangle"></i><?= htmlspecialchars($error) ?></div>
       <?php endif; ?>
 
       <?php if (empty($cart_items)): ?>
-        <div style="text-align:center;padding:40px 0;">
-          <i class="fas fa-shopping-bag" style="font-size:48px;color:#e0d5c0;display:block;margin-bottom:16px;"></i>
-          <p style="color:var(--muted);margin-bottom:20px;">Your cart is empty.</p>
+        <div style="text-align:center;padding:48px 0;">
+          <i class="fas fa-shopping-bag" style="font-size:52px;color:#e0d5c0;display:block;margin-bottom:16px;"></i>
+          <p style="color:var(--muted);margin-bottom:20px;font-size:16px;">Your cart is empty.</p>
           <a href="<?= $link_home ?>" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-radius:10px;text-decoration:none;font-weight:600;">
-            <i class="fas fa-gem"></i> Shop Now
+            <i class="fas fa-gem"></i> Browse Products
           </a>
         </div>
-      <?php else: ?>
-      <form method="POST" id="checkout-form">
 
-        <!-- Contact -->
+      <?php else: ?>
+      <form method="POST" id="checkout-form" novalidate>
+
+        <!-- ── Contact Details ── -->
         <div class="section-label"><i class="fas fa-user"></i> Contact Details</div>
         <div class="form-row">
           <div class="form-group">
@@ -376,20 +476,30 @@ hr.sum-div{border:none;border-top:2px solid #ede9df;margin:14px 0;}
                    value="<?= htmlspecialchars($_POST['phone'] ?? $user['phone'] ?? '') ?>">
           </div>
         </div>
-
-        <!-- Address -->
-        <div class="section-label"><i class="fas fa-map-marker-alt"></i> Delivery Address</div>
         <div class="form-group">
-          <div class="radio-group">
-            <label>
+          <label for="email_display">Email</label>
+          <input type="email" id="email_display" value="<?= htmlspecialchars($user['email'] ?? '') ?>" disabled
+                 style="background:#f5f5f5;color:var(--muted);">
+        </div>
+
+        <!-- ── Delivery Address ── -->
+        <div class="section-label"><i class="fas fa-map-marker-alt"></i> Delivery Address</div>
+
+        <div class="form-group">
+          <div class="radio-cards">
+            <label class="radio-card">
               <input type="radio" name="addressOption" value="saved"
-                     <?= ($_POST['addressOption'] ?? 'saved') === 'saved' ? 'checked' : '' ?>>
-              Use saved address
+                     <?= (($_POST['addressOption'] ?? 'saved') === 'saved') ? 'checked' : '' ?>>
+              <span class="radio-card-inner">
+                <i class="fas fa-bookmark"></i> Use Saved Address
+              </span>
             </label>
-            <label>
+            <label class="radio-card">
               <input type="radio" name="addressOption" value="new"
-                     <?= ($_POST['addressOption'] ?? '') === 'new' ? 'checked' : '' ?>>
-              Enter new address
+                     <?= (($_POST['addressOption'] ?? '') === 'new') ? 'checked' : '' ?>>
+              <span class="radio-card-inner">
+                <i class="fas fa-edit"></i> New Address
+              </span>
             </label>
           </div>
         </div>
@@ -402,7 +512,7 @@ hr.sum-div{border:none;border-top:2px solid #ede9df;margin:14px 0;}
                 <?= htmlspecialchars($user['address']) ?>
               </option>
             <?php else: ?>
-              <option value="">No saved address — please enter one below</option>
+              <option value="">— No saved address, please enter one below —</option>
             <?php endif; ?>
           </select>
         </div>
@@ -414,19 +524,46 @@ hr.sum-div{border:none;border-top:2px solid #ede9df;margin:14px 0;}
                  value="<?= htmlspecialchars($_POST['c_address'] ?? '') ?>">
         </div>
 
-        <!-- Payment -->
+        <!-- ── Payment Method ── -->
         <div class="section-label"><i class="fas fa-credit-card"></i> Payment Method</div>
         <div class="form-group">
-          <select id="payment" name="payment">
-            <option value="cod"    <?= ($_POST['payment'] ?? 'cod') === 'cod'    ? 'selected' : '' ?>>💴 Cash on Delivery</option>
-            <option value="bank"   <?= ($_POST['payment'] ?? '') === 'bank'   ? 'selected' : '' ?>>🏦 Bank Transfer</option>
-            <option value="online" <?= ($_POST['payment'] ?? '') === 'online' ? 'selected' : '' ?>>💳 Online Payment</option>
-          </select>
+          <input type="hidden" name="payment" id="payment-hidden" value="<?= htmlspecialchars($_POST['payment'] ?? 'cod') ?>">
+          <div class="payment-cards">
+            <label class="p-card">
+              <input type="radio" name="payment_radio" value="cod"
+                     <?= (($_POST['payment'] ?? 'cod') === 'cod') ? 'checked' : '' ?>>
+              <span class="p-card-inner">
+                <span class="p-icon">💴</span>
+                Cash on Delivery
+              </span>
+            </label>
+            <label class="p-card">
+              <input type="radio" name="payment_radio" value="bank"
+                     <?= (($_POST['payment'] ?? '') === 'bank') ? 'checked' : '' ?>>
+              <span class="p-card-inner">
+                <span class="p-icon">🏦</span>
+                Bank Transfer
+              </span>
+            </label>
+            <label class="p-card">
+              <input type="radio" name="payment_radio" value="online"
+                     <?= (($_POST['payment'] ?? '') === 'online') ? 'checked' : '' ?>>
+              <span class="p-card-inner">
+                <span class="p-icon">💳</span>
+                Online Payment
+              </span>
+            </label>
+          </div>
         </div>
 
         <button type="submit" class="btn-order" id="btn-place-order">
-          <i class="fas fa-check-circle"></i> Place Order — $<?= number_format($total_amount, 2) ?>
+          <i class="fas fa-check-circle"></i>
+          Place Order — $<?= number_format($total_amount, 2) ?>
         </button>
+
+        <a href="<?= $link_cart ?>" class="btn-back">
+          <i class="fas fa-arrow-left"></i> Back to Cart
+        </a>
 
       </form>
       <?php endif; ?>
@@ -439,67 +576,113 @@ hr.sum-div{border:none;border-top:2px solid #ede9df;margin:14px 0;}
     <h2 class="sum-title"><i class="fas fa-receipt"></i> Order Summary</h2>
 
     <?php if (empty($cart_items)): ?>
-      <p class="empty-cart-note">No items in cart.</p>
+      <p class="empty-note">No items in cart.</p>
     <?php else: ?>
-      <?php foreach ($cart_items as $item): ?>
-      <div class="sum-item">
-        <img src="<?= IMG_URL . htmlspecialchars($item['image'] ?? '') ?>"
-             alt="<?= htmlspecialchars($item['name']) ?>" class="sum-thumb"
-             onerror="this.src='<?= IMG_URL ?>default-avatar.png'">
-        <div style="flex:1;min-width:0;">
-          <div class="sum-name"><?= htmlspecialchars($item['name']) ?></div>
-          <div class="sum-qty">Qty: <?= $item['quantity'] ?></div>
+      <div class="sum-items-list">
+        <?php foreach ($cart_items as $item): ?>
+        <div class="sum-item">
+          <img src="<?= IMG_URL . htmlspecialchars($item['image'] ?? '') ?>"
+               alt="<?= htmlspecialchars($item['name']) ?>" class="sum-thumb"
+               onerror="this.src='<?= IMG_URL ?>default-avatar.png'">
+          <div class="sum-info">
+            <div class="sum-name"><?= htmlspecialchars($item['name']) ?></div>
+            <div class="sum-qty">SKU: <?= htmlspecialchars($item['id']) ?> · Qty: <?= $item['quantity'] ?></div>
+          </div>
+          <span class="sum-price">$<?= number_format($item['total'], 2) ?></span>
         </div>
-        <span class="sum-price">$<?= number_format($item['total'], 2) ?></span>
+        <?php endforeach; ?>
       </div>
-      <?php endforeach; ?>
+
       <hr class="sum-div">
+
+      <div class="sum-row">
+        <span class="lbl">Subtotal (<?= count($cart_items) ?> items)</span>
+        <span class="val">$<?= number_format($total_amount, 2) ?></span>
+      </div>
+      <div class="sum-row">
+        <span class="lbl">Shipping</span>
+        <span class="val" style="color:#4caf50">Free</span>
+      </div>
+      <div class="sum-row">
+        <span class="lbl">Tax</span>
+        <span class="val">Included</span>
+      </div>
+
+      <hr class="sum-div">
+
       <div class="sum-total-row">
         <span>Total</span>
         <span class="amt">$<?= number_format($total_amount, 2) ?></span>
       </div>
-      <div style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center;">
-        <i class="fas fa-shield-alt" style="color:#4caf50;"></i> Free shipping · Secure checkout
-      </div>
+
+      <p class="sum-note"><i class="fas fa-shield-alt"></i> Free shipping · Secure checkout</p>
     <?php endif; ?>
   </div>
 
-</div>
+</div><!-- /.page-wrapper -->
 
 <script>
-function doSearch(){
-  const kw=document.getElementById('search-input').value.trim();
-  if(kw) window.location.href='<?= $link_search ?>?q='+encodeURIComponent(kw);
+// ── Search ──────────────────────────────────────────────
+function doSearch() {
+  const kw = document.getElementById('search-input').value.trim();
+  if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
 }
 
-// Toggle address sections
+// ── Sync payment hidden input ────────────────────────────
+document.querySelectorAll('input[name="payment_radio"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('payment-hidden').value = r.value;
+  });
+});
+
+// ── Toggle address sections ──────────────────────────────
 const savedSec = document.getElementById('saved-addr-section');
 const newSec   = document.getElementById('new-addr-section');
 const newInput = document.getElementById('c_address');
 
-function toggleAddr(){
+function toggleAddr() {
   const v = document.querySelector('input[name="addressOption"]:checked')?.value;
-  if(v === 'new'){
+  if (v === 'new') {
     savedSec.style.display = 'none';
     newSec.style.display   = 'block';
-    newInput?.setAttribute('required','required');
+    if (newInput) newInput.required = true;
   } else {
     savedSec.style.display = 'block';
     newSec.style.display   = 'none';
-    newInput?.removeAttribute('required');
+    if (newInput) newInput.required = false;
   }
 }
 document.querySelectorAll('input[name="addressOption"]').forEach(r => r.addEventListener('change', toggleAddr));
 toggleAddr();
 
-// Confirm before submit
+// ── Form validation ──────────────────────────────────────
 const form = document.getElementById('checkout-form');
-if(form){
-  form.addEventListener('submit', function(e){
+if (form) {
+  form.addEventListener('submit', function(e) {
     const name  = document.getElementById('fullname')?.value.trim();
     const phone = document.getElementById('phone')?.value.trim();
-    if(!name || !phone){ e.preventDefault(); alert('Please fill in name and phone.'); return; }
-    if(!confirm('Confirm your order?\n\nTotal: $<?= number_format($total_amount, 2) ?>\n\nClick OK to place order.')){ e.preventDefault(); }
+    const addrOpt = document.querySelector('input[name="addressOption"]:checked')?.value;
+    const newAddr = document.getElementById('c_address')?.value.trim();
+
+    if (!name || !phone) {
+      e.preventDefault();
+      alert('Please fill in your full name and phone number.');
+      return;
+    }
+    if (addrOpt === 'new' && !newAddr) {
+      e.preventDefault();
+      alert('Please enter your delivery address.');
+      return;
+    }
+    if (!confirm('Confirm your order?\n\nTotal: $<?= number_format($total_amount, 2) ?>\n\nClick OK to place order.')) {
+      e.preventDefault();
+    } else {
+      const btn = document.getElementById('btn-place-order');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
+      }
+    }
   });
 }
 </script>
