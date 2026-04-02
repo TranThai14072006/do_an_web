@@ -1,7 +1,35 @@
 <?php
+session_start();
 
 $conn = new mysqli("localhost", "root", "", "jewelry_db");
 $conn->set_charset("utf8");
+
+// Handle Size Update natively in this file
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_size') {
+    $product_id = $_POST['product_id'] ?? '';
+    $old_size = $_POST['old_size'] ?? '';
+    $new_size = $_POST['new_size'] ?? '';
+    $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+    
+    if ($user_id > 0 && $product_id && $new_size && $old_size !== $new_size) {
+        $pid_safe = $conn->real_escape_string($product_id);
+        $old_s_safe = $conn->real_escape_string($old_size);
+        $new_s_safe = $conn->real_escape_string($new_size);
+        
+        // Merge identical sizes if they exist
+        $check = $conn->query("SELECT quantity FROM cart WHERE user_id = $user_id AND product_id = '$pid_safe' AND size = '$new_s_safe'");
+        if ($check && $check->num_rows > 0) {
+            $conn->query("UPDATE cart SET quantity = quantity + (SELECT quantity FROM (SELECT quantity FROM cart WHERE user_id=$user_id AND product_id='$pid_safe' AND size='$old_s_safe') as old_qty) WHERE user_id = $user_id AND product_id = '$pid_safe' AND size = '$new_s_safe'");
+            $conn->query("DELETE FROM cart WHERE user_id = $user_id AND product_id = '$pid_safe' AND size = '$old_s_safe'");
+        } else {
+            // otherwise just rename the size
+            $conn->query("UPDATE cart SET size = '$new_s_safe' WHERE user_id = $user_id AND product_id = '$pid_safe' AND size = '$old_s_safe'");
+        }
+    }
+    // Refresh page with new size
+    header("Location: view.php?id=" . urlencode($product_id) . "&size=" . urlencode($new_size));
+    exit;
+}
 
 $id   = $_GET['id']   ?? '';
 $size = $_GET['size'] ?? '';
@@ -14,30 +42,26 @@ $product = $conn->query($sql)->fetch_assoc();
 $sql_details = "SELECT * FROM product_details WHERE product_id = '" . $conn->real_escape_string($id) . "'";
 $details     = $conn->query($sql_details)->fetch_assoc();
 
-// ===== TÍNH GIÁ =====
+// ===== TÍNH GIÁ VÀ SỐ LƯỢNG =====
 $sale_price = 0;
+$qty_in_cart = 0;
 
 if ($product) {
-    $product_id    = $product['id'];
-    $current_cost  = (float)$product['price'];
+    $cost_price     = (float)$product['cost_price'];
     $profit_percent = (float)$product['profit_percent'];
 
-    $total_quantity = 0;
-    $total_cost     = 0;
+    // Giá bán = giá nhập bình quân × (1 + tỷ lệ lợi nhuận%)
+    $sale_price = round($cost_price * (1 + $profit_percent / 100), 2);
 
-    $sql_receipt = "SELECT quantity, unit_price 
-                    FROM goods_receipt_items 
-                    WHERE product_id = '" . $conn->real_escape_string($product_id) . "'";
-
-    $result_receipt = $conn->query($sql_receipt);
-
-    while ($row = $result_receipt->fetch_assoc()) {
-        $total_cost     += $row['quantity'] * $row['unit_price'];
-        $total_quantity += $row['quantity'];
+    // Tính số lượng trong giỏ
+    $user_id_cart = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+    if ($user_id_cart > 0) {
+        $q_sql = "SELECT quantity FROM cart WHERE user_id = $user_id_cart AND product_id = '" . $conn->real_escape_string($id) . "' AND size = '" . $conn->real_escape_string($size) . "'";
+        $q_res = $conn->query($q_sql);
+        if ($q_res && $q_res->num_rows > 0) {
+            $qty_in_cart = (int)$q_res->fetch_assoc()['quantity'];
+        }
     }
-
-    $avg_cost   = ($total_quantity > 0) ? $total_cost / $total_quantity : $current_cost;
-    $sale_price = round($avg_cost * (1 + $profit_percent / 100), 2);
 }
 ?>
 <!DOCTYPE html>
@@ -105,6 +129,34 @@ if ($product) {
       height: 1px;
       background: linear-gradient(to right, #c9a96e, transparent);
       margin: 22px 0;
+    }
+
+    /* ── EDIT MODAL ── */
+    .edit-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      z-index: 9999; align-items: center; justify-content: center;
+    }
+    .edit-modal-overlay.open { display: flex; }
+    .edit-modal {
+      background: #fff; border-radius: 10px; padding: 24px;
+      width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .edit-modal h3 { margin: 0 0 15px; font-size: 16px; color: #2d1a0e; }
+    .edit-modal select { width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #ddd; outline: none; }
+    .edit-modal .modal-actions { display: flex; gap: 10px; }
+    .edit-modal button { flex: 1; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; border: none; }
+    .btn-cancel { background: #f5f5f5; color: #666; }
+    .btn-save { background: #c9a96e; color: #fff; text-transform: uppercase; }
+
+    .qty-badge {
+      display: inline-block;
+      margin-top: 12px; font-size: 14px; color: #888;
+    }
+    .qty-badge strong { color: #3d2710; }
+    
+    .edit-size-btn {
+      background: none; border: none; color: #c9a96e; margin-left: 10px;
+      cursor: pointer; font-size: 13px; text-decoration: underline; text-transform: none; letter-spacing: 0;
     }
   </style>
 </head>
@@ -175,7 +227,12 @@ if ($product) {
 
     <!-- Size đã chọn -->
     <div class="size-display">
-      <h3>Selected Ring Size</h3>
+      <h3>
+        Selected Ring Size 
+        <button type="button" class="edit-size-btn" onclick="document.getElementById('editModal').classList.add('open')">
+          <i class="fas fa-pencil-alt"></i> Edit
+        </button>
+      </h3>
       <?php if (!empty($size)): ?>
         <div class="size-chip">
           <i class="fas fa-ring"></i>
@@ -187,6 +244,31 @@ if ($product) {
           No size selected
         </div>
       <?php endif; ?>
+      <br>
+      <?php if ($qty_in_cart > 0): ?>
+        <div class="qty-badge">Quantity in cart: <strong><?php echo $qty_in_cart; ?></strong></div>
+      <?php endif; ?>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="edit-modal-overlay" id="editModal">
+      <div class="edit-modal">
+        <h3>Change Ring Size</h3>
+        <form method="POST" action="">
+          <input type="hidden" name="action" value="update_size">
+          <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($product['id']); ?>">
+          <input type="hidden" name="old_size" value="<?php echo htmlspecialchars($size); ?>">
+          <select name="new_size" required>
+            <?php foreach([5,6,7,8,9] as $s): ?>
+              <option value="<?php echo $s; ?>" <?php echo $size == $s ? 'selected' : ''; ?>>Size <?php echo $s; ?></option>
+            <?php endforeach; ?>
+          </select>
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="document.getElementById('editModal').classList.remove('open')">Cancel</button>
+            <button type="submit" class="btn-save">Save</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Specs -->
