@@ -127,7 +127,7 @@ $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
 $link_search  = BASE_URL . 'User/Search/search.html';
 $link_detail  = BASE_URL . 'User/users/product_detail.php';
-$link_shop    = BASE_URL . 'User/indexprofile.php';
+$link_shop    = BASE_URL . 'User/Search/search.html';
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -1,4 +1,5 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 
 // ===== CONNECT DB =====
@@ -9,6 +10,12 @@ if ($conn->connect_error) {
     echo json_encode(['success' => false, 'message' => 'DB connection failed']);
     exit;
 }
+
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Please login to use cart']);
+    exit;
+}
+$user_id = (int)$_SESSION['user_id'];
 
 // ===== NHẬN DATA (JSON + POST) =====
 $raw = file_get_contents("php://input");
@@ -26,7 +33,8 @@ if ($action === 'get') {
     // SELECT theo cả product_id + size
     $sql = "SELECT c.product_id, c.quantity, c.size, p.name, p.image, p.price, p.profit_percent, p.stock
             FROM cart c
-            JOIN products p ON c.product_id = p.id";
+            JOIN products p ON c.product_id = p.id
+            WHERE c.user_id = $user_id";
 
     $result = $conn->query($sql);
     $items = [];
@@ -41,9 +49,11 @@ if ($action === 'get') {
 
         $res = $conn->query("SELECT quantity, unit_price FROM goods_receipt_items WHERE product_id = '{$row['product_id']}'");
 
-        while ($r = $res->fetch_assoc()) {
-            $total_cost += $r['quantity'] * $r['unit_price'];
-            $total_qty += $r['quantity'];
+        if ($res) {
+            while ($r = $res->fetch_assoc()) {
+                $total_cost += $r['quantity'] * $r['unit_price'];
+                $total_qty += $r['quantity'];
+            }
         }
 
         $avg = $total_qty > 0 ? $total_cost / $total_qty : $current_cost;
@@ -66,7 +76,7 @@ if ($action === 'get') {
 // ===== ADD =====
 // Dùng (product_id, size) làm composite key
 if ($action === 'add') {
-    $id   = $data['product_id'] ?? '';
+    $id   = $conn->real_escape_string($data['product_id'] ?? '');
     $qty  = (int)($data['quantity'] ?? 1);
     $size = $conn->real_escape_string($data['size'] ?? '');
 
@@ -76,14 +86,14 @@ if ($action === 'add') {
     }
 
     // Kiểm tra đúng cả product_id VÀ size
-    $check = $conn->query("SELECT * FROM cart WHERE product_id = '$id' AND size = '$size'");
+    $check = $conn->query("SELECT * FROM cart WHERE user_id = $user_id AND product_id = '$id' AND size = '$size'");
 
     if ($check && $check->num_rows > 0) {
         // Cùng sản phẩm + cùng size → cộng dồn số lượng
-        $conn->query("UPDATE cart SET quantity = quantity + $qty WHERE product_id = '$id' AND size = '$size'");
+        $conn->query("UPDATE cart SET quantity = quantity + $qty WHERE user_id = $user_id AND product_id = '$id' AND size = '$size'");
     } else {
         // Sản phẩm mới HOẶC size khác → thêm dòng mới
-        $conn->query("INSERT INTO cart (product_id, quantity, size) VALUES ('$id', $qty, '$size')");
+        $conn->query("INSERT INTO cart (user_id, product_id, quantity, size) VALUES ($user_id, '$id', $qty, '$size')");
     }
 
     echo json_encode(['success' => true]);
@@ -93,11 +103,11 @@ if ($action === 'add') {
 // ===== UPDATE =====
 // Cần truyền thêm size để update đúng dòng
 if ($action === 'update') {
-    $id   = $data['product_id'] ?? '';
+    $id   = $conn->real_escape_string($data['product_id'] ?? '');
     $qty  = (int)($data['quantity'] ?? 1);
     $size = $conn->real_escape_string($data['size'] ?? '');
 
-    $conn->query("UPDATE cart SET quantity = $qty WHERE product_id = '$id' AND size = '$size'");
+    $conn->query("UPDATE cart SET quantity = $qty WHERE user_id = $user_id AND product_id = '$id' AND size = '$size'");
 
     echo json_encode(['success' => true]);
     exit;
@@ -106,10 +116,10 @@ if ($action === 'update') {
 // ===== REMOVE =====
 // Cần truyền thêm size để xoá đúng dòng
 if ($action === 'remove') {
-    $id   = $data['product_id'] ?? '';
+    $id   = $conn->real_escape_string($data['product_id'] ?? '');
     $size = $conn->real_escape_string($data['size'] ?? '');
 
-    $conn->query("DELETE FROM cart WHERE product_id = '$id' AND size = '$size'");
+    $conn->query("DELETE FROM cart WHERE user_id = $user_id AND product_id = '$id' AND size = '$size'");
 
     echo json_encode(['success' => true]);
     exit;
