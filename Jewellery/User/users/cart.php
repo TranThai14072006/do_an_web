@@ -888,7 +888,7 @@ $added_flash = isset($_GET['added']);
                       alt="<?= htmlspecialchars($item['name']) ?>" class="product-thumb"
                       onerror="this.src='<?= IMG_URL ?>default-avatar.png'">
                     <div>
-                      <a href="<?= $link_detail ?>?id=<?= urlencode($item['product_id']) ?>"
+                      <a href="<?= $link_detail ?>?id=<?= urlencode($item['product_id']) ?>&size=<?= urlencode($item['size'] ?? '') ?>"
                         class="product-name"><?= htmlspecialchars($item['name']) ?></a>
                       <span class="product-id">SKU: <?= htmlspecialchars($item['product_id']) ?></span>
                     </div>

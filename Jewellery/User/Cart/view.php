@@ -53,7 +53,7 @@ if ($product) {
     // Giá bán = giá nhập bình quân × (1 + tỷ lệ lợi nhuận%)
     $sale_price = round($cost_price * (1 + $profit_percent / 100), 2);
 
-    // Tính số lượng trong giỏ
+    // Tính số lượng một sản phẩm riêng lẽ này trong giỏ (để hiện bên dưới)
     $user_id_cart = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
     if ($user_id_cart > 0) {
         $q_sql = "SELECT quantity FROM cart WHERE user_id = $user_id_cart AND product_id = '" . $conn->real_escape_string($id) . "' AND size = '" . $conn->real_escape_string($size) . "'";
@@ -61,6 +61,17 @@ if ($product) {
         if ($q_res && $q_res->num_rows > 0) {
             $qty_in_cart = (int)$q_res->fetch_assoc()['quantity'];
         }
+    }
+}
+
+// ===== TỔNG SỐ LƯỢNG CART & USER NAME CHO HEADER =====
+$total_cart_count = 0;
+$logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
+if (isset($_SESSION['user_id'])) {
+    $uid = (int)$_SESSION['user_id'];
+    $badge_res = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = $uid");
+    if ($badge_res && $row_b = $badge_res->fetch_assoc()) {
+        $total_cart_count = (int)$row_b['total_qty'];
     }
 }
 ?>
@@ -158,6 +169,13 @@ if ($product) {
       background: none; border: none; color: #c9a96e; margin-left: 10px;
       cursor: pointer; font-size: 13px; text-decoration: underline; text-transform: none; letter-spacing: 0;
     }
+    
+    /* ── CUSTOM HEADER MATCHING CART ── */
+    .icon-link { position: relative; }
+    .cart-badge { position: absolute; top: 4px; right: 4px; background: #b8860b; color: #fff; font-size: 10px; font-weight: 700; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; line-height: 1; }
+    .user-name { font-size: 13px; font-weight: 600; color: #111; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+    .user-name:hover { color: #b8860b; }
+    .search-bar .right { gap: 4px; }
   </style>
 </head>
 
@@ -174,22 +192,29 @@ if ($product) {
 
     <div class="center">
       <a href="../indexprofile.php">
-        <img src="../../images/36-logo.png" class="header-logo">
+        <img src="../../images/36-logo.png" class="header-logo" alt="36 Jewelry">
       </a>
       <div class="search-box">
-        <input type="text" placeholder="Search products...">
-        <button onclick="window.location.href='../search.html'">
+        <input type="text" id="view-search-input" placeholder="Search products..." onkeydown="if(event.key==='Enter') doSearchView()">
+        <button onclick="doSearchView()">
           <i class="fas fa-search"></i>
         </button>
       </div>
     </div>
 
     <div class="right">
-      <a href="../users/cart.php" class="icon-link">
+      <a href="../users/cart.php" class="icon-link" title="Cart">
         <i class="fas fa-shopping-cart"></i>
+        <?php if ($total_cart_count > 0): ?>
+          <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
+        <?php endif; ?>
       </a>
-      <a href="../users/profile.php" class="icon-link">
-        <i class="fas fa-user"></i>
+      <a href="../users/profile.php" class="user-name" title="Profile">
+        <i class="fas fa-user-circle" style="font-size:20px;color:#b8860b"></i>
+        <span><?= $logged_in_name ?></span>
+      </a>
+      <a href="../users/logout.php" class="icon-link" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
       </a>
     </div>
   </div>
@@ -198,8 +223,6 @@ if ($product) {
 <?php if ($product): ?>
 
 <div class="product-detail">
-
-  <button class="back-btn" onclick="window.history.back()">←</button>
 
   <!-- IMAGE -->
   <div class="product-image">
@@ -300,4 +323,10 @@ if ($product) {
 <?php endif; ?>
 
 </body>
+<script>
+function doSearchView() {
+  const kw = document.getElementById('view-search-input').value.trim();
+  if (kw) window.location.href = '../Search/search.html?q=' + encodeURIComponent(kw);
+}
+</script>
 </html>
