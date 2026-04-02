@@ -1,49 +1,38 @@
 <?php
 // ═══════════════════════════════════════════════════════════════
-// File: Jewellery/User/users/index.php
+// File: Jewellery/User/index.php  (guest homepage)
 // Fixes:
+//   ✔ Đường dẫn config đúng (__DIR__ + separator)
+//   ✔ define() guard (if !defined)
 //   ✔ session_start() + nhận diện user đăng nhập
-//   ✔ Đường dẫn ảnh tuyệt đối từ gốc web
-//   ✔ Thanh tìm kiếm JS chuyển hướng sang search.php
-//   ✔ Tất cả link dùng .php
-//   ✔ Include config.php có sẵn
+//   ✔ Thanh tìm kiếm chuyển hướng đúng
+//   ✔ Link "Shop Now" & "Shop All" trỏ về catalog
 //   ✔ Nút Add to Cart kiểm tra đăng nhập
 // ═══════════════════════════════════════════════════════════════
 
 session_start();
+require_once __DIR__ . '/../config/config.php';
 
-// ── Include config (từ User/users/ lên 3 cấp → gốc Jewellery/) ──
-require_once __DIR__ . '../../config/config.php';
-// $conn và $conn_user đã có từ config.php
-
-// ── Đường dẫn gốc web ────────────────────────────────────────
-// File này ở: Jewellery/User/users/index.php
-// Gốc web  ở: /do_an_web/Jewellery/
-define('BASE_URL', '/do_an_web/Jewellery/');
-define('IMG_URL',  BASE_URL . 'images/');
+if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('IMG_URL'))  define('IMG_URL',  BASE_URL . 'images/');
 
 // ── Nhận diện user đăng nhập ─────────────────────────────────
-// Thử nhiều key session phổ biến vì chưa xác định được key
-$session_keys_id   = ['user_id', 'id', 'userId', 'userID'];
-$session_keys_name = ['user_name', 'username', 'name', 'fullname', 'full_name'];
-
-$is_logged_in = false;
-foreach ($session_keys_id as $key) {
-    if (!empty($_SESSION[$key])) {
-        $is_logged_in = true;
-        break;
-    }
-}
-
+$is_logged_in = !empty($_SESSION['user_id']);
 $logged_in_name = '';
+
 if ($is_logged_in) {
-    foreach ($session_keys_name as $key) {
-        if (!empty($_SESSION[$key])) {
-            $logged_in_name = htmlspecialchars($_SESSION[$key]);
-            break;
-        }
-    }
-    if (!$logged_in_name) $logged_in_name = 'Tài khoản';
+    // Lấy tên đầy đủ từ DB
+    $uid = (int)$_SESSION['user_id'];
+    $stmt_n = $conn->prepare("
+        SELECT COALESCE(c.full_name, u.username) AS display_name
+        FROM users u LEFT JOIN customers c ON c.user_id = u.id
+        WHERE u.id = ? LIMIT 1
+    ");
+    $stmt_n->bind_param('i', $uid);
+    $stmt_n->execute();
+    $row_n = $stmt_n->get_result()->fetch_assoc();
+    $stmt_n->close();
+    $logged_in_name = htmlspecialchars($row_n['display_name'] ?? $_SESSION['username'] ?? 'Account');
 }
 
 // ── Hàm tính giá bán ─────────────────────────────────────────
@@ -54,7 +43,7 @@ function calcSellingPrice($row) {
     return ($cost > 0) ? $cost * (1 + $profit / 100) : $price;
 }
 
-// ── Kiểm tra cột tồn tại (tránh lỗi Unknown column) ──────────
+// ── Kiểm tra cột tồn tại ─────────────────────────────────────
 $col_result = $conn->query("SHOW COLUMNS FROM products");
 $columns = [];
 while ($col = $col_result->fetch_assoc()) { $columns[] = $col['Field']; }
@@ -105,8 +94,6 @@ if ($res2) {
     }
 }
 
-// KHÔNG đóng $conn ở đây — để config.php quản lý
-
 // ── Static data ───────────────────────────────────────────────
 $page_title   = "ThirtySix Jewellery Store";
 $banner_title = "Make your fashion look ThirtySix.";
@@ -123,15 +110,16 @@ $categories = [
     ['name' => 'Unisex', 'image' => IMG_URL . 'R006.jpg'],
 ];
 
-// ── Link helpers (relative từ User/users/) ────────────────────
-// Tất cả dùng BASE_URL để nhất quán
-$link_home    = BASE_URL . 'User/users/index.php';
-$link_login   = BASE_URL . 'User/Login.php';
+// ── Link helpers ──────────────────────────────────────────────
+$link_home    = BASE_URL . 'User/index.php';
+$link_login   = BASE_URL . 'User/users/login.php';
+$link_register= BASE_URL . 'User/users/register.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
-$link_search  = BASE_URL . 'User/users/search.php';
+$link_search  = BASE_URL . 'User/Search/search.html';
 $link_detail  = BASE_URL . 'User/users/product_detail.php';
+$link_shop    = BASE_URL . 'User/indexprofile.php';  // nếu đã login, hoặc login page nếu chưa
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -140,8 +128,7 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="format-detection" content="telephone=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="description" content="ThirtySix Jewellery - Premium jewelry store with exclusive rings, necklaces and more.">
   <link rel="stylesheet" type="text/css" href="<?= BASE_URL ?>css/normalize.css">
   <link rel="stylesheet" type="text/css" href="<?= BASE_URL ?>fonts/icomoon.css">
   <link rel="stylesheet" type="text/css" href="<?= BASE_URL ?>css/vendor.css">
@@ -171,7 +158,6 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       <a href="<?= $link_home ?>">
         <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
       </a>
-      <!-- FIX: Tìm kiếm có JS chuyển hướng sang search.php -->
       <div class="search-box">
         <input type="text" id="search-input" placeholder="Search products..."
                onkeydown="if(event.key==='Enter') doSearch()">
@@ -216,7 +202,11 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
   <div class="banner-content content-light style1 text-center col-md-6">
     <h2 class="banner-title"><?= htmlspecialchars($banner_title) ?></h2>
     <div class="btn-center">
-      <a href="users/login.php " class="btn btn-medium btn-light">Shop Now</a>
+      <?php if ($is_logged_in): ?>
+        <a href="<?= $link_shop ?>" class="btn btn-medium btn-light">Shop Now</a>
+      <?php else: ?>
+        <a href="<?= $link_login ?>" class="btn btn-medium btn-light">Shop Now</a>
+      <?php endif; ?>
     </div>
   </div>
 </section>
@@ -312,7 +302,11 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       <div class="swiper-button swiper-button-next"></div>
       <div class="swiper-button swiper-button-prev"></div>
       <div class="btn-center">
-        <a href="<?= $link_login ?>" class="btn btn-medium btn-black">Shop All</a>
+        <?php if ($is_logged_in): ?>
+          <a href="<?= $link_shop ?>" class="btn btn-medium btn-black">Shop All</a>
+        <?php else: ?>
+          <a href="<?= $link_login ?>" class="btn btn-medium btn-black">Shop All</a>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -349,7 +343,6 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       </div>
     </div>
   </div>
-  <div class="swiper-pagination"></div>
 </section>
 
 <!-- ══ NEW ARRIVALS ══════════════════════════════════════════════ -->
@@ -406,7 +399,11 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       <div class="swiper-button swiper-button-next"></div>
       <div class="swiper-button swiper-button-prev"></div>
       <div class="btn-center">
-        <a href="<?= $link_login ?>" class="btn btn-medium btn-black">Shop All</a>
+        <?php if ($is_logged_in): ?>
+          <a href="<?= $link_shop ?>" class="btn btn-medium btn-black">Shop All</a>
+        <?php else: ?>
+          <a href="<?= $link_login ?>" class="btn btn-medium btn-black">Shop All</a>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -428,7 +425,11 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       <div class="category-content content-light">
         <h3 class="category-title"><?= htmlspecialchars($cat['name']) ?></h3>
         <div class="btn-left">
-          <a href="<?= $link_login ?>" class="btn btn-medium <?= $bc ?>">Shop it now</a>
+          <?php if ($is_logged_in): ?>
+            <a href="<?= $link_shop ?>" class="btn btn-medium <?= $bc ?>">Shop it now</a>
+          <?php else: ?>
+            <a href="<?= $link_login ?>" class="btn btn-medium <?= $bc ?>">Shop it now</a>
+          <?php endif; ?>
         </div>
       </div>
     </div>
@@ -466,6 +467,8 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
               <h5 class="widget-title">Quick Links</h5>
               <ul class="menu-list list-unstyled text-uppercase">
                 <li class="menu-item"><a href="<?= $link_home ?>">Home</a></li>
+                <li class="menu-item"><a href="<?= $link_login ?>">Login</a></li>
+                <li class="menu-item"><a href="<?= $link_register ?>">Register</a></li>
               </ul>
             </div>
           </div>
@@ -521,8 +524,7 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
       </div>
       <div class="col-md-4 col-sm-6">
         <div class="copyright text-md-end">
-          <p>Freebies by <a href="https://templatesjungle.com/"><u>Templates Jungle</u></a><br>
-             Distributed by <a href="https://themewagon.com"><u>ThemeWagon</u></a></p>
+          <p>&copy; <?= date('Y') ?> ThirtySix Jewellery. All rights reserved.</p>
         </div>
       </div>
     </div>
@@ -538,7 +540,7 @@ $link_detail  = BASE_URL . 'User/users/product_detail.php';
   crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 <script>
-  // FIX: Tìm kiếm chuyển hướng đúng sang search.php
+  // Tìm kiếm chuyển hướng đúng sang search.php
   function doSearch() {
     const keyword = document.getElementById('search-input').value.trim();
     if (keyword !== '') {
