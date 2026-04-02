@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 
 $host = 'localhost';
-$db   = 'jewelry_db'; // ✅ FIX DB
+$db   = 'jewelry_db';
 $user = 'root';
 $pass = '';
 
@@ -21,12 +21,12 @@ try {
     exit;
 }
 
-// ✅ LẤY KEYWORD SEARCH
+// ===== LẤY KEYWORD SEARCH =====
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
 if ($q !== '') {
     $stmt = $pdo->prepare("
-        SELECT id, name, price AS cost_price, profit_percent, stock, image, gender 
+        SELECT id, name, cost_price, profit_percent, image, gender 
         FROM products 
         WHERE name LIKE :q
         ORDER BY id ASC
@@ -34,7 +34,7 @@ if ($q !== '') {
     $stmt->execute(['q' => "%$q%"]);
 } else {
     $stmt = $pdo->query("
-        SELECT id, name, price AS cost_price, profit_percent, stock, image, gender 
+        SELECT id, name, cost_price, profit_percent, image, gender 
         FROM products
         ORDER BY id ASC
     ");
@@ -43,31 +43,16 @@ if ($q !== '') {
 $rows = $stmt->fetchAll();
 
 // ===== TÍNH GIÁ =====
-$receiptItems = [];
-foreach ($pdo->query("SELECT product_id, quantity, unit_price FROM goods_receipt_items")->fetchAll() as $r) {
-    $receiptItems[$r['product_id']][] = $r;
-}
-
 $products = [];
 foreach ($rows as $p) {
-    $pid            = $p['id'];
-    $current_stock  = (int)$p['stock'];
-    $current_cost   = (float)$p['cost_price'];
+    $cost_price     = (float)$p['cost_price'];
     $profit_percent = (float)$p['profit_percent'];
 
-    $total_quantity = $current_stock;
-    $total_cost     = $current_cost * $current_stock;
-
-    foreach ($receiptItems[$pid] ?? [] as $r) {
-        $total_cost += $r['quantity'] * $r['unit_price'];
-        $total_quantity += $r['quantity'];
-    }
-
-    $avg_cost   = $total_quantity > 0 ? $total_cost / $total_quantity : $current_cost;
-    $sale_price = round($avg_cost * (1 + $profit_percent / 100), 2);
+    // Giá bán = giá nhập bình quân × (1 + tỷ lệ lợi nhuận%)
+    $sale_price = round($cost_price * (1 + $profit_percent / 100), 2);
 
     $products[] = [
-        'id'         => $pid,
+        'id'         => $p['id'],
         'name'       => $p['name'],
         'gender'     => $p['gender'],
         'sale_price' => $sale_price,

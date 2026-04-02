@@ -18,28 +18,11 @@ $details = $conn->query($sql_details)->fetch_assoc();
 $sale_price = 0;
 
 if ($product) {
-    $product_id = $product['id'];
-    $current_stock = (int)$product['stock'];
-    $current_cost = (float)$product['price'];
+    $cost_price     = (float)$product['cost_price'];
     $profit_percent = (float)$product['profit_percent'];
 
-    // Chỉ tính từ phiếu nhập, KHÔNG cộng stock (đồng bộ search-api.php)
-    $total_quantity = 0;
-    $total_cost = 0;
-
-    $sql_receipt = "SELECT quantity, unit_price 
-                    FROM goods_receipt_items 
-                    WHERE product_id = '$product_id'";
-
-    $result_receipt = $conn->query($sql_receipt);
-
-    while ($row = $result_receipt->fetch_assoc()) {
-        $total_cost += $row['quantity'] * $row['unit_price'];
-        $total_quantity += $row['quantity'];
-    }
-
-    $avg_cost = ($total_quantity > 0) ? $total_cost / $total_quantity : $current_cost;
-    $sale_price = round($avg_cost * (1 + $profit_percent / 100), 2);
+    // Giá bán = giá nhập bình quân × (1 + tỷ lệ lợi nhuận%)
+    $sale_price = round($cost_price * (1 + $profit_percent / 100), 2);
 }
 ?>
 
@@ -217,7 +200,7 @@ async function addToCart(id, name) {
         action: 'add', 
         product_id: id, 
         quantity: 1,
-        size: selectedSize // gửi size lên server
+        size: selectedSize
       })
     });
 
