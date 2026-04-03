@@ -290,14 +290,21 @@ body {
   letter-spacing:0.5px;
 }
 .status {
-  font-weight:600;
-  padding:5px 10px;
-  border-radius:8px;
-  color:#fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  letter-spacing: .4px;
+  text-transform: uppercase;
 }
-.status.pending { background-color:#ff9800; }
-.status.completed { background-color:#4caf50; }
-.status.cancelled { background-color:#f44336; }
+.status.pending   { background: rgba(255,152,0,.25);  border: 1px solid #ff9800;  color: #ffcc80; }
+.status.processed { background: rgba(33,150,243,.25); border: 1px solid #2196f3;  color: #90caf9; }
+.status.shipping  { background: rgba(103,58,183,.25); border: 1px solid #7e57c2;  color: #ce93d8; }
+.status.delivered { background: rgba(76,175,80,.25);  border: 1px solid #4caf50;  color: #a5d6a7; }
+.status.cancelled { background: rgba(244,67,54,.25);  border: 1px solid #f44336;  color: #ef9a9a; }
 
 /* ===== VIEW BUTTON ===== */
 .view-details-btn {
@@ -409,27 +416,31 @@ body {
           </tr>
         </thead>
         <tbody>
-          <?php foreach ($orders as $order): ?>
-            <?php
-              // Định dạng ngày
-              $order_date = date('Y-m-d', strtotime($order['order_date']));
-              // Xác định class cho status
-              $status_class = '';
-              $status_text = '';
+          <?php foreach ($orders as $order):
+              $order_date = date('d/m/Y', strtotime($order['order_date']));
               switch ($order['status']) {
-                  case 'Pending': $status_class = 'pending'; $status_text = 'Pending'; break;
-                  case 'Processed': $status_class = 'completed'; $status_text = 'Processed'; break;
-                  case 'Delivered': $status_class = 'completed'; $status_text = 'Delivered'; break;
-                  case 'Cancelled': $status_class = 'cancelled'; $status_text = 'Cancelled'; break;
-                  default: $status_class = 'pending'; $status_text = $order['status'];
+                  case 'Pending':
+                      $sc = 'pending';   $si = 'fa-clock';        $sl = 'Chờ xác nhận'; break;
+                  case 'Processed':
+                  case 'Processing':
+                      $sc = 'processed'; $si = 'fa-cogs';         $sl = 'Đang xử lý'; break;
+                  case 'Shipping':
+                  case 'Shipped':
+                      $sc = 'shipping';  $si = 'fa-truck';        $sl = 'Đang giao'; break;
+                  case 'Delivered':
+                      $sc = 'delivered'; $si = 'fa-check-circle'; $sl = 'Đã nhận hàng'; break;
+                  case 'Cancelled':
+                      $sc = 'cancelled'; $si = 'fa-times-circle'; $sl = 'Đã hủy'; break;
+                  default:
+                      $sc = 'pending';   $si = 'fa-question-circle'; $sl = htmlspecialchars($order['status']);
               }
-            ?>
+          ?>
             <tr>
               <td><?= htmlspecialchars($order['order_number']) ?></td>
               <td><?= $order_date ?></td>
               <td>$<?= number_format($order['total_amount'], 2) ?></td>
-              <td><span class="status <?= $status_class ?>"><?= $status_text ?></span></td>
-              <td><button class="view-details-btn" data-order-id="<?= $order['id'] ?>">View Details</button></td>
+              <td><span class="status <?= $sc ?>"><i class="fas <?= $si ?>"></i><?= $sl ?></span></td>
+              <td><button class="view-details-btn" data-order-id="<?= $order['id'] ?>">Chi tiết</button></td>
             </tr>
           <?php endforeach; ?>
         </tbody>
