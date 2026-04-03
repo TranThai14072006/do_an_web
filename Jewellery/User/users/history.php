@@ -2,8 +2,8 @@
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
-// Định nghĩa hằng TRƯỚC khi dùng
-if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+// Define constants BEFORE use
+if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
 
 // Kiểm tra đăng nhập
@@ -14,7 +14,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = (int)$_SESSION['user_id'];
 
-// Lấy thông tin customer_id từ bảng customers
+// Get customer_id from customers table
 $stmt = $conn->prepare("SELECT id FROM customers WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -22,11 +22,11 @@ $result = $stmt->get_result();
 $customer = $result->fetch_assoc();
 
 if (!$customer) {
-    // Nếu chưa có thông tin khách hàng
+    // If no customer information found
     $orders = [];
 } else {
     $customer_id = $customer['id'];
-    // Lấy danh sách đơn hàng của khách hàng
+    // Get orders list for the customer
     $stmt = $conn->prepare("SELECT id, order_number, order_date, total_amount, status FROM orders WHERE customer_id = ? ORDER BY order_date DESC");
     $stmt->bind_param("i", $customer_id);
     $stmt->execute();
@@ -411,9 +411,9 @@ body {
         <tbody>
           <?php foreach ($orders as $order): ?>
             <?php
-              // Định dạng ngày
+              // Date formatting
               $order_date = date('Y-m-d', strtotime($order['order_date']));
-              // Xác định class cho status
+              // Determine status class
               $status_class = '';
               $status_text = '';
               switch ($order['status']) {

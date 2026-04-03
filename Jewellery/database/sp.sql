@@ -13,7 +13,7 @@ CREATE TABLE `products` (
 
 --
 -- Đang đổ dữ liệu cho bảng `products`
---
+--pr
 
 INSERT INTO `products` (`id`, `name`, `price`, `image`, `cost_price`, `profit_percent`, `stock`, `category`, `gender`) VALUES
 ('R001', 'Kane Moissanite Ring', 1326.00, 'R001.jpg', 1020.00, 30, 10, 'Ring', 'Male'),

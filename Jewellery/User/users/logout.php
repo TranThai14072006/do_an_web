@@ -26,5 +26,5 @@ if (ini_get('session.use_cookies')) {
 session_destroy();
 
 // Chuyển về trang login
-header('Location: /do_an_web/Jewellery/User/users/login.php');
+header('Location: /Jewellery/User/users/login.php');
 exit();

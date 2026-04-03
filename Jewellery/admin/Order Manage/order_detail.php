@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
         }
         $stmt->close();
     } else {
-        $update_error = 'Trạng thái không hợp lệ.';
+        $update_error = 'Invalid status.';
     }
 }
 
@@ -48,7 +48,7 @@ $order = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$order) {
-    echo "<p style='padding:40px;color:red;font-family:sans-serif;'>❌ Không tìm thấy đơn hàng.</p>";
+    echo "<p style='padding:40px;color:red;font-family:sans-serif;'>❌ Order not found.</p>";
     $conn->close();
     exit;
 }
@@ -172,22 +172,7 @@ $status_class = [
     </div>
   </div>
 
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../../images/Admin_login.jpg" alt="Admin Logo">
-      <h2>Luxury Jewelry Admin</h2>
-    </div>
-    <div class="menu">
-      <a href="../Administration_menu.php#products">Jewelry List</a>
-      <a href="../product_management.php">Product Management</a>
-      <a href="../Administration_menu.php#users">Customers</a>
-      <a href="../Price Manage/pricing.php">Pricing Management</a>
-      <a href="../Import_product/import_management.php">Import Management</a>
-      <a href="order_management.php" class="active">Order Management</a>
-      <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
-      <a href="../Administration_menu.php#settings">Settings</a>
-    </div>
-  </div>
+<?php include '../sidebar_include.php'; ?>
 
   <main>
     <header>
@@ -263,7 +248,7 @@ $status_class = [
         <thead>
           <tr>
             <th>No.</th><th>Product ID</th><th>Image</th><th>Product Name</th>
-            <th>Quantity</th><th>Unit Price (USD)</th><th>Total (USD)</th>
+            <th>Quantity</th><th>Unit Price</th><th>Total</th>
           </tr>
         </thead>
         <tbody>
@@ -280,8 +265,8 @@ $status_class = [
                 </td>
                 <td><?= htmlspecialchars($item['product_name']) ?></td>
                 <td><?= intval($item['quantity']) ?></td>
-                <td><?= number_format($item['unit_price'], 2) ?></td>
-                <td><?= number_format($item['total_price'], 2) ?></td>
+                <td>$<?= number_format($item['unit_price'], 2) ?></td>
+                <td>$<?= number_format($item['total_price'], 2) ?></td>
               </tr>
             <?php endforeach; ?>
           <?php endif; ?>
@@ -293,7 +278,7 @@ $status_class = [
         <div class="summary-row"><span>Total Quantity:</span><span><?= $total_qty ?></span></div>
         <div class="summary-row summary-total">
           <span>Grand Total:</span>
-          <span><?= number_format($order['total_amount'], 2) ?> USD</span>
+          <span>$<?= number_format($order['total_amount'], 2) ?></span>
         </div>
       </div>
     </div>

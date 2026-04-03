@@ -44,6 +44,7 @@ $saved      = isset($_GET['saved']);
 // ============================================================
 $q_name     = trim($_GET['name']     ?? '');
 $q_category = trim($_GET['category'] ?? 'All');
+$q_gender   = trim($_GET['gender']   ?? 'All');
 
 $where1  = ['1=1'];
 $params1 = [];
@@ -56,6 +57,11 @@ if ($q_name !== '') {
 if ($q_category !== 'All' && $q_category !== '') {
     $where1[]  = 'category = ?';
     $params1[] = $q_category;
+    $types1   .= 's';
+}
+if ($q_gender !== 'All' && $q_gender !== '') {
+    $where1[]  = 'gender = ?';
+    $params1[] = $q_gender;
     $types1   .= 's';
 }
 $sql1  = "SELECT * FROM products WHERE " . implode(' AND ', $where1) . " ORDER BY id";
@@ -139,29 +145,16 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
 <head>
 <meta charset="UTF-8">
 <title>Pricing Management</title>
+<link rel="stylesheet" href="../admin_function.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif;}
-body{background:#f5f5f5;display:flex;color:#333;}
-
-.sidebar{width:220px;background:#8e4b00;color:#f8ce86;display:flex;flex-direction:column;padding:20px;height:100vh;position:fixed;left:0;top:0;}
-.logo{text-align:center;margin-bottom:30px;}
-.logo img{width:80px;border-radius:50%;}
-.logo h2{font-size:18px;margin-top:10px;}
-.menu a{display:block;padding:12px;color:#f8ce86;text-decoration:none;border-radius:8px;margin-bottom:10px;font-weight:bold;transition:0.3s;}
-.menu a:hover,.menu a.active{background:#f8ce86;color:#8e4b00;}
-
-main{flex:1;padding:25px 40px;margin-left:220px;}
-header h1{font-size:24px;color:#8e4b00;margin-bottom:20px;}
-
 /* TABS */
 .tabs{display:flex;gap:0;border-bottom:2px solid #ddd;margin-bottom:24px;}
 .tab-btn{padding:11px 22px;font-weight:600;color:#666;cursor:pointer;border:none;background:none;font-size:14px;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;}
 .tab-btn.active{color:#8e4b00;border-bottom-color:#8e4b00;}
 .tab-content{display:none;}
 .tab-content.active{display:block;animation:fadeIn .3s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-/* SEARCH */
+/* PAGE-SPECIFIC OVERRIDES */
 .search-section{background:#fff;border-radius:10px;padding:20px;display:flex;gap:15px;align-items:flex-end;flex-wrap:wrap;box-shadow:0 2px 6px rgba(0,0,0,0.08);margin-bottom:22px;}
 .search-group{flex:1;min-width:150px;display:flex;flex-direction:column;}
 .search-label{font-weight:600;margin-bottom:6px;font-size:14px;}
@@ -171,63 +164,28 @@ header h1{font-size:24px;color:#8e4b00;margin-bottom:20px;}
 .btn-reset{background:#888;color:#fff;}
 .btn-search:hover{background:#a3670b;}
 .btn-reset:hover{background:#666;}
-
-/* TABLE */
-table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.08);}
-th{background:#8e4b00;color:#f8ce86;padding:13px 12px;text-align:center;font-size:14px;font-weight:600;}
-td{padding:11px 12px;text-align:center;border-bottom:1px solid #f0e2d0;font-size:14px;}
-tr:hover td{background:#f9f2e7;}
 .product-img{width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid #eee;}
-
-/* BUTTONS */
-.btn{display:inline-block;background:#8e4b00;color:#f8ce86;text-decoration:none;padding:7px 16px;border-radius:7px;font-weight:600;border:none;cursor:pointer;font-size:13px;transition:.2s;}
-.btn:hover{background:#a3670b;}
-.btn.small{padding:5px 12px;font-size:12px;}
-
-/* INLINE PROFIT FORM */
 .profit-form{display:flex;gap:8px;justify-content:center;align-items:center;}
 .profit-input{width:72px;padding:6px 8px;border:1px solid #ccc;border-radius:5px;text-align:center;font-size:14px;}
 .profit-input:focus{border-color:#8e4b00;outline:none;}
-
-/* LOT BADGE */
 .lot-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;background:#fff3cd;color:#856404;}
 .diff-up{color:#2e7d32;font-weight:600;}
 .diff-dn{color:#c62828;font-weight:600;}
 .diff-eq{color:#888;}
-
-/* ALERT */
 .alert-success{background:#d4edda;color:#155724;border:1px solid #c3e6cb;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-weight:600;}
-
-/* CATEGORY ROW */
 .cat-badge{display:inline-block;background:#f8f9fa;border:1px solid #ddd;border-radius:6px;padding:3px 10px;font-size:13px;}
-
 .no-data{text-align:center;padding:30px;color:#888;}
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">
-    <img src="../../images/Admin_login.jpg" alt="Admin">
-    <h2>Luxury Jewelry Admin</h2>
-  </div>
-  <div class="menu">
-    <a href="../Administration_menu.php#products">Jewelry List</a>
-    <a href="../product_management.php">Product Management</a>
-    <a href="../Administration_menu.php#users">Customers</a>
-    <a href="pricing.php" class="active">Pricing Management</a>
-    <a href="../Import_product/import_management.php">Import Management</a>
-    <a href="../Order Manage/order_management.php">Order Management</a>
-    <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
-    <a href="../Administration_menu.php#settings">Settings</a>
-  </div>
-</div>
+<?php include '../sidebar_include.php'; ?>
 
 <main>
   <header><h1>Pricing & Profit Management</h1></header>
 
   <?php if ($saved): ?>
-    <div class="alert-success">✅ Cập nhật thành công!</div>
+    <div class="alert-success">✅ Update successful!</div>
   <?php endif; ?>
 
   <!-- TABS -->
@@ -248,15 +206,12 @@ tr:hover td{background:#f9f2e7;}
           <input type="text" class="search-input" name="name" value="<?= htmlspecialchars($q_name) ?>" placeholder="Search...">
         </div>
         <div class="search-group">
-          <label class="search-label">Category</label>
-          <select class="search-input" name="category">
+          <label class="search-label">Gender</label>
+          <select class="search-input" name="gender">
             <option value="All">All</option>
-            <?php foreach ($cat_list as $c): ?>
-              <option value="<?= htmlspecialchars($c['category']) ?>"
-                <?= $q_category === $c['category'] ? 'selected' : '' ?>>
-                <?= htmlspecialchars($c['category']) ?>
-              </option>
-            <?php endforeach; ?>
+            <option value="Male"   <?= $q_gender === 'Male'   ? 'selected' : '' ?>>Male</option>
+            <option value="Female" <?= $q_gender === 'Female' ? 'selected' : '' ?>>Female</option>
+            <option value="Unisex" <?= $q_gender === 'Unisex' ? 'selected' : '' ?>>Unisex</option>
           </select>
         </div>
         <button type="submit" class="btn-search">Search</button>
@@ -265,7 +220,7 @@ tr:hover td{background:#f9f2e7;}
     </form>
 
     <table>
-      <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Cost Price (USD)</th><th>Profit %</th><th>Selling Price (USD)</th><th>Action</th></tr></thead>
+      <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit %</th><th>Selling Price</th><th>Action</th></tr></thead>
       <tbody>
         <?php if (empty($products_tab1)): ?>
           <tr><td colspan="8" class="no-data">No products found.</td></tr>
@@ -278,7 +233,7 @@ tr:hover td{background:#f9f2e7;}
             <td><img src="../../images/<?= htmlspecialchars($row['image']) ?>" class="product-img" onerror="this.style.opacity='.2'"></td>
             <td style="text-align:left"><?= htmlspecialchars($row['name']) ?></td>
             <td><?= htmlspecialchars($row['category']) ?></td>
-            <td><?= number_format($row['cost_price'], 2) ?></td>
+            <td>$<?= number_format($row['cost_price'], 2) ?></td>
             <td><?= $row['profit_percent'] ?>%</td>
             <td><strong>$<?= number_format($sell, 2) ?></strong></td>
             <td><a href="edit_price.php?id=<?= urlencode($row['id']) ?>" class="btn small">Edit</a></td>
@@ -291,7 +246,7 @@ tr:hover td{background:#f9f2e7;}
 
   <!-- ====== TAB 2: Profit by Product ====== -->
   <div id="tab2" class="tab-content <?= $active_tab==='tab2'?'active':'' ?>">
-    <p style="color:#666;font-size:14px;margin-bottom:16px;">Sửa % lợi nhuận từng sản phẩm — giá bán sẽ tự tính lại.</p>
+    <p style="color:#666;font-size:14px;margin-bottom:16px;">Update profit % for each product — selling price will automatically recalculate.</p>
     <table>
       <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit %</th><th>Selling Price</th><th>Save</th></tr></thead>
       <tbody>
@@ -303,9 +258,9 @@ tr:hover td{background:#f9f2e7;}
           <td><img src="../../images/<?= htmlspecialchars($row['image']) ?>" class="product-img" onerror="this.style.opacity='.2'"></td>
           <td style="text-align:left"><?= htmlspecialchars($row['name']) ?></td>
           <td><?= htmlspecialchars($row['category']) ?></td>
-          <td><?= number_format($row['cost_price'], 2) ?></td>
+          <td>$<?= number_format($row['cost_price'], 2) ?></td>
           <td>
-            <!-- Input inline — tự tính preview giá bán khi gõ -->
+            <!-- Inline input — calculates price preview on typing -->
             <input type="number" class="profit-input"
                    id="profit-<?= htmlspecialchars($row['id']) ?>"
                    value="<?= $row['profit_percent'] ?>" min="0" max="999"
@@ -333,7 +288,7 @@ tr:hover td{background:#f9f2e7;}
 
   <!-- ====== TAB 3: Profit by Category ====== -->
   <div id="tab3" class="tab-content <?= $active_tab==='tab3'?'active':'' ?>">
-    <p style="color:#666;font-size:14px;margin-bottom:16px;">Cập nhật % lợi nhuận cho toàn bộ sản phẩm trong một danh mục.</p>
+    <p style="color:#666;font-size:14px;margin-bottom:16px;">Update profit % for all products in a category.</p>
     <table>
       <thead><tr><th>No.</th><th>Category</th><th>Products</th><th>Avg Profit %</th><th>Set Profit % for All</th></tr></thead>
       <tbody>
@@ -360,7 +315,7 @@ tr:hover td{background:#f9f2e7;}
   <!-- ====== TAB 4: Cost Price by Lot ====== -->
   <div id="tab4" class="tab-content <?= $active_tab==='tab4'?'active':'' ?>">
     <p style="color:#666;font-size:14px;margin-bottom:16px;">
-      Tra cứu giá vốn từng lô nhập — so sánh với giá vốn bình quân hiện tại và giá bán tương ứng.
+      Lookup cost price for each batch — compare with current average cost and corresponding selling price.
     </p>
 
     <!-- Search -->
@@ -394,8 +349,8 @@ tr:hover td{background:#f9f2e7;}
           <th>Image</th>
           <th>Product</th>
           <th>Qty</th>
-          <th>Lot Cost (USD)</th>
-          <th>Avg Cost (USD)</th>
+          <th>Lot Cost</th>
+          <th>Avg Cost</th>
           <th>Diff</th>
           <th>Profit %</th>
           <th>Lot Sell Price</th>
@@ -429,13 +384,13 @@ tr:hover td{background:#f9f2e7;}
             </td>
             <td style="text-align:left"><?= htmlspecialchars($row['product_name']) ?></td>
             <td><?= intval($row['quantity']) ?></td>
-            <td><strong><?= number_format($row['lot_cost'], 2) ?></strong></td>
-            <td style="color:#666"><?= number_format($row['avg_cost'], 2) ?></td>
+            <td>$<strong><?= number_format($row['lot_cost'], 2) ?></strong></td>
+            <td style="color:#666">$<?= number_format($row['avg_cost'], 2) ?></td>
             <td class="<?= $diff_cls ?>">
-              <?= $diff_sign . number_format(abs($diff), 2) ?>
+              <?= $diff_sign ?>$<?= number_format(abs($diff), 2) ?>
             </td>
             <td><?= $row['profit_percent'] ?>%</td>
-            <td>$<?= number_format($row['lot_sell_price'], 2) ?></td>
+            <td>$<strong><?= number_format($row['lot_sell_price'], 2) ?></strong></td>
             <td>$<?= number_format($row['current_sell_price'], 2) ?></td>
           </tr>
           <?php endforeach; ?>
@@ -445,10 +400,10 @@ tr:hover td{background:#f9f2e7;}
 
     <?php if (!empty($lot_rows)): ?>
     <div style="margin-top:14px;font-size:13px;color:#666;padding:10px 0;border-top:1px solid #eee;">
-      <strong>Chú thích:</strong>
-      <span class="diff-up">+X.XX</span> = lô nhập đắt hơn bình quân &nbsp;|&nbsp;
-      <span class="diff-dn">-X.XX</span> = lô nhập rẻ hơn bình quân &nbsp;|&nbsp;
-      Lot Sell Price = giá bán tính theo giá vốn lô đó (không phải bình quân)
+      <strong>Notes:</strong>
+      <span class="diff-up">+X.XX</span> = batch is more expensive than average &nbsp;|&nbsp;
+      <span class="diff-dn">-X.XX</span> = batch is cheaper than average &nbsp;|&nbsp;
+      Lot Sell Price = price calculated based on that batch's cost (not average)
     </div>
     <?php endif; ?>
   </div>

@@ -3,266 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>Entry Form Management</title>
+  <link rel="stylesheet" href="../admin_function.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* ====== RESET CƠ BẢN ====== */
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
-
-    body {
-      background-color: #f5f5f5;
-      color: #333;
-      display: flex;
-    }
-
-    /* ====== SIDEBAR ====== */
-    .sidebar {
-      width: 220px;
-      background-color: #8e4b00;
-      color: #f8ce86;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      height: 100vh;
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .logo img {
-      width: 80px;
-      border-radius: 50%;
-    }
-
-    .logo h2 {
-      font-size: 18px;
-      margin-top: 10px;
-    }
-
-    .menu a {
-      display: block;
-      padding: 12px;
-      color: #f8ce86;
-      text-decoration: none;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      font-weight: bold;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    .menu a:hover,
-    .menu a.active {
-      background-color: #f8ce86;
-      color: #8e4b00;
-    }
-
-    /* ====== MAIN ====== */
-    main {
-      flex: 1;
-      padding: 25px 40px;
-    }
-
-    header h1 {
-      font-size: 24px;
-      color: #8e4b00;
-      margin-bottom: 20px;
-    }
-
-    /* ====== NÚT THÊM ====== */
-    .user-actions {
-      margin-bottom: 20px;
-      text-align: right;
-    }
-
-    .btn {
-      background: linear-gradient(195deg, #8e4b00, #8e4b00);
-      color: #f8ce86;
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: 0.3s;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn:hover {
-      background: linear-gradient(195deg, #d8921b, #a3670b);
-      transform: translateY(-2px);
-    }
-
-    /* ====== PHẦN TÌM KIẾM ====== */
-    .search-section {
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      display: flex;
-      gap: 20px;
-      align-items: flex-end;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      margin-bottom: 25px;
-    }
-
-    .search-group {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .search-label {
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 6px;
-    }
-
-    .search-input {
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 15px;
-    }
-
-    .btn-search,
-    .btn-reset {
-      height: 42px;
-      padding: 0 20px;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
-      font-size: 15px;
-    }
-
-    .btn-search {
-      background-color: #8e4b00;
-      color: #fff;
-    }
-
-    .btn-reset {
-      background-color: #888;
-      color: #fff;
-    }
-
-    .btn-search:hover { background-color: #3d8b40; }
-    .btn-reset:hover { background-color: #666; }
-
-    /* ====== BẢNG DỮ LIỆU ====== */
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    th {
-      background-color: #8e4b00;
-      color: #f8ce86;
-      font-weight: 600;
-      text-align: center;
-      padding: 14px 10px;
-      font-size: 15px;
-    }
-
-    td {
-      text-align: center;
-      padding: 12px 10px;
-      border-bottom: 1px solid #eee;
-      font-size: 15px;
-    }
-
-    tr:nth-child(even) td { background: #faf6f2; }
-    tr:hover td { background: #f3ede6; }
-
-    /* ====== NÚT XEM ====== */
-    .btn.small {
-      background-color: #f8ce86;
-      color: #f8ce86;
-      padding: 6px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: 600;
-      transition: 0.2s;
-    }
-
-    .btn.small:hover {
-      background-color: #8e4b00;
-      color: white;
-    }
-
-    /* ====== PHÂN TRANG ====== */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      margin-top: 20px;
-    }
-
-    .pagination-btn {
-      border: 1px solid #ddd;
-      background: white;
-      color: #8e4b00;
-      width: 36px;
-      height: 36px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: 0.2s;
-      font-weight: bold;
-    }
-
-    .pagination-btn:hover {
-      background-color: #f8ce86;
-      color: #8e4b00;
-    }
-
-    .pagination-btn.active {
-      background-color: #8e4b00;
-      color: #fff;
-      border-color: #8e4b00;
-    }
-
-    .pagination-info {
-      text-align: center;
-      font-size: 14px;
-      color: #666;
-      margin-top: 10px;
-    }
-.back-button-container {
- 
-  margin-bottom: 0.5cm;    /* cách phần nội dung bên dưới 1 cm */
-}
-
+    .back-button-container { margin-bottom: 0.5cm; }
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; }
   </style>
 </head>
 <body>
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../../images/Admin_login.jpg" alt="Admin Logo">
-      <h2>Luxury Jewelry Admin</h2>
-    </div>
 
-    <div class="menu">
-      <a href="../Administration_menu.html#products">Jewelry List</a>
-      <a href="../product_management.php">Product Management</a>
-      <a href="../Administration_menu.html#users">Customers</a>
-      <a href="../Price Manage/pricing.php">Pricing Management</a>
-      <a href="import_management.php">Import Management</a>
-      <a href="../Order Manage/order_management.php">Order Management</a>
-      <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
-      <a href="../Administration_menu.html#setting">Settings</a>
-    </div>
-  </div>
+<?php include '../sidebar_include.php'; ?>
+
+<div class="content">
 
   <!-- MAIN -->
   <main>
     <header><h1>Import Management</h1></header> 
-<div class="back-button-container">
-  <button type="button" class="btn" onclick="window.location.href='import_management.html'">Back</button>
-</div>
+    <div class="back-button-container">
+      <button type="button" class="btn" onclick="window.location.href='import_management.php'">Back</button>
+    </div>
     <!-- SEARCH -->
     <div class="search-section">
       <div class="search-group">
@@ -275,7 +34,7 @@
         <input type="date" class="search-input">
       </div>
 
-      <button class="btn-search" onclick="window.location.href='search_form.html'">Search</button>
+      <button class="btn-search" onclick="window.location.href='search_form.php'">Search</button>
       <button class="btn-reset">Reset</button>
     </div>
 
@@ -301,7 +60,7 @@
         $sql = "SELECT * FROM goods_receipt WHERE 1";
 
         if($from && $to){
-        $sql .= " AND entry_date BETWEEN '$from' AND '$to'";
+            $sql .= " AND entry_date BETWEEN '$from' AND '$to'";
         }
 
         $result = $conn->query($sql);
@@ -311,11 +70,14 @@
         <tbody>
             <?php while($row = $result->fetch_assoc()): ?>
             <tr>
-            <td><?= $i++ ?></td>
-            <td><?= $row['order_number'] ?></td>
-            <td><?= $row['entry_date'] ?></td>
-            <td><?= $row['total_quantity'] ?></td>
-            <td><?= $row['total_value'] ?></td>
+              <td><?= $i++ ?></td>
+              <td><?= $row['order_number'] ?></td>
+              <td><?= $row['entry_date'] ?></td>
+              <td><?= $row['total_quantity'] ?></td>
+              <td><?= $row['total_value'] ?></td>
+              <td>
+                <a href="entry_form_detail.php?id=<?= $row['id'] ?>" class="btn small">View Detail</a>
+              </td>
             </tr>
         <?php endwhile; ?>
         </tbody>
@@ -333,8 +95,8 @@
       <button class="pagination-btn">&#10095;</button>
     </div>
 
-    <div class="pagination-info">Showing 1-5 of Search Results</div>
+    <div class="pagination-info">Showing 1-10 of Results</div>
   </main>
+</div>
 </body>
 </html>
-

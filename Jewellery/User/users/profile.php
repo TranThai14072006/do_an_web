@@ -1,23 +1,23 @@
 <?php
 // ═══════════════════════════════════════════════════════════
 // File: Jewellery/User/users/profile.php
-// Chức năng đầy đủ:
-//   ✔ Kiểm tra đăng nhập
-//   ✔ Lấy thông tin user + customer từ DB
-//   ✔ Upload avatar (lưu file)
-//   ✔ Hiển thị đơn hàng gần nhất
-//   ✔ Thống kê: tổng đơn / tổng chi tiêu
-//   ✔ Nút Edit Profile / Log Out / Order History
+// Full functions:
+//   ✔ Check login
+//   ✔ Fetch user + customer info from DB
+//   ✔ Avatar upload (file storage)
+//   ✔ Display recent orders
+//   ✔ Stats: total orders / total spent
+//   ✔ Edit Profile / Log Out / Order History buttons
 // ═══════════════════════════════════════════════════════════
 
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
-// --- Định nghĩa hằng ---
-if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+// --- Define constants ---
+if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
 
-// --- Kiểm tra đăng nhập ---
+// --- Check login ---
 if (!isset($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . 'User/users/login.php');
     exit();
@@ -35,7 +35,7 @@ $link_edit        = BASE_URL . 'User/users/edit_profile.php';
 $link_history     = BASE_URL . 'User/users/history.php';
 
 // ─────────────────────────────────────────────────────────
-// XỬ LÝ UPLOAD AVATAR
+// AVATAR UPLOAD HANDLING
 // ─────────────────────────────────────────────────────────
 $upload_msg  = '';
 $upload_err  = '';
@@ -57,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
             $dest    = $dir . $fname;
 
             if (move_uploaded_file($file['tmp_name'], $dest)) {
-                // Lưu đường dẫn vào DB (bảng customers, cột avatar)
-                // Thêm cột nếu chưa có (idempotent)
+                // Save path to DB (customers table, avatar column)
+                // Add column if not exists (idempotent)
                 $conn->query("ALTER TABLE customers ADD COLUMN IF NOT EXISTS avatar VARCHAR(255) DEFAULT NULL");
                 $stmt_av = $conn->prepare("UPDATE customers SET avatar = ? WHERE user_id = ?");
                 $stmt_av->bind_param('si', $fname, $user_id);
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
 }
 
 // ─────────────────────────────────────────────────────────
-// LẤY THÔNG TIN USER + CUSTOMER
+// FETCH USER + CUSTOMER INFO
 // ─────────────────────────────────────────────────────────
 $sql_user = "
     SELECT u.username, u.email, u.created_at,
@@ -91,7 +91,7 @@ $user = $stmt_u->get_result()->fetch_assoc();
 $stmt_u->close();
 
 if (!$user) {
-    // Tài khoản không tồn tại → logout
+    // Account doesn't exist → logout
     header('Location: ' . $link_logout);
     exit();
 }
@@ -104,7 +104,7 @@ $birthday     = $user['birthday'] ? date('d/m/Y', strtotime($user['birthday'])) 
 $gender       = htmlspecialchars($user['gender']  ?: 'Not set');
 $member_since = $user['created_at'] ? date('F Y', strtotime($user['created_at'])) : '';
 
-// Đường dẫn avatar
+// Avatar path
 if (!empty($user['avatar'])) {
     $avatar_src = BASE_URL . 'images/avatars/' . htmlspecialchars($user['avatar']);
 } else {
@@ -112,7 +112,7 @@ if (!empty($user['avatar'])) {
 }
 
 // ─────────────────────────────────────────────────────────
-// LẤY THỐNG KÊ ĐƠN HÀNG
+// FETCH ORDER STATS
 // ─────────────────────────────────────────────────────────
 $stats = ['total_orders' => 0, 'total_spent' => 0, 'pending' => 0, 'delivered' => 0];
 $stmt_cid = $conn->prepare("SELECT id FROM customers WHERE user_id = ?");
@@ -125,7 +125,7 @@ $customer_id = $row_c['id'] ?? null;
 $orders = [];
 
 if ($customer_id) {
-    // Thống kê tổng
+    // General stats
     $stmt_stat = $conn->prepare("
         SELECT COUNT(*) AS total_orders,
                COALESCE(SUM(total_amount),0) AS total_spent,
@@ -138,7 +138,7 @@ if ($customer_id) {
     $stats = $stmt_stat->get_result()->fetch_assoc();
     $stmt_stat->close();
 
-    // 3 đơn hàng gần nhất
+    // 3 most recent orders
     $stmt_o = $conn->prepare("
         SELECT id, order_number, order_date, total_amount, status
         FROM orders
@@ -594,7 +594,7 @@ function doSearch() {
   if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
 }
 
-// Preview avatar trước khi submit
+// Preview avatar before submit
 function previewAndSubmit(input) {
   if (!input.files || !input.files[0]) return;
   const reader = new FileReader();

@@ -617,7 +617,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   // Search
   document.getElementById("searchBtn").onclick = function() {
     let key = document.getElementById("searchInput").value.trim();
-    if (key) window.location.href = '/do_an_web/Jewellery/User/Search/search.html?q=' + encodeURIComponent(key);
+    if (key) window.location.href = '/Jewellery/User/Search/search.html?q=' + encodeURIComponent(key);
   };
   document.getElementById("searchInput").addEventListener('keydown', function(e) {
     if (e.key === 'Enter') document.getElementById('searchBtn').click();

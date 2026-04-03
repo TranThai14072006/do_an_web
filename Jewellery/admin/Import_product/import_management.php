@@ -1,25 +1,10 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Entry Form Management</title>
+  <title>Import Management</title>
+  <link rel="stylesheet" href="../admin_function.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
-    body { background-color: #f5f5f5; color: #333; display: flex; }
-
-    /* SIDEBAR */
-    .sidebar { width: 220px; background-color: #8e4b00; color: #f8ce86; display: flex; flex-direction: column; padding: 20px; height: 100vh; position: fixed; left: 0; top: 0; overflow-y: auto; }
-    .logo { text-align: center; margin-bottom: 30px; }
-    .logo img { width: 80px; border-radius: 50%; }
-    .logo h2 { font-size: 18px; margin-top: 10px; }
-    .menu a { display: block; padding: 12px; color: #f8ce86; text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: bold; transition: background 0.3s, color 0.3s; }
-    .menu a:hover, .menu a.active { background-color: #f8ce86; color: #8e4b00; }
-
-    /* MAIN */
-    main { flex: 1; padding: 25px 40px; margin-left: 220px; }
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    header h1 { font-size: 24px; color: #8e4b00; }
-
     /* BUTTONS */
     .btn {
       background: #8e4b00; color: #f8ce86; text-decoration: none;
@@ -169,22 +154,7 @@ function build_url($page, $params = []) {
 }
 ?>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <div class="logo">
-    <img src="../../images/Admin_login.jpg" alt="Admin Logo">
-    <h2>Luxury Jewelry Admin</h2>
-  </div>
-  <div class="menu">
-    <a href="../Administration_menu.php#products">Jewelry List</a>
-    <a href="../product_management.php">Product Management</a>
-    <a href="../Administration_menu.php#users">Customers</a>
-    <a href="../Price Manage/pricing.php">Pricing Management</a>
-    <a href="import_management.php" class="active">Import Management</a>
-    <a href="../Order Manage/order_management.php">Order Management</a>
-    <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
-  </div>
-</div>
+<?php include '../sidebar_include.php'; ?>
 
 <!-- MAIN -->
 <main>
@@ -195,7 +165,7 @@ function build_url($page, $params = []) {
 
   <?php if (isset($_GET['success'])): ?>
     <div class="alert-success" id="success-alert">
-      ✅ Phiếu nhập #<?= (int)$_GET['receipt_id'] ?> đã được lưu thành công!
+      ✅ Receipt #<?= (int)$_GET['receipt_id'] ?> saved successfully!
       <button onclick="document.getElementById('success-alert').remove()">×</button>
     </div>
   <?php endif; ?>
@@ -207,7 +177,7 @@ function build_url($page, $params = []) {
         <div class="search-group wide">
           <label class="search-label">Order Number</label>
           <input type="text" name="order" class="search-input"
-                 placeholder="Tìm theo mã phiếu..."
+                 placeholder="Search by order number..."
                  value="<?= htmlspecialchars($search_order) ?>">
         </div>
         <div class="search-group narrow">
@@ -266,7 +236,7 @@ function build_url($page, $params = []) {
     <tbody>
       <?php if (empty($rows)): ?>
         <tr class="no-results"><td colspan="8">
-          <?= $is_searching ? 'Không tìm thấy phiếu nhập nào phù hợp.' : 'Chưa có phiếu nhập nào.' ?>
+          <?= $is_searching ? 'No matching entry forms found.' : 'No entry forms yet.' ?>
         </td></tr>
       <?php else: ?>
         <?php
@@ -280,7 +250,7 @@ function build_url($page, $params = []) {
           <td><?= htmlspecialchars($row['entry_date']) ?></td>
           <td><?= htmlspecialchars($row['supplier'] ?? '—') ?></td>
           <td><?= intval($row['total_quantity']) ?></td>
-          <td><?= number_format($row['total_value'], 2) ?> USD</td>
+          <td>$<?= number_format($row['total_value'], 2) ?></td>
           <td><span class="badge <?= $badge ?>"><?= $row['status'] ?></span></td>
           <td>
             <a href="entry_form_detail.php?id=<?= $row['id'] ?>" class="tbl-link">View</a>
@@ -288,7 +258,7 @@ function build_url($page, $params = []) {
             <?php if ($row['status'] === 'Draft'): ?>
               <a href="edit_entry_form.php?id=<?= $row['id'] ?>" class="tbl-link">Edit</a>
             <?php else: ?>
-              <span style="color:#ccc;font-size:13px;" title="Phiếu đã hoàn thành, không thể sửa">🔒 Locked</span>
+              <span style="color:#ccc;font-size:13px;" title="Completed form cannot be edited">🔒 Locked</span>
             <?php endif; ?>
           </td>
         </tr>

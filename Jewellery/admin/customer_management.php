@@ -141,23 +141,7 @@ function pageUrl(array $overrides = []): string {
 </head>
 <body>
 
-  <!-- ── Sidebar ── -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../images/Admin_login.jpg" alt="Admin Logo">
-      <h2>Luxury Jewelry Admin</h2>
-    </div>
-    <div class="menu">
-      <a href="Administration_menu.php#products">Jewelry List</a>
-      <a href="product_management.php">Product Management</a>
-      <a href="Price Manage/pricing.php">Pricing Management</a>
-      <a href="customer_management.php" class="active">Customers</a>
-      <a href="Order Manage/order_management.php">Order Management</a>
-      <a href="Import product manage/import_management.php">Import Management</a>
-      <a href="Stock Manage/stocking_management.php">Stocking Management</a>
-      <a href="Administration_menu.php#settings">Settings</a>
-    </div>
-  </div>
+<?php include 'sidebar_include.php'; ?>
 
   <!-- ── Main content ── -->
   <div class="content">

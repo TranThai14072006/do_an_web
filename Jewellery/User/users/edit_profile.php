@@ -1,21 +1,21 @@
 <?php
 // ═══════════════════════════════════════════════════════════
 // File: Jewellery/User/users/edit_profile.php
-// Chức năng:
-//   ✔ Lấy thông tin hiện tại của user từ DB
-//   ✔ Form sửa: full_name, phone, address, birthday, gender
-//   ✔ Đổi password (optional, có xác nhận)
-//   ✔ Validate server-side
-//   ✔ Ghi DB → redirect về profile.php
+// Functions:
+//   ✔ Fetch current user info from DB
+//   ✔ Edit form: full_name, phone, address, birthday, gender
+//   ✔ Change password (optional, with confirmation)
+//   ✔ Server-side validation
+//   ✔ Save to DB → redirect to profile.php
 // ═══════════════════════════════════════════════════════════
 
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
-if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
 
-// Kiểm tra đăng nhập
+// Check login
 if (!isset($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . 'User/users/login.php');
     exit();
@@ -32,7 +32,7 @@ $errors  = [];
 $success = '';
 
 // ─────────────────────────────────────────────────────────
-// LẤY DỮ LIỆU HIỆN TẠI
+// FETCH CURRENT DATA
 // ─────────────────────────────────────────────────────────
 $stmt_get = $conn->prepare("
     SELECT u.username, u.email,
@@ -52,7 +52,7 @@ if (!$user) {
 }
 
 // ─────────────────────────────────────────────────────────
-// XỬ LÝ SUBMIT
+// SUBMIT HANDLING
 // ─────────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -87,8 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        // Cập nhật bảng customers
-        // Kiểm tra row customer đã tồn tại chưa
+        // Update customers table
+        // Check if customer row already exists
         $stmt_check = $conn->prepare("SELECT id FROM customers WHERE user_id = ?");
         $stmt_check->bind_param('i', $user_id);
         $stmt_check->execute();
@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_ins->close();
         }
 
-        // Đổi password
+        // Change password
         if ($change_pass) {
             $hashed = password_hash($new_pass, PASSWORD_DEFAULT);
             $stmt_pw = $conn->prepare("UPDATE users SET password=? WHERE id=?");
@@ -127,12 +127,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_pw->close();
         }
 
-        // Redirect với thông báo thành công
+        // Redirect with success message
         header('Location: ' . $link_profile . '?updated=1');
         exit();
     }
 
-    // Nếu lỗi → giữ giá trị đã nhập
+    // If error → keep entered values
     $user['full_name'] = $full_name;
     $user['phone']     = $phone;
     $user['address']   = $address;

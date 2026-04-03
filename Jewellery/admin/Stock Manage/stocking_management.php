@@ -228,23 +228,13 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stocking Management</title>
+  <link rel="stylesheet" href="../admin_function.css">
   <style>
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif; }
-body { display:flex; background:#f3f3f3; color:#333; min-height:100vh; }
+    /* PAGE-SPECIFIC: main override for this layout */
+    main { overflow-x: hidden; padding: 25px; }
+    h1 { color:#8e4b00; margin-bottom:20px; font-size:24px; }
 
-/* SIDEBAR */
-.sidebar { width:220px; background:#8e4b00; color:#f8ce86; display:flex; flex-direction:column; padding:20px; flex-shrink:0; }
-.logo { text-align:center; margin-bottom:30px; }
-.logo img { width:80px; border-radius:50%; }
-.logo h2 { font-size:18px; margin-top:10px; }
-.menu a { display:block; padding:12px; color:#f8ce86; text-decoration:none; border-radius:8px; margin-bottom:10px; font-weight:bold; transition:.3s; }
-.menu a:hover, .menu a.active { background:#f8ce86; color:#8e4b00; }
-
-/* MAIN */
-main { flex:1; padding:25px; overflow-x:hidden; }
-h1 { color:#8e4b00; margin-bottom:20px; font-size:24px; }
-
-/* TABS */
+    /* TABS */
 .tabs { display:flex; gap:10px; margin-bottom:20px; border-bottom:2px solid #ddd; }
 .tab { padding:10px 18px; font-weight:600; color:#555; cursor:pointer; border-bottom:3px solid transparent; transition:all .3s; white-space:nowrap; }
 .tab.active { color:#8e4b00; border-bottom-color:#8e4b00; }
@@ -390,22 +380,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">
-    <img src="../../images/Admin_login.jpg" alt="Admin Logo">
-    <h2>Luxury Jewelry Admin</h2>
-  </div>
-  <div class="menu">
-    <a href="../Administration_menu.php#products">Jewelry List</a>
-    <a href="../product_management.php">Product Management</a>
-    <a href="../Administration_menu.php#users">Customers</a>
-    <a href="../Price Manage/pricing.php">Pricing Management</a>
-    <a href="../Import_product/import_management.php">Import Management</a>
-    <a href="../Order Manage/order_management.php">Order Management</a>
-    <a href="stocking_management.php" class="active">Stocking Management</a>
-    <a href="../Administration_menu.php#settings">Settings</a>
-  </div>
-</div>
+<?php include '../sidebar_include.php'; ?>
 
 <main>
   <h1>Stocking Management</h1>

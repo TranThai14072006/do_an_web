@@ -15,7 +15,7 @@ session_start();
 require_once __DIR__ . '/../../config/config.php';
 
 if (!defined('BASE_URL'))
-  define('BASE_URL', '/do_an_web/Jewellery/');
+  define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))
   define('IMG_URL', BASE_URL . 'images/');
 
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
   if (!$error) {
     foreach ($cart_items as $item) {
       if ($item['quantity'] > $item['stock']) {
-        $error = '"' . htmlspecialchars($item['name']) . '" chỉ còn ' . $item['stock'] . ' sản phẩm trong kho.';
+        $error = '"' . htmlspecialchars($item['name']) . '" only has ' . $item['stock'] . ' units left in stock.';
         break;
       }
     }
@@ -205,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
     } catch (Exception $e) {
       $conn->rollback();
-      $error = 'Đặt hàng thất bại: ' . $e->getMessage();
+      $error = 'Order failed: ' . $e->getMessage();
     }
   }
 }

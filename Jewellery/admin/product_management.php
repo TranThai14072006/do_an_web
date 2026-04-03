@@ -19,6 +19,7 @@ $start = ($page - 1) * $limit;
 // Search variables
 $search_name     = isset($_GET['product_name'])     ? trim($_GET['product_name'])     : '';
 $search_category = isset($_GET['product_category']) ? trim($_GET['product_category']) : '';
+$search_gender   = isset($_GET['product_gender'])   ? trim($_GET['product_gender'])   : '';
 
 $where_clause = "WHERE 1=1";
 if (!empty($search_name)) {
@@ -29,9 +30,13 @@ if (!empty($search_category) && $search_category != "All") {
     $safe_cat = $conn->real_escape_string($search_category);
     $where_clause .= " AND category = '$safe_cat'";
 }
+if (!empty($search_gender) && $search_gender != "All") {
+    $safe_gen = $conn->real_escape_string($search_gender);
+    $where_clause .= " AND gender = '$safe_gen'";
+}
 
 // Fetch products
-$sql    = "SELECT id AS code, name, image, price, stock FROM products $where_clause ORDER BY id ASC LIMIT $start, $limit";
+$sql    = "SELECT id AS code, name, image, price, stock, category, gender FROM products $where_clause ORDER BY id ASC LIMIT $start, $limit";
 $result = $conn->query($sql);
 $products = [];
 if ($result && $result->num_rows > 0) {
@@ -70,22 +75,7 @@ $q_string = !empty($q_params) ? '&' . http_build_query($q_params) : '';
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../images/Admin_login.jpg" alt="Admin Logo">
-      <h2>Luxury Jewelry Admin</h2>
-    </div>
-    <div class="menu">
-      <a href="Administration_menu.php#products">Jewelry List</a>
-      <a href="product_management.php" class="active">Product Management</a>
-      <a href="Price Manage/pricing.php">Pricing Management</a>
-      <a href="Administration_menu.php#users">Customers</a>
-      <a href="Order Manage/order_management.php">Order Management</a>
-      <a href="Import product manage/import_management.php">Import Management</a>
-      <a href="Stock Manage/stocking_management.php">Stocking Management</a>
-      <a href="Administration_menu.php#settings">Settings</a>
-    </div>
-  </div>
+<?php include 'sidebar_include.php'; ?>
 
   <div class="content">
 
@@ -104,12 +94,17 @@ $q_string = !empty($q_params) ? '&' . http_build_query($q_params) : '';
                  placeholder="Product Name" value="<?php echo htmlspecialchars($search_name); ?>">
         </div>
         <div class="search-group">
-          <label class="search-label" for="product-category">Search by Category</label>
-          <select id="product-category" name="product_category" class="search-select">
+          <label class="search-label" for="product-category">Category</label>
+          <input type="text" id="product-category" name="product_category" class="search-input"
+                 placeholder="Ring, Necklace..." value="<?php echo htmlspecialchars($search_category); ?>">
+        </div>
+        <div class="search-group">
+          <label class="search-label" for="product-gender">Gender</label>
+          <select id="product-gender" name="product_gender" class="search-select">
             <option value="">All</option>
-            <option value="Male"   <?php if($search_category=='Male')   echo 'selected'; ?>>Male</option>
-            <option value="Female" <?php if($search_category=='Female') echo 'selected'; ?>>Female</option>
-            <option value="Unisex" <?php if($search_category=='Unisex') echo 'selected'; ?>>Unisex</option>
+            <option value="Male"   <?php if($search_gender=='Male')   echo 'selected'; ?>>Male</option>
+            <option value="Female" <?php if($search_gender=='Female') echo 'selected'; ?>>Female</option>
+            <option value="Unisex" <?php if($search_gender=='Unisex') echo 'selected'; ?>>Unisex</option>
           </select>
         </div>
         <button type="submit" class="btn-search">
@@ -121,7 +116,7 @@ $q_string = !empty($q_params) ? '&' . http_build_query($q_params) : '';
         <table>
           <tr>
             <th>Product Code</th><th>Product Name</th><th>Image</th>
-            <th>Price</th><th>Stock</th><th>Action</th>
+            <th>Category</th><th>Gender</th><th>Price</th><th>Stock</th><th>Action</th>
           </tr>
           <?php if (empty($products)): ?>
           <tr><td colspan="6" style="text-align:center;color:#888;padding:20px;">No products found.</td></tr>
@@ -141,7 +136,9 @@ $q_string = !empty($q_params) ? '&' . http_build_query($q_params) : '';
                 <span class="no-image">No img</span>
               <?php endif; ?>
             </td>
-            <td><?php echo number_format((float)$p['price'], 0, ',', '.'); ?> ₫</td>
+            <td>$<?php echo number_format((float)$p['price'], 2, '.', ','); ?></td>
+            <td><?php echo htmlspecialchars($p['category']); ?></td>
+            <td><?php echo htmlspecialchars($p['gender']); ?></td>
             <td><?php echo htmlspecialchars($p['stock']); ?></td>
             <td>
               <a href="edit_product.php?code=<?php echo urlencode($p['code']); ?>" class="btn small">Edit</a>

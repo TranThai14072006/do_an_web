@@ -28,14 +28,9 @@ $conn->close();
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Edit Entry Form</title>
 <style>
-body { font-family: sans-serif; background: #f0f2f5; margin: 0; }
-.sidebar { width: 220px; background-color: #8e4b00; color: #f8ce86; display: flex; flex-direction: column; padding: 20px; height: 100vh; position: fixed; left: 0; top: 0; overflow-y: auto; }
-.logo { text-align: center; margin-bottom: 30px; }
-.logo img { width: 80px; border-radius: 50%; }
-.logo h2 { font-size: 18px; margin-top: 10px; }
-.menu a { display: block; padding: 12px; color: #f8ce86; text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: bold; }
-.menu a:hover, .menu a.active { background: #f8ce86; color: #8e4b00; }
-main { margin-left: 250px; padding: 0; box-sizing: border-box; }
+<link rel="stylesheet" href="../admin_function.css">
+main { padding: 0; }
+.top-nav { background: white; padding: 18px 22px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: 700; color: #8e4b00; font-size: 18px; }
 .top-nav { background: white; padding: 18px 22px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: 700; color: #8e4b00; font-size: 18px; }
 .card { background: white; border-radius: 10px; margin: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 .card-header { background: #8e4b00; color: #f8ce86; padding: 18px 22px; font-weight: 700; font-size: 17px; border-radius: 10px 10px 0 0; display: flex; align-items: center; gap: 12px; }
@@ -63,8 +58,8 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
 .summary-total { font-weight: 700; color: #8e4b00; font-size: 18px; }
 .form-actions { display: flex; justify-content: flex-end; gap: 14px; margin-top: 32px; flex-wrap: wrap; }
 .input-with-usd { position: relative; }
-.input-with-usd .form-control { padding-right: 50px; }
-.input-usd-label { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #8e4b00; font-weight: 700; font-size: 14px; }
+.input-with-usd .form-control { padding-left: 25px; }
+.input-usd-label { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #555; font-weight: 700; font-size: 14px; }
 .col-label { font-size: 12px; color: #888; margin-bottom: 4px; }
 
 /* ── Readonly overlay for Completed status ── */
@@ -114,22 +109,7 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">
-    <img src="../../images/Admin_login.jpg" alt="Admin">
-    <h2>Luxury Jewelry Admin</h2>
-  </div>
-  <div class="menu">
-    <a href="../Administration_menu.php#products">Jewelry List</a>
-    <a href="../product_management.php">Product Management</a>
-    <a href="../Administration_menu.php#users">Customers</a>
-    <a href="../Price Manage/pricing.php">Pricing Management</a>
-    <a href="import_management.php" class="active">Import Management</a>
-    <a href="../Order Manage/order_management.php">Order Management</a>
-    <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
-    <a href="../Administration_menu.php#settings">Settings</a>
-  </div>
-</div>
+<?php include '../sidebar_include.php'; ?>
 
 <form action="save_edit_receipt.php" method="POST" id="edit-form">
 <input type="hidden" name="id" value="<?= $form['id'] ?>">
@@ -151,8 +131,8 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
         <div class="readonly-overlay">
           <span class="icon">🔒</span>
           <div>
-            <strong>Phiếu đã hoàn thành — không thể chỉnh sửa</strong>
-            <span>Chỉ có thể sửa các phiếu ở trạng thái <b>Draft</b>. Phiếu Completed đã được cập nhật vào kho.</span>
+            <strong>Completed receipt — cannot be edited</strong>
+            <span>Only receipts in <b>Draft</b> status can be edited. Completed receipts have already updated the stock.</span>
           </div>
         </div>
       <?php endif; ?>
@@ -190,7 +170,7 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
       <!-- Column headers -->
       <div style="display:flex;gap:14px;padding:0 14px;margin-bottom:4px;flex-wrap:wrap;">
         <div style="flex:2;min-width:160px;" class="col-label">Product</div>
-        <div style="flex:1;min-width:120px;" class="col-label">Unit Price (USD)</div>
+        <div style="flex:1;min-width:120px;" class="col-label">Unit Price</div>
         <div style="flex:1;min-width:80px;"  class="col-label">Quantity</div>
         <div style="flex:1;min-width:100px;" class="col-label">Total</div>
         <?php if (!$is_completed): ?><div style="flex:0.3;" class="col-label"></div><?php endif; ?>
@@ -246,11 +226,11 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
           </div>
 
           <div class="product-price input-with-usd">
+            <span class="input-usd-label">$</span>
             <input type="text" name="price[]" class="form-control price-input"
-                   value="<?= number_format($item['unit_price'], 0, '.', '.') ?>"
+                   value="<?= number_format($item['unit_price'], 2, '.', ',') ?>"
                    <?= $is_completed ? 'disabled' : '' ?>
                    oninput="formatPrice(this); calcRow(this)">
-            <span class="input-usd-label">USD</span>
           </div>
 
           <div class="product-quantity">
@@ -260,7 +240,7 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
                    oninput="calcRow(this)">
           </div>
 
-          <div class="product-total"><?= number_format($item_total, 0, '.', '.') ?> USD</div>
+          <div class="product-total">$<?= number_format($item_total, 2, '.', ',') ?></div>
 
           <?php if (!$is_completed): ?>
           <div class="product-actions">
@@ -298,13 +278,13 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
             </div>
           </div>
           <div class="product-price input-with-usd">
-            <input type="text" name="price[]" class="form-control price-input" placeholder="0" oninput="formatPrice(this); calcRow(this)">
-            <span class="input-usd-label">USD</span>
+            <span class="input-usd-label">$</span>
+            <input type="text" name="price[]" class="form-control price-input" placeholder="0.00" oninput="formatPrice(this); calcRow(this)">
           </div>
           <div class="product-quantity">
             <input type="number" name="quantity[]" class="form-control qty-input" value="1" min="1" oninput="calcRow(this)">
           </div>
-          <div class="product-total">0 USD</div>
+          <div class="product-total">$0.00</div>
           <div class="product-actions">
             <button type="button" class="btn btn-danger" onclick="removeRow(this)">✖</button>
           </div>
@@ -319,7 +299,7 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
       <div class="summary-card">
         <div class="summary-row"><span>Total Products:</span><span id="sum-products">0</span></div>
         <div class="summary-row"><span>Total Quantity:</span><span id="sum-qty">0</span></div>
-        <div class="summary-row summary-total"><span>Grand Total:</span><span id="sum-total">0 USD</span></div>
+        <div class="summary-row summary-total"><span>Grand Total:</span><span id="sum-total">$0.00</span></div>
       </div>
 
       <div class="form-actions">
@@ -340,17 +320,22 @@ main { margin-left: 250px; padding: 0; box-sizing: border-box; }
 const IS_COMPLETED = <?= $is_completed ? 'true' : 'false' ?>;
 const ALL_PRODUCTS = <?= json_encode($products_list) ?>;
 
-function formatNum(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function formatNum(n) { return n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
 function formatPrice(input) {
-  const raw = input.value.replace(/\D/g, '');
-  input.value = raw ? formatNum(parseInt(raw)) : '';
+  // Allow numbers and one decimal point
+  let val = input.value.replace(/[^0-9.]/g, '');
+  const parts = val.split('.');
+  if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+  // We don't want to format while typing because it's hard to edit decimals
+  // but we can update the row total.
 }
 
 function calcRow(el) {
   const row   = el.closest('.product-row');
-  const price = parseInt((row.querySelector('.price-input').value || '0').replace(/\./g, '')) || 0;
+  const priceStr = row.querySelector('.price-input').value.replace(/,/g, '');
+  const price = parseFloat(priceStr) || 0;
   const qty   = parseInt(row.querySelector('.qty-input').value) || 0;
-  row.querySelector('.product-total').textContent = formatNum(price * qty) + ' USD';
+  row.querySelector('.product-total').textContent = '$' + formatNum(price * qty);
   updateSummary();
 }
 
@@ -358,13 +343,14 @@ function updateSummary() {
   let totalQty = 0, totalVal = 0, productCount = 0;
   document.querySelectorAll('.product-item').forEach(row => {
     const pid   = row.querySelector('.prod-select')?.value;
-    const price = parseInt((row.querySelector('.price-input').value || '0').replace(/\./g, '')) || 0;
+    const priceStr = row.querySelector('.price-input').value.replace(/,/g, '');
+    const price = parseFloat(priceStr) || 0;
     const qty   = parseInt(row.querySelector('.qty-input').value) || 0;
     if (pid) { productCount++; totalQty += qty; totalVal += price * qty; }
   });
   document.getElementById('sum-products').textContent = productCount;
   document.getElementById('sum-qty').textContent      = totalQty;
-  document.getElementById('sum-total').textContent    = formatNum(totalVal) + ' USD';
+  document.getElementById('sum-total').textContent    = '$' + formatNum(totalVal);
 }
 
 function initCustomSelect(wrapper) {
@@ -402,7 +388,7 @@ function filterOptions(list, query) {
   });
   let empty = list.querySelector('.custom-select-empty');
   if (!hasVisible) {
-    if (!empty) { empty = document.createElement('div'); empty.className = 'custom-select-empty'; empty.textContent = 'Không tìm thấy sản phẩm'; list.appendChild(empty); }
+    if (!empty) { empty = document.createElement('div'); empty.className = 'custom-select-empty'; empty.textContent = 'No products found'; list.appendChild(empty); }
     empty.style.display = '';
   } else if (empty) { empty.style.display = 'none'; }
 }
@@ -434,9 +420,9 @@ function addRow() {
   const clone = first.cloneNode(true);
   clone.querySelectorAll('input').forEach(i => { i.value = i.type === 'number' ? 1 : ''; });
   clone.querySelector('.prod-select').value = '';
-  clone.querySelector('.product-total').textContent = '0 USD';
+  clone.querySelector('.product-total').textContent = '$0.00';
   const display = clone.querySelector('.custom-select-display');
-  if (display) display.textContent = '— Chọn sản phẩm —';
+  if (display) display.textContent = '— Select Product —';
   clone.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('selected'));
   const dd = clone.querySelector('.custom-select-dropdown');
   if (dd) dd.classList.remove('open');
@@ -446,7 +432,7 @@ function addRow() {
 }
 
 function removeRow(btn) {
-  if (document.querySelectorAll('.product-item').length <= 1) { alert('Phải có ít nhất 1 sản phẩm!'); return; }
+  if (document.querySelectorAll('.product-item').length <= 1) { alert('At least 1 product is required!'); return; }
   btn.closest('.product-row').remove();
   updateSummary();
 }
@@ -457,8 +443,8 @@ updateSummary();
 if (!IS_COMPLETED) {
   document.getElementById('edit-form').addEventListener('submit', function(e) {
     const hasSelected = [...document.querySelectorAll('.prod-select')].some(s => s.value !== '');
-    if (!hasSelected) { alert('Phải chọn ít nhất 1 sản phẩm!'); e.preventDefault(); return; }
-    document.querySelectorAll('.price-input').forEach(i => { i.value = i.value.replace(/\./g, ''); });
+    if (!hasSelected) { alert('At least 1 product is required!'); e.preventDefault(); return; }
+    document.querySelectorAll('.price-input').forEach(i => { i.value = i.value.replace(/,/g, ''); });
   });
 }
 </script>

@@ -3,6 +3,7 @@ require_once "../../config/config.php";
 
 $name = $_GET['name'] ?? '';
 $category = $_GET['category'] ?? '';
+$gender   = $_GET['gender']   ?? '';
 
 $sql = "SELECT * FROM products WHERE 1";
 
@@ -13,6 +14,9 @@ if ($name != '') {
 if ($category != '' && $category != 'All') {
     $sql .= " AND category='$category'";
 }
+if ($gender != '' && $gender != 'All') {
+    $sql .= " AND gender='$gender'";
+}
 
 $result = $conn->query($sql);
 ?>
@@ -22,140 +26,50 @@ $result = $conn->query($sql);
 <head>
 <meta charset="UTF-8">
 <title>Pricing Management 2</title>
-<style>
-* {margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",sans-serif;}
-body {background:#f5f5f5; display:flex; color:#333;}
-
-.btn {
-      background: linear-gradient(195deg, #8e4b00, #8e4b00);
-      color: #f8ce86;
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: 0.3s;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn:hover {
-      background: linear-gradient(195deg, #d8921b, #a3670b);
-      transform: translateY(-2px);
-    }
-
-/* SIDEBAR */
-.sidebar {
-  width:220px; background:#8e4b00; color:#f8ce86;
-  display:flex; flex-direction:column; padding:20px;
-  height:100vh; position:fixed; left:0; top:0;
-}
-.logo {text-align:center; margin-bottom:30px;}
-.logo img {width:80px; border-radius:50%;}
-.logo h2 {font-size:18px; margin-top:10px;}
-.menu a {display:block; padding:12px; color:#f8ce86; text-decoration:none;
-  border-radius:8px; margin-bottom:10px; font-weight:bold; transition:0.3s;}
-.menu a:hover, .menu a.active {background:#f8ce86; color:#8e4b00;}
-
-/* MAIN */
-main {flex:1; padding:25px 40px; margin-left:220px;}
-header h1 {font-size:24px; color:#8e4b00; margin-bottom:20px;}
-
-/* TAB BUTTONS pricing style */
-input[name="tab"]{display:none;}
-
-label.tab-btn{
-  padding:10px 18px; font-weight:600; color:#444; cursor:pointer;
-  display:inline-block; margin-right:60px; position:relative;
-}
-
-input[name="tab"]:checked + label{
-  color:#8e4b00;
-}
-input[name="tab"]:checked + label::after{
-  content:""; left:0; bottom:-2px; width:100%; height:3px;
-  background:#8e4b00; border-radius:2px;
-  position:absolute;
-}
-
-/* TAB CONTENT */
-.tab-content{display:block; animation:fadeIn .3s ease;}
-@keyframes fadeIn {from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
-#tab1:checked ~ .contents #content1{display:block;}
-#tab2:checked ~ .contents #content2{display:block;}
-#tab3:checked ~ .contents #content3{display:block;}
-
-/* SEARCH area */
-.search-section{
-  background:#fff; border-radius:10px; padding:20px;
-  display:flex; gap:20px; align-items:flex-end;
-  box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:25px;
-}
-.search-group{flex:1; display:flex; flex-direction:column;}
-.search-label{font-weight:600; margin-bottom:6px;}
-.search-input, .search-input select{
-  height:42px; padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;
-}
-.btn-search,.btn-reset{
-  height:42px; padding:0 20px; border:none; font-weight:600; border-radius:6px; cursor:pointer;
-}
-.btn-search{background:#8e4b00; color:#fff;}
-.btn-reset{background:#888; color:#fff;}
-
-/* TABLE */
-table{width:100%; border-collapse:separate; background:#fff; border-radius:10px; overflow:hidden;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);}
-th{background:#8e4b00; color:#f8ce86; padding:14px 10px; text-align:center;}
-td{padding:12px 10px; text-align:center; border-bottom:1px solid #eee;}
-tr:nth-child(even) td{background:#faf6f2;}
-
-#content1 {
-  display: block !important;
-}
-.back-button-container {
- 
-  margin-bottom: 0.5cm;    /* cách phần nội dung bên dưới 1 cm */
-}
-
-
-
-</style>
+  <link rel="stylesheet" href="../admin_function.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    #content1 { display: block !important; }
+    .back-button-container { margin-bottom: 0.5cm; }
+  </style>
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">
-    <img src="../../images/Admin_login.jpg">
-    <h2>Luxury Jewelry Admin</h2>
-  </div>
-  <div class="menu">
-    <a href="../Administration_menu.html#products">Jewelry List</a>
-    <a href="../product_management.php">Product Management</a>
-    <a href="../Administration_menu.html#users">Customers</a>
-    <a href="pricing.php" class="active">Pricing Management</a>
-    <a href="../Import_product/import_management.php">Import Management</a>
-    <a href="../Order Manage/order_management.php">Order Management</a>
-    <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
-    <a href="../Administration_menu.html#settings">Settings</a>
-  </div>
-</div>
+<?php include '../sidebar_include.php'; ?>
+
+<div class="content">
 
 <main>
   <header><h1>Search Results </h1></header>
 
 
 <div class="back-button-container">
-  <button type="button" class="btn" onclick="window.location.href='pricing.html'">Back</button>
+  <button type="button" class="btn" onclick="window.location.href='pricing.php'">Back</button>
 </div>
 
     <!-- TAB1 -->
     <div id="content1">
-      <div class="search-section">
-        <div class="search-group"><label class="search-label">Product Name</label><input type="text" class="search-input"></div>
-        <div class="search-group"><label class="search-label">Category</label>
-        <select class="search-input"><option>All</option><option>Male</option><option>Female</option><option>free sex to night </option></select></div>
-        <button class="btn-search">Search</button>
-        <button class="btn-reset">Reset</button>
-      </div>
+      <form method="GET" action="search.php" class="search-section">
+        <div class="search-group">
+          <label class="search-label">Product Name</label>
+          <input type="text" name="name" class="search-input" value="<?= htmlspecialchars($name) ?>">
+        </div>
+        <div class="search-group">
+          <label class="search-label">Category</label>
+          <input type="text" name="category" class="search-input" placeholder="Ring, Necklace..." value="<?= htmlspecialchars($category) ?>">
+        </div>
+        <div class="search-group">
+          <label class="search-label">Gender</label>
+          <select name="gender" class="search-input">
+            <option value="All">All</option>
+            <option value="Male"   <?= $gender=='Male'?'selected':'' ?>>Male</option>
+            <option value="Female" <?= $gender=='Female'?'selected':'' ?>>Female</option>
+            <option value="Unisex" <?= $gender=='Unisex'?'selected':'' ?>>Unisex</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-search">Search</button>
+        <button type="button" class="btn-reset" onclick="window.location.href='search.php'">Reset</button>
+      </form>
 
       <table>
         <thead><tr><th>No.</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit (%)</th><th>Selling Price</th><th>Action</th></tr></thead>
@@ -169,9 +83,9 @@ tr:nth-child(even) td{background:#faf6f2;}
           <td><?= $i++ ?></td>
           <td><?= $row['name'] ?></td>
           <td><?= $row['category'] ?></td>
-          <td><?= $row['cost_price'] ?></td>
+          <td>$<?= number_format($row['cost_price'], 2) ?></td>
           <td><?= $row['profit_percent'] ?>%</td>
-          <td>$<?= number_format($price,2) ?></td>
+          <td>$<?= number_format($price, 2) ?></td>
           <td>
             <a href="edit_price.php?id=<?= $row['id'] ?>" class="btn small">Edit</a>
           </td>
@@ -183,6 +97,7 @@ tr:nth-child(even) td{background:#faf6f2;}
 
   </div>
 </main>
+</div>
 </body>
 </html>
 

@@ -28,14 +28,14 @@ $cust_page   = isset($_GET['cust_page'])   && is_numeric($_GET['cust_page'])   ?
 $cust_name   = isset($_GET['cust_name'])   ? trim($_GET['cust_name'])   : '';
 $cust_status = isset($_GET['cust_status']) ? trim($_GET['cust_status']) : '';
 
-function fetchProducts($conn, $category, $search_name, $page, $limit) {
+function fetchProducts($conn, $gender, $search_name, $page, $limit) {
     $offset = ($page - 1) * $limit;
-    $where  = "WHERE category = '" . $conn->real_escape_string($category) . "'";
+    $where  = "WHERE gender = '" . $conn->real_escape_string($gender) . "'";
     if (!empty($search_name)) {
         $where .= " AND name LIKE '%" . $conn->real_escape_string($search_name) . "%'";
     }
     $rows  = [];
-    $r     = $conn->query("SELECT id, name, image, category FROM products $where ORDER BY id ASC LIMIT $offset, $limit");
+    $r     = $conn->query("SELECT id, name, image, category, gender FROM products $where ORDER BY id ASC LIMIT $offset, $limit");
     if ($r) while ($row = $r->fetch_assoc()) $rows[] = $row;
     $cnt   = $conn->query("SELECT COUNT(id) AS total FROM products $where");
     $total = $cnt ? (int)$cnt->fetch_assoc()['total'] : 0;
@@ -87,26 +87,11 @@ function pageUrl($overrides = []) {
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../images/Admin_login.jpg" alt="Admin Logo">
-      <h2>Luxury Jewelry Admin</h2>
-    </div>
-    <div class="menu">
-      <a href="#products">Jewelry List</a>
-      <a href="product_management.php">Product Management</a>
-      <a href="Price Manage/pricing.php">Pricing Management</a>
-      <a href="customer_management.php">Customers</a>
-      <a href="Order Manage/order_management.php">Order Management</a>
-      <a href="Import product manage/import_management.php">Import Management</a>
-      <a href="Stock Manage/stocking_management.php">Stocking Management</a>
-      <a href="#settings">Settings</a>
-    </div>
-  </div>
+<?php include 'sidebar_include.php'; ?>
 
   <div class="content">
 
-    <!-- ======= Jewelry List ======= -->
+    <!-- ======= Jewelry Inventory ======= -->
     <section id="products" class="section">
       <header><h1>Jewelry Inventory</h1></header>
 
@@ -283,53 +268,6 @@ function pageUrl($overrides = []) {
           <?php endif; ?>
         </div>
 
-      </div>
-    </section>
-
-    <!-- ======= Jewelry Types ======= -->
-    <section id="categories" class="section">
-      <header><h1>Jewelry Type Management</h1></header>
-      <div class="user-actions">
-        <a href="#" class="btn">Add Type</a>
-        <a href="#" class="btn">Edit Type</a>
-        <a href="#" class="btn">Delete / Hide Type</a>
-      </div>
-      <div class="user-list">
-        <table>
-          <tr><th>ID</th><th>Type Name</th><th>Description</th><th>Status</th><th>Action</th></tr>
-          <tr>
-            <td>1</td><td>Necklaces</td><td>Luxury gold and diamond necklaces</td><td>Visible</td>
-            <td><a href="#" class="btn small">Edit</a> <a href="#" class="btn small">Hide</a></td>
-          </tr>
-          <tr>
-            <td>2</td><td>Rings</td><td>Elegant diamond and platinum rings</td><td>Hidden</td>
-            <td><a href="#" class="btn small">Edit</a> <a href="#" class="btn small">Show</a></td>
-          </tr>
-        </table>
-      </div>
-    </section>
-
-    <!-- ======= Customers ======= -->
-    <!-- Moved to standalone customer_management.php -->
-    <section id="users" class="section" style="display:none !important;"></section>
-
-    <!-- ======= Settings ======= -->
-    <section id="settings" class="section">
-      <header><h1>System Settings</h1></header>
-      <div class="user-actions">
-        <a href="admin_login.php?logout=1" class="btn logout-btn" onclick="return confirm('Are you sure you want to logout?')">
-          <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
-      </div>
-    </section>
-
-    <!-- ======= Stock ======= -->
-    <section id="stock" class="section">
-      <header><h1>Inventory Management</h1></header>
-      <div class="user-actions">
-        <a href="add_entry_form.php" class="btn">Add Stock Receipt</a>
-        <a href="edit_entry_form.php" class="btn">Edit Stock Receipt</a>
-        <a href="stocking_management.php" class="btn">Stocking Management</a>
       </div>
     </section>
 

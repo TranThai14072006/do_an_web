@@ -2,7 +2,7 @@
 session_start();
 require_once "../../config/config.php";
 
-if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
 
 // If already logged in → go to profile
@@ -22,12 +22,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Please enter all required fields!";
     } else {
 
-        $stmt = $conn->prepare("SELECT id, username, password, status FROM users WHERE username = ? AND role = 'user'");
+        $stmt = $conn->prepare("SELECT id, username, password, status FROM users WHERE (username = ? OR email = ?) AND role = 'user'");
         if (!$stmt) {
             die("SQL error: " . $conn->error);
         }
 
-        $stmt->bind_param("s", $username);
+        $stmt->bind_param("ss", $username, $username);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -131,8 +131,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
   <form method="POST" class="login-form">
     <div class="input-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" name="username" placeholder="Enter your username" required>
+      <label for="username">Username or Email</label>
+      <input type="text" id="username" name="username" placeholder="Enter your username or email" required>
     </div>
     <div class="input-group">
       <label for="password">Password</label>

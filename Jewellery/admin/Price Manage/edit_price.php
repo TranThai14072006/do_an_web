@@ -62,16 +62,8 @@ $conn->close();
 <head>
 <meta charset="UTF-8">
 <title>Edit Price</title>
+<link rel="stylesheet" href="../admin_function.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif;}
-body{background:#f3f3f3;color:#333;display:flex;}
-.sidebar{width:220px;background:#8e4b00;color:#f8ce86;display:flex;flex-direction:column;padding:20px;height:100vh;position:fixed;left:0;top:0;}
-.logo{text-align:center;margin-bottom:30px;}
-.logo img{width:80px;border-radius:50%;}
-.logo h2{font-size:18px;margin-top:10px;}
-.menu a{display:block;padding:12px;color:#f8ce86;text-decoration:none;border-radius:8px;margin-bottom:10px;font-weight:bold;transition:0.3s;}
-.menu a:hover,.menu a.active{background:#f8ce86;color:#8e4b00;}
-main{margin-left:220px;flex:1;padding:25px;}
 h1{color:#8e4b00;margin-bottom:20px;font-size:22px;}
 .card{background:#fff;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,0.1);padding:25px;margin-bottom:20px;max-width:1100px;}
 .card h3{color:#8e4b00;margin-bottom:15px;font-size:16px;}
@@ -105,28 +97,13 @@ textarea{resize:vertical;min-height:80px;}
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="logo">
-    <img src="../../images/Admin_login.jpg" alt="Admin">
-    <h2>Luxury Jewelry Admin</h2>
-  </div>
-  <div class="menu">
-    <a href="../Administration_menu.php#products">Jewelry List</a>
-    <a href="../product_management.php">Product Management</a>
-    <a href="../Administration_menu.php#users">Customers</a>
-    <a href="pricing.php" class="active">Pricing Management</a>
-    <a href="../Import_product/import_management.php">Import Management</a>
-    <a href="../Order Manage/order_management.php">Order Management</a>
-    <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
-    <a href="../Administration_menu.php#settings">Settings</a>
-  </div>
-</div>
+<?php include '../sidebar_include.php'; ?>
 
 <main>
   <h1>Edit Price — <?= htmlspecialchars($product['id']) ?></h1>
 
   <?php if ($save_success): ?>
-    <div class="alert-success">✅ Đã lưu thành công! Giá bán mới: <strong>$<?= number_format($sell_price, 2) ?></strong></div>
+    <div class="alert-success">✅ Saved successfully! New selling price: <strong>$<?= number_format($sell_price, 2) ?></strong></div>
   <?php endif; ?>
 
   <!-- FORM -->
@@ -156,15 +133,17 @@ textarea{resize:vertical;min-height:80px;}
             <input type="number" value="<?= intval($product['stock']) ?>" readonly>
           </div>
 
-          <div class="form-group">
-            <label>Avg Cost Price (USD) <span style="color:#888;font-weight:normal;font-size:12px">— tính từ giá bình quân</span></label>
-            <input type="number" step="0.01" name="cost_price"
-                   id="cost_input" value="<?= $product['cost_price'] ?>"
-                   oninput="calcPreview()">
-          </div>
+            <label>Avg Cost Price <span style="color:#888;font-weight:normal;font-size:12px">— calculated as average cost</span></label>
+            <div style="position:relative;">
+              <span style="position:absolute; left:10px; top:10px; font-weight:600; color:#555;">$</span>
+              <input type="number" step="0.01" name="cost_price"
+                     style="padding-left:25px;"
+                     id="cost_input" value="<?= $product['cost_price'] ?>"
+                     oninput="calcPreview()">
+            </div>
 
           <div class="form-group">
-            <label>Profit % <span style="color:#888;font-weight:normal;font-size:12px">— thay đổi sẽ cập nhật giá bán</span></label>
+            <label>Profit % <span style="color:#888;font-weight:normal;font-size:12px">— changes will update the selling price</span></label>
             <input type="number" step="1" min="0" max="999" name="profit_percent"
                    id="profit_input" value="<?= $product['profit_percent'] ?>"
                    oninput="calcPreview()">
@@ -196,9 +175,9 @@ textarea{resize:vertical;min-height:80px;}
 
   <!-- LOT HISTORY -->
   <div class="card">
-    <h3>Import Lot History — giá vốn theo từng lần nhập</h3>
+    <h3>Import Lot History — unit cost for each batch</h3>
     <?php if (empty($lot_history)): ?>
-      <p class="no-data">Chưa có lô nhập nào cho sản phẩm này.</p>
+      <p class="no-data">No import batches found for this product.</p>
     <?php else: ?>
       <table class="lot-table">
         <thead>
@@ -207,9 +186,9 @@ textarea{resize:vertical;min-height:80px;}
             <th>Date</th>
             <th>Supplier</th>
             <th>Qty</th>
-            <th>Lot Unit Cost (USD)</th>
-            <th>Lot Total (USD)</th>
-            <th>Lot Sell Price* (USD)</th>
+            <th>Lot Unit Cost</th>
+            <th>Lot Total</th>
+            <th>Lot Sell Price*</th>
           </tr>
         </thead>
         <tbody>
@@ -221,14 +200,14 @@ textarea{resize:vertical;min-height:80px;}
             <td><?= htmlspecialchars($lot['entry_date']) ?></td>
             <td><?= htmlspecialchars($lot['supplier'] ?? '—') ?></td>
             <td><?= intval($lot['quantity']) ?></td>
-            <td><strong><?= number_format($lot['unit_price'], 2) ?></strong></td>
-            <td><?= number_format($lot['total_price'], 2) ?></td>
+            <td>$<strong><?= number_format($lot['unit_price'], 2) ?></strong></td>
+            <td>$<?= number_format($lot['total_price'], 2) ?></td>
             <td>$<?= number_format($lot_sell, 2) ?></td>
           </tr>
           <?php endforeach; ?>
         </tbody>
       </table>
-      <p style="font-size:12px;color:#888;margin-top:10px;">* Lot Sell Price = giá bán nếu tính theo giá vốn lô đó × % lợi nhuận hiện tại</p>
+      <p style="font-size:12px;color:#888;margin-top:10px;">* Lot Sell Price = price calculated based on that batch's cost × current profit %</p>
     <?php endif; ?>
   </div>
 </main>

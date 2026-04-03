@@ -21,7 +21,8 @@ if ($result->num_rows > 0) {
         'image'       => $productRow['image'],
         'price'       => $productRow['price'],
         'stock'       => $productRow['stock'],
-        'category'    => $productRow['category']
+        'category'    => $productRow['category'],
+        'gender'      => $productRow['gender']
     ];
 } else {
     // redirect or die
@@ -34,7 +35,10 @@ $error   = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newName        = trim($_POST['product_name'] ?? '');
     $newDescription = trim($_POST['description'] ?? '');
-    $newCategory    = trim($_POST['category'] ?? 'Unisex');
+    $newCategory    = trim($_POST['category'] ?? '');
+    $newGender      = trim($_POST['gender'] ?? 'Unisex');
+    $newPrice       = isset($_POST['price']) ? (float)$_POST['price'] : 0.00;
+    $newStock       = isset($_POST['stock']) ? (int)$_POST['stock'] : 0;
 
     if (empty($newName)) {
         $error = 'Product Name is required.';
@@ -55,9 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($error)) {
             // Update product in database
-            $update_sql = "UPDATE products SET name=?, category=?, image=? WHERE id=?";
+            $update_sql = "UPDATE products SET name=?, category=?, gender=?, image=?, price=?, stock=? WHERE id=?";
             $stmt = $conn->prepare($update_sql);
-            $stmt->bind_param("ssss", $newName, $newCategory, $product['image'], $code);
+            $stmt->bind_param("ssssdss", $newName, $newCategory, $newGender, $product['image'], $newPrice, $newStock, $code);
             
             if ($stmt->execute()) {
                 // Check if details exist
@@ -77,6 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $product['name']        = $newName;
                 $product['description'] = $newDescription;
                 $product['category']    = $newCategory;
+                $product['gender']      = $newGender;
+                $product['price']       = $newPrice;
+                $product['stock']       = $newStock;
                 $success = 'Product updated successfully!';
             } else {
                 $error = 'Failed to update product: ' . $conn->error;
@@ -127,21 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../images/Admin_login.jpg" alt="Admin Logo">
-      <h2>Luxury Jewelry Admin</h2>
-    </div>
-    <div class="menu">
-      <a href="Administration_menu.php#products">Jewelry List</a>
-      <a href="product_management.php" class="active">Product Management</a>
-      <a href="Price Manage/pricing.php">Pricing Management</a>
-      <a href="Administration_menu.php#users">Customers</a>
-      <a href="Order Manage/order_management.php">Order Management</a>
-      <a href="Stock Manage/stocking_management.php">Stocking Management</a>
-      <a href="Administration_menu.php#settings">Settings</a>
-    </div>
-  </div>
+<?php include 'sidebar_include.php'; ?>
 
   <main>
     <h1>Edit Product</h1>
@@ -175,15 +168,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
               <label>Category:</label>
-              <select name="category" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;">
-                <option value="Male" <?php echo (($product['category']??'')=='Male')?'selected':''; ?>>Male</option>
-                <option value="Female" <?php echo (($product['category']??'')=='Female')?'selected':''; ?>>Female</option>
-                <option value="Unisex" <?php echo (($product['category']??'')=='Unisex')?'selected':''; ?>>Unisex</option>
+              <input type="text" name="category" placeholder="Ring, Necklace, etc."
+                     value="<?php echo htmlspecialchars($product['category'] ?? ''); ?>">
+            </div>
+            <div class="form-group">
+              <label>Gender/Collection:</label>
+              <select name="gender" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;">
+                <option value="Male" <?php echo (($product['gender']??'')=='Male')?'selected':''; ?>>Male</option>
+                <option value="Female" <?php echo (($product['gender']??'')=='Female')?'selected':''; ?>>Female</option>
+                <option value="Unisex" <?php echo (($product['gender']??'')=='Unisex')?'selected':''; ?>>Unisex</option>
               </select>
             </div>
             <div class="form-group">
               <label>Description:</label>
               <textarea name="description"><?php echo htmlspecialchars($product['description'] ?? ''); ?></textarea>
+            </div>
+            <div style="display:flex; gap:15px;">
+              <div class="form-group" style="flex:1;">
+                <label>Price ($):</label>
+                <input type="number" name="price" step="0.01" min="0"
+                       value="<?php echo htmlspecialchars($product['price'] ?? '0.00'); ?>" required>
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label>Stock Count:</label>
+                <input type="number" name="stock" min="0"
+                       value="<?php echo htmlspecialchars($product['stock'] ?? '0'); ?>" required>
+              </div>
             </div>
           </div>
 

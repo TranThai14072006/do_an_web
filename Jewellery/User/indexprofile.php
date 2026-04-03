@@ -9,7 +9,7 @@ require_once __DIR__ . '/../config/config.php';
 // $conn đã có từ config.php (jewelry_db)
 
 // ── Đường dẫn gốc web ────────────────────────────────────────
-if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL',  BASE_URL . 'images/');
 
 // ── Nhận diện user từ session ────────────────────────────────
@@ -150,7 +150,7 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* Tên user hiển thị bên trái icon profile */
+    /* User name display to the left of profile icon */
     .user-name-label {
       font-size: 13px;
       font-weight: 600;
@@ -349,14 +349,14 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
     <!-- Header phải: luôn hiển thị trạng thái đã đăng nhập -->
     <div class="right" style="display:flex; align-items:center; gap:20px;">
 
-  <!-- Giỏ hàng -->
-  <a href="<?= $link_cart ?>" class="icon-link" title="Giỏ hàng"
+  <!-- Cart -->
+  <a href="<?= $link_cart ?>" class="icon-link" title="Cart"
      style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
     <i class="fas fa-shopping-cart" style="font-size:18px;"></i>
   </a>
 
-  <!-- Tên tài khoản + icon profile -->
-  <a href="<?= $link_profile ?>" class="icon-link" title="Trang cá nhân"
+  <!-- Profile + name -->
+  <a href="<?= $link_profile ?>" class="icon-link" title="My Profile"
      style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
       <i class="fas fa-user-circle user-icon"></i>
     <span style="font-size:13px; font-weight:600; white-space:nowrap; color:#333;">
@@ -364,8 +364,8 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
     </span>
   </a>
 
-  <!-- Đăng xuất -->
-  <a href="<?= $link_logout ?>" class="icon-link" title="Đăng xuất"
+  <!-- Logout -->
+  <a href="<?= $link_logout ?>" class="icon-link" title="Logout"
      style="display:flex; align-items:center; gap:6px; text-decoration:none; color:#c0392b;">
     <i class="fas fa-sign-out-alt" style="font-size:18px;"></i>
     <span style="font-size:12px; font-weight:500;"></span>
@@ -699,7 +699,7 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
 <div class="size-modal-overlay" id="size-modal-overlay">
   <div class="size-modal">
     <button class="size-modal-close" onclick="closeSizeModal()">&#10005;</button>
-    <h3>Chọn size nhẫn</h3>
+    <h3>Select Ring Size</h3>
     <p class="modal-sub" id="modal-product-name"></p>
     <div class="size-options">
       <?php foreach ([5,6,7,8,9] as $s): ?>
@@ -707,9 +707,9 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
       <?php endforeach; ?>
     </div>
     <div class="size-modal-actions">
-      <button class="btn-cancel" onclick="closeSizeModal()">Huỷ</button>
+      <button class="btn-cancel" onclick="closeSizeModal()">Cancel</button>
       <button class="btn-confirm" id="btn-confirm-size" disabled
-              onclick="confirmAddToCart()">Thêm vào giỏ hàng</button>
+              onclick="confirmAddToCart()">Add to Cart</button>
     </div>
   </div>
 </div>

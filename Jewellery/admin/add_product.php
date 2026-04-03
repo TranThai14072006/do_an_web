@@ -9,9 +9,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $code        = trim($_POST['product_code'] ?? '');
     $name        = trim($_POST['product_name'] ?? '');
     $description = trim($_POST['description'] ?? '');
-    $price       = 0;
-    $stock       = 0;
-    $category    = trim($_POST['category'] ?? 'Unisex');
+    $price       = isset($_POST['price']) ? (float)$_POST['price'] : 0.00;
+    $stock       = isset($_POST['stock']) ? (int)$_POST['stock'] : 0;
+    $category    = trim($_POST['category'] ?? '');
+    $gender      = trim($_POST['gender'] ?? 'Unisex');
 
     if (empty($code) || empty($name)) {
         $error = 'Product Code and Product Name are required.';
@@ -37,9 +38,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if($check->num_rows > 0) {
                 $error = 'Product Code already exists.';
             } else {
-                $sql = "INSERT INTO products (id, name, price, stock, category, image) VALUES (?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO products (id, name, price, stock, category, gender, image) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("ssdiss", $code, $name, $price, $stock, $category, $imagePath);
+                $stmt->bind_param("ssdiss s", $code, $name, $price, $stock, $category, $gender, $imagePath);
                 if ($stmt->execute()) {
                     $sql_details = "INSERT INTO product_details (product_id, description) VALUES (?, ?)";
                     $stmt_details = $conn->prepare($sql_details);
@@ -96,21 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../images/Admin_login.jpg" alt="Admin Logo">
-      <h2>Luxury Jewelry Admin</h2>
-    </div>
-    <div class="menu">
-      <a href="Administration_menu.php#products">Jewelry List</a>
-      <a href="product_management.php" class="active">Product Management</a>
-      <a href="Price Manage/pricing.php">Pricing Management</a>
-      <a href="Administration_menu.php#users">Customers</a>
-      <a href="Order Manage/order_management.php">Order Management</a>
-      <a href="Stock Manage/stocking_management.php">Stocking Management</a>
-      <a href="Administration_menu.php#settings">Settings</a>
-    </div>
-  </div>
+<?php include 'sidebar_include.php'; ?>
 
   <main>
     <h1>Add Product</h1>
@@ -142,15 +129,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
               <label>Category:</label>
-              <select name="category" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;">
-                <option value="Male" <?php echo (($_POST['category']??'')=='Male')?'selected':''; ?>>Male</option>
-                <option value="Female" <?php echo (($_POST['category']??'')=='Female')?'selected':''; ?>>Female</option>
-                <option value="Unisex" <?php echo (($_POST['category']??'')=='Unisex')?'selected':''; ?>>Unisex</option>
+              <input type="text" name="category" placeholder="Ring, Necklace, etc."
+                     value="<?php echo htmlspecialchars($_POST['category'] ?? ''); ?>">
+            </div>
+            <div class="form-group">
+              <label>Gender/Collection:</label>
+              <select name="gender" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;">
+                <option value="Male" <?php echo (($_POST['gender']??'')=='Male')?'selected':''; ?>>Male</option>
+                <option value="Female" <?php echo (($_POST['gender']??'')=='Female')?'selected':''; ?>>Female</option>
+                <option value="Unisex" <?php echo (($_POST['gender']??'')=='Unisex')?'selected':''; ?>>Unisex</option>
               </select>
             </div>
             <div class="form-group">
               <label>Description:</label>
               <textarea name="description"><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
+            </div>
+            <div style="display:flex; gap:15px;">
+              <div class="form-group" style="flex:1;">
+                <label>Price ($):</label>
+                <input type="number" name="price" step="0.01" min="0"
+                       value="<?php echo htmlspecialchars($_POST['price'] ?? '0.00'); ?>" required>
+              </div>
+              <div class="form-group" style="flex:1;">
+                <label>Initial Stock:</label>
+                <input type="number" name="stock" min="0"
+                       value="<?php echo htmlspecialchars($_POST['stock'] ?? '0'); ?>" required>
+              </div>
             </div>
           </div>
 

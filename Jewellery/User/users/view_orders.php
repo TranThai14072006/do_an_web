@@ -2,8 +2,8 @@
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
-// Định nghĩa hằng TRƯỚC khi dùng
-if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+// Define constants BEFORE use
+if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
 
 if (!isset($_SESSION['user_id'])) {
@@ -12,14 +12,14 @@ if (!isset($_SESSION['user_id'])) {
 }
 $user_id = (int)$_SESSION['user_id'];
 
-// Lấy thông tin khách hàng
+// Get customer information
 $stmt = $conn->prepare("SELECT u.email, c.full_name, c.phone, c.address, c.id as customer_id FROM users u LEFT JOIN customers c ON u.id = c.user_id WHERE u.id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user_info = $stmt->get_result()->fetch_assoc();
 if (!$user_info) $user_info = ['email' => '', 'full_name' => '', 'phone' => '', 'address' => '', 'customer_id' => null];
 
-// Lấy danh sách đơn hàng
+// Get orders list
 $orders = [];
 if ($user_info['customer_id']) {
     $order_stmt = $conn->prepare("SELECT id, order_number, order_date, total_amount, status FROM orders WHERE customer_id = ? ORDER BY order_date DESC");

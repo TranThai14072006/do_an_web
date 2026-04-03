@@ -1,22 +1,22 @@
 <?php
 // ═══════════════════════════════════════════════════════════
 // File: Jewellery/User/users/order_success.php
-// Chức năng:
-//   ✔ Kiểm tra đăng nhập
-//   ✔ Lấy order từ DB theo order_id (GET) + verify owner
-//   ✔ Lấy danh sách order_items để hiển thị
-//   ✔ Hiển thị thông báo thành công với animation đẹp
-//   ✔ Xóa session last_order sau khi hiển thị
-//   ✔ Links về Home / View Orders
+// Functions:
+//   ✔ Check login
+//   ✔ Fetch order from DB by order_id (GET) + verify owner
+//   ✔ Fetch order_items list for display
+//   ✔ Display success message with beautiful animation
+//   ✔ Clear last_order session after display
+//   ✔ Links to Home / View Orders
 // ═══════════════════════════════════════════════════════════
 
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
-if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL',  BASE_URL . 'images/');
 
-// ── Kiểm tra đăng nhập ────────────────────────────────────
+// ── Check login ────────────────────────────────────
 if (!isset($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . 'User/users/login.php');
     exit();
@@ -32,17 +32,17 @@ $link_logout  = BASE_URL . 'User/users/logout.php';
 $link_search  = BASE_URL . 'User/Search/search.html';
 $logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
 
-// ── Lấy order_id từ GET ───────────────────────────────────
+// ── Get order_id from GET ───────────────────────────────────
 $order_id     = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
 $order_number = $_SESSION['last_order_number'] ?? '';
 
-// Nếu không có gì hợp lệ → redirect
+// If nothing valid → redirect
 if (!$order_id && !$order_number) {
     header('Location: ' . $link_history);
     exit();
 }
 
-// ── Lấy thông tin order từ DB ─────────────────────────────
+// ── Fetch order info from DB ─────────────────────────────
 $order = null;
 if ($order_id) {
     $stmt = $conn->prepare("
@@ -59,7 +59,7 @@ if ($order_id) {
     $stmt->close();
 }
 
-// ── Lấy order items ───────────────────────────────────────
+// ── Fetch order items ───────────────────────────────────────
 $order_items = [];
 if ($order) {
     $ist = $conn->prepare("
@@ -79,10 +79,10 @@ if ($order) {
     $ist->close();
 }
 
-// ── Xóa session sau khi lấy xong ─────────────────────────
+// ── Clear session after fetching ─────────────────────────
 unset($_SESSION['last_order_id'], $_SESSION['last_order_number']);
 
-// ── Chuẩn bị biến hiển thị ───────────────────────────────
+// ── Prep display variables ───────────────────────────────
 $order_num   = $order['order_number'] ?? $order_number ?: 'N/A';
 $order_date  = $order ? date('d/m/Y', strtotime($order['order_date'])) : date('d/m/Y');
 $order_total = $order ? number_format((float)$order['total_amount'], 2) : '0.00';

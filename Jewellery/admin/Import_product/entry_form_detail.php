@@ -40,16 +40,8 @@ $badge_class = $form['status'] === 'Completed' ? 'badge-completed' : 'badge-draf
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Entry Form Detail | Luxury Jewelry Admin</title>
+  <link rel="stylesheet" href="../admin_function.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
-    body { background-color: #f5f5f5; color: #333; display: flex; }
-    .sidebar { width: 220px; background-color: #8e4b00; color: #f8ce86; display: flex; flex-direction: column; padding: 20px; height: 100vh; position: fixed; top: 0; left: 0; overflow-y: auto; }
-    .logo { text-align: center; margin-bottom: 30px; }
-    .logo img { width: 80px; border-radius: 50%; }
-    .logo h2 { font-size: 18px; margin-top: 10px; }
-    .menu a { display: block; padding: 12px; color: #f8ce86; text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: bold; transition: background 0.3s, color 0.3s; }
-    .menu a:hover, .menu a.active { background-color: #f8ce86; color: #8e4b00; }
-    main { flex: 1; padding: 30px 40px; margin-left: 220px; }
     header h1 { font-size: 24px; color: #8e4b00; margin-bottom: 20px; }
 
     .card { background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 25px; margin-bottom: 25px; }
@@ -99,22 +91,7 @@ $badge_class = $form['status'] === 'Completed' ? 'badge-completed' : 'badge-draf
   </div>
 </div>
 
-<div class="sidebar">
-  <div class="logo">
-    <img src="../../images/Admin_login.jpg" alt="Admin Logo">
-    <h2>Luxury Jewelry Admin</h2>
-  </div>
-  <div class="menu">
-    <a href="../Administration_menu.php#products">Jewelry List</a>
-    <a href="../product_management.php">Product Management</a>
-    <a href="../Administration_menu.php#users">Customers</a>
-    <a href="../Price Manage/pricing.php">Pricing Management</a>
-    <a href="import_management.php" class="active">Import Management</a>
-    <a href="../Order Manage/order_management.php">Order Management</a>
-    <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
-    <a href="../Administration_menu.php#settings">Settings</a>
-  </div>
-</div>
+<?php include '../sidebar_include.php'; ?>
 
 <main>
   <header>
@@ -158,8 +135,8 @@ $badge_class = $form['status'] === 'Completed' ? 'badge-completed' : 'badge-draf
           <th>Image</th>
           <th>Product Name</th>
           <th>Quantity</th>
-          <th>Unit Price (USD)</th>
-          <th>Total (USD)</th>
+          <th>Unit Price</th>
+          <th>Total</th>
         </tr>
       </thead>
       <tbody>
@@ -176,8 +153,8 @@ $badge_class = $form['status'] === 'Completed' ? 'badge-completed' : 'badge-draf
             </td>
             <td><?php echo htmlspecialchars($row['product_name']); ?></td>
             <td><?php echo intval($row['quantity']); ?></td>
-            <td><?php echo number_format($row['unit_price'], 2); ?></td>
-            <td><?php echo number_format($row['total_price'], 2); ?></td>
+            <td>$<?php echo number_format($row['unit_price'], 2); ?></td>
+            <td>$<?php echo number_format($row['total_price'], 2); ?></td>
           </tr>
           <?php endforeach; ?>
         <?php endif; ?>
@@ -191,7 +168,7 @@ $badge_class = $form['status'] === 'Completed' ? 'badge-completed' : 'badge-draf
       </div>
       <div class="summary-row summary-total">
         <span>Grand Total</span>
-        <span><?php echo number_format($form['total_value'], 2); ?> USD</span>
+        <span>$<?php echo number_format($form['total_value'], 2); ?></span>
       </div>
     </div>
   </div>

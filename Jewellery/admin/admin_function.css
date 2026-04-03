@@ -18,51 +18,71 @@ body {
 }
 
 /* =============================
-   SIDEBAR
+   SIDEBAR & LAYOUT
 ============================= */
 .sidebar {
-  width: 220px;
-  background-color: #8e4b00; /* Nâu đồng đậm */
+  width: 250px;
+  background-color: #8e4b00;
   color: #f8ce86;
   display: flex;
   flex-direction: column;
   padding: 20px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
 }
 
 .logo {
   text-align: center;
   margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(248, 206, 134, 0.2);
 }
 
 .logo img {
   width: 80px;
   border-radius: 50%;
+  border: 3px solid #f8ce86;
+  transition: transform 0.3s;
 }
+.logo img:hover { transform: scale(1.05); }
 
 .logo h2 {
   font-size: 18px;
-  margin-top: 10px;
+  margin-top: 12px;
+  color: #f8ce86;
+  letter-spacing: 0.5px;
 }
 
-/* =============================
-   MENU
-============================= */
 .menu a {
-  display: block;
-  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
   color: #f8ce86;
   text-decoration: none;
   border-radius: 8px;
-  margin-bottom: 10px;
-  font-weight: bold;
-  transition: background 0.3s, color 0.3s;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14.5px;
+  transition: all 0.25s ease;
+}
+
+.menu a i {
+  width: 20px;
+  text-align: center;
+  font-size: 16px;
 }
 
 .menu a:hover,
-.menu a.active,
-.menu a:target {
+.menu a.active {
   background-color: #f8ce86;
   color: #8e4b00;
+  transform: translateX(5px);
 }
 
 /* =============================
@@ -71,6 +91,14 @@ body {
 .content {
   flex: 1;
   padding: 30px;
+  margin-left: 250px;
+}
+
+/* Pages using <main> instead of .content */
+main {
+  flex: 1;
+  padding: 25px 30px;
+  margin-left: 250px;
 }
 
 .section {

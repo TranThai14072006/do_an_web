@@ -1,24 +1,24 @@
 <?php
 // ═══════════════════════════════════════════════════════════
 // File: Jewellery/User/users/cart.php
-// Chức năng đầy đủ:
-//   ✔ Kiểm tra đăng nhập
-//   ✔ Xử lý thêm sản phẩm vào giỏ (GET action=add&id=)
-//   ✔ AJAX: cập nhật số lượng, xóa sản phẩm
-//   ✔ Hiển thị giỏ hàng với ảnh & giá thực
-//   ✔ Tính tổng tiền realtime
-//   ✔ Nút Checkout → order_confirm.php
+// Full features:
+//   ✔ Login check
+//   ✔ Handle product addition to cart (GET action=add&id=)
+//   ✔ AJAX: quantity update, item removal
+//   ✔ Display cart with image & local price
+//   ✔ Real-time total calculation
+//   ✔ Checkout button → order_confirm.php
 // ═══════════════════════════════════════════════════════════
 
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
 if (!defined('BASE_URL'))
-  define('BASE_URL', '/do_an_web/Jewellery/');
+  define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))
   define('IMG_URL', BASE_URL . 'images/');
 
-// Kiểm tra đăng nhập
+// Check login
 if (!isset($_SESSION['user_id'])) {
   header('Location: ' . BASE_URL . 'User/users/login.php');
   exit();
@@ -38,7 +38,7 @@ $link_checkout = BASE_URL . 'User/users/order_confirm.php';
 $logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
 
 // ─────────────────────────────────────────────────────────
-// HÀM TÍNH GIÁ BÁN
+// SELLING PRICE CALCULATION FUNCTION
 // ─────────────────────────────────────────────────────────
 function sellingPrice(array $row): float
 {
@@ -49,14 +49,14 @@ function sellingPrice(array $row): float
 }
 
 // ─────────────────────────────────────────────────────────
-// XỬ LÝ AJAX (update qty / remove)
+// AJAX HANDLING (update qty / remove)
 // ─────────────────────────────────────────────────────────
 if (isset($_POST['ajax_action'])) {
   header('Content-Type: application/json');
   $action = $_POST['ajax_action'];
 
   if ($action === 'update' && isset($_POST['product_id'], $_POST['quantity'])) {
-    $pid = $_POST['product_id'];     // varchar – không ép int
+    $pid = $_POST['product_id'];     // varchar – not cast to int
     $qty = max(1, (int) $_POST['quantity']);
 
     $st = $conn->prepare("
@@ -84,19 +84,19 @@ if (isset($_POST['ajax_action'])) {
 }
 
 // ─────────────────────────────────────────────────────────
-// THÊM VÀO GIỎ (GET action=add&id=xxx&size=yyy)
+// ADD TO CART (GET action=add&id=xxx&size=yyy)
 // ─────────────────────────────────────────────────────────
 if (isset($_GET['action']) && $_GET['action'] === 'add' && !empty($_GET['id'])) {
   $pid  = trim($_GET['id']);
   $size = trim($_GET['size'] ?? '');
 
-  // Bắt buộc phải có size
+  // Size is required
   if (empty($size)) {
     header('Location: ' . $link_home . '?error=no_size');
     exit();
   }
 
-  // Kiểm tra sản phẩm tồn tại
+  // Check product existence
   $chk = $conn->prepare("SELECT id FROM products WHERE id = ? LIMIT 1");
   $chk->bind_param('s', $pid);
   $chk->execute();
@@ -116,7 +116,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'add' && !empty($_GET['id'])) 
 }
 
 // ─────────────────────────────────────────────────────────
-// LẤY GIỎ HÀNG
+// FETCH CART
 // ─────────────────────────────────────────────────────────
 $cart_rows = [];
 $total = 0.0;
@@ -1055,7 +1055,7 @@ $added_flash = isset($_GET['added']);
               setTimeout(() => {
                 row.remove();
                 recalcTotals();
-                // Nếu giỏ trống
+                // If cart is empty
                 if (!document.querySelector('#cart-body tr[data-pid]')) {
                   document.getElementById('cart-body').innerHTML = '';
                   document.getElementById('cart-table').remove();

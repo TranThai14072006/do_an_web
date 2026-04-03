@@ -128,20 +128,8 @@ $status_class   = [
 <head>
   <meta charset="UTF-8">
   <title>Order Management</title>
+  <link rel="stylesheet" href="../admin_function.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
-    body { background-color: #f5f5f5; color: #333; display: flex; }
-
-    .sidebar { width: 220px; background-color: #8e4b00; color: #f8ce86; display: flex; flex-direction: column; padding: 20px; height: 100vh; position: fixed; top: 0; left: 0; }
-    .logo { text-align: center; margin-bottom: 30px; }
-    .logo img { width: 80px; border-radius: 50%; }
-    .logo h2 { font-size: 18px; margin-top: 10px; }
-    .menu a { display: block; padding: 12px; color: #f8ce86; text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: bold; transition: background 0.3s, color 0.3s; }
-    .menu a:hover, .menu a.active { background-color: #f8ce86; color: #8e4b00; }
-
-    main { flex: 1; padding: 25px 40px; margin-left: 220px; }
-    header h1 { font-size: 24px; color: #8e4b00; margin-bottom: 20px; }
-
     /* SEARCH */
     .search-section { background: #fff; border-radius: 10px; padding: 20px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 25px; }
     .search-group { flex: 1; min-width: 150px; display: flex; flex-direction: column; }
@@ -205,22 +193,7 @@ $status_class   = [
 </head>
 <body>
 
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../../images/Admin_login.jpg" alt="Admin Logo">
-      <h2>Luxury Jewelry Admin</h2>
-    </div>
-    <div class="menu">
-      <a href="../Administration_menu.php#products">Jewelry List</a>
-      <a href="../product_management.php">Product Management</a>
-      <a href="../Administration_menu.php#users">Customers</a>
-      <a href="../Price Manage/pricing.php">Pricing Management</a>
-      <a href="../Import_product/import_management.php">Import Management</a>
-      <a href="order_management.php" class="active">Order Management</a>
-      <a href="../Stock Manage/stocking_management.php">Stocking Management</a>
-      <a href="../Administration_menu.php#settings">Settings</a>
-    </div>
-  </div>
+<?php include '../sidebar_include.php'; ?>
 
   <main>
     <header><h1>Order Management</h1></header>
@@ -366,7 +339,7 @@ $status_class   = [
               </td>
               <td><?= htmlspecialchars($o['phone'] ?? '') ?></td>
               <td><?= htmlspecialchars($o['order_date']) ?></td>
-              <td><?= number_format($o['total_amount'], 0, '.', ',') ?> USD</td>
+              <td>$<?= number_format($o['total_amount'], 2, '.', ',') ?></td>
               <td>
                 <span class="status <?= $status_class[$o['status']] ?? '' ?>">
                   <?= htmlspecialchars($o['status']) ?>

@@ -116,33 +116,14 @@ $total_balance = $total_import - $total_export;
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Import & Export Report Detail</title>
+  <link rel="stylesheet" href="../admin_function.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
-    body { display: flex; background: #f3f3f3; color: #333; min-height: 100vh; }
-
-    .sidebar { width: 220px; background-color: #8e4b00; color: #f8ce86; display: flex; flex-direction: column; padding: 20px; }
-    .logo { text-align: center; margin-bottom: 30px; }
-    .logo img { width: 80px; border-radius: 50%; }
-    .logo h2 { font-size: 18px; margin-top: 10px; }
-    .menu a { display: block; padding: 12px; color: #f8ce86; text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: bold; transition: background 0.3s, color 0.3s; }
-    .menu a:hover, .menu a.active { background-color: #f8ce86; color: #8e4b00; }
-
-    main { flex: 1; padding: 25px; }
-    h1 { color: #8e4b00; margin-bottom: 20px; font-size: 24px; }
-
     .report-header { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; }
     .report-header h2 { color: #8e4b00; margin-bottom: 10px; }
     .report-header p { font-size: 15px; color: #555; margin-bottom: 15px; }
 
-    table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-    th, td { padding: 14px 16px; text-align: center; font-size: 15px; border-bottom: 1px solid #f0e2d0; }
-    th { background: #8e4b00; color: #f8ce86; font-weight: 600; }
-    tr:hover td { background: #f9f2e7; }
-
     .product-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
-
-    .btn { display: inline-block; background-color: #8e4b00; color: #f8ce86; border: none; border-radius: 6px; padding: 10px 16px; font-weight: bold; cursor: pointer; transition: 0.3s; text-decoration: none; }
-    .btn:hover { background-color: #f8ce86; color: #8e4b00; }
 
     .summary { background: #fff; border-left: 4px solid #8e4b00; padding: 1rem; margin-top: 1.5rem; border-radius: 6px; }
     .summary p { font-size: 15px; margin-bottom: 6px; }
@@ -155,22 +136,9 @@ $total_balance = $total_import - $total_export;
 </head>
 <body>
 
-  <div class="sidebar">
-    <div class="logo">
-      <img src="../../images/Admin_login.jpg" alt="Admin Logo">
-      <h2>Luxury Jewelry Admin</h2>
-    </div>
-    <div class="menu">
-      <a href="../Administration_menu.php#products">Jewelry List</a>
-      <a href="../product_management.php">Product Management</a>
-      <a href="../Administration_menu.php#users">Customers</a>
-      <a href="../Price Manage/pricing.php">Pricing Management</a>
-      <a href="../Import_product/import_management.php">Import Management</a>
-      <a href="../Order Manage/order_management.php">Order Management</a>
-      <a href="stocking_management.php" class="active">Stocking Management</a>
-      <a href="../Administration_menu.php#settings">Settings</a>
-    </div>
-  </div>
+<?php include '../sidebar_include.php'; ?>
+
+<div class="content">
 
   <main>
     <h1>Import & Export Report Detail</h1>
@@ -227,6 +195,7 @@ $total_balance = $total_import - $total_export;
       </p>
     </div>
   </main>
+</div>
 </body>
 </html>
 <?php $conn->close(); ?>

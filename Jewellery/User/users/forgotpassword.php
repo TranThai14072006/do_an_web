@@ -1,20 +1,20 @@
 <?php
 // ═══════════════════════════════════════════════════════════
 // File: Jewellery/User/users/forgotpassword.php
-// Chức năng: Reset password bằng email (không cần token email)
-//   ✔ Kiểm tra email tồn tại trong DB
-//   ✔ Validate password mới
-//   ✔ Cập nhật password hash vào DB
-//   ✔ Redirect sang login sau khi thành công
+// Function: Reset password using email (no email token needed)
+//   ✔ Check if email exists in DB
+//   ✔ Validate new password
+//   ✔ Update hashed password in DB
+//   ✔ Redirect to login after success
 // ═══════════════════════════════════════════════════════════
 
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
-if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
 
-// Nếu đã đăng nhập → về home
+// If already logged in → go home
 if (isset($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . 'User/indexprofile.php');
     exit();
