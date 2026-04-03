@@ -60,14 +60,14 @@ if ($product) {
     </div>
 
     <div class="right">
-      <a href="../users/cart.php" class="icon-link" title="Giỏ hàng">
+      <a href="../users/cart.php" class="icon-link" title="Cart">
         <i class="fas fa-shopping-cart"></i>
       </a>
-      <a href="../users/profile.php" class="icon-link" title="Trang cá nhân">
+      <a href="../users/profile.php" class="icon-link" title="Profile">
         <i class="fas fa-user-circle user-icon"></i>
         <?php if ($logged_in_name): ?><span><?= htmlspecialchars($logged_in_name) ?></span><?php endif; ?>
       </a>
-      <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Đăng xuất" style="color:#c0392b;">
+      <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Logout" style="color:#111;">
         <i class="fas fa-sign-out-alt"></i>
       </a>
     </div>
