@@ -12,7 +12,7 @@
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
-if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
+if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
 if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
 
 // Check login
