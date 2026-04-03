@@ -308,13 +308,13 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .stat-card.clickable { cursor:pointer; }
 .stat-card.clickable:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(142,75,0,.2); }
 .stat-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; letter-spacing:0; }
-/* Total — màu chính */
+/* Total — main color */
 .si-gold   { background:#fdf0e0; color:#8e4b00; border:2px solid #e8c98a; }
-/* In Stock — xanh lá */
+/* In Stock — green */
 .si-green  { background:#e8f5e9; color:#2e7d32; border:2px solid #a5d6a7; }
-/* Low Stock — cam */
+/* Low Stock — orange */
 .si-orange { background:#fff3e0; color:#e65100; border:2px solid #ffcc80; }
-/* Out of Stock — đỏ */
+/* Out of Stock — red */
 .si-red    { background:#ffebee; color:#c62828; border:2px solid #ef9a9a; }
 .stat-info h3 { font-size:22px; font-weight:700; color:#333; line-height:1; }
 .stat-info p  { font-size:12px; color:#888; margin-top:3px; }
@@ -326,7 +326,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .modal { background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.3); width:100%; max-width:900px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; animation:modalIn .25s ease; }
 @keyframes modalIn { from { opacity:0; transform:translateY(20px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
 
-/* Modal headers — tất cả dùng màu nâu chính */
+/* Modal headers — all using main brown color */
 .modal-header { padding:18px 24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #f0e2d0; flex-shrink:0; }
 .modal-header.import-header { background:#8e4b00; color:#f8ce86; }
 .modal-header.export-header { background:#5a2d00; color:#f8ce86; }

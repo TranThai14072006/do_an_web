@@ -10,6 +10,8 @@ $status     = isset($_GET['status'])     ? trim($_GET['status'])     : 'All';
 $sort_by    = isset($_GET['sort_by'])    ? trim($_GET['sort_by'])    : '';
 $sort_dir   = isset($_GET['sort_dir'])   ? trim($_GET['sort_dir'])   : 'asc';
 $searched   = isset($_GET['searched']);
+$page       = max(1, (int)($_GET['page'] ?? 1));
+$per_page   = 10;
 
 // ============================================================
 // Query orders + customer info — tất cả từ jewelry_db (1 DB duy nhất)
@@ -101,10 +103,10 @@ if ($sort_by === 'district') {
     });
 }
 
-// Helper: tạo URL sort
+// Helper: build sort URL
 function sortUrl($col, $current_sort, $current_dir) {
     $dir = ($current_sort === $col && $current_dir === 'asc') ? 'desc' : 'asc';
-    $params = array_merge($_GET, ['sort_by' => $col, 'sort_dir' => $dir, 'searched' => '1']);
+    $params = array_merge($_GET, ['sort_by' => $col, 'sort_dir' => $dir, 'searched' => '1', 'page' => 1]);
     return '?' . http_build_query(array_filter($params, fn($v) => $v !== ''));
 }
 
@@ -122,6 +124,18 @@ $status_class   = [
     'Delivered' => 'status-delivered',
     'Cancelled' => 'status-cancelled',
 ];
+
+// Pagination — after sorting
+$total_orders = count($orders);
+$total_pages  = max(1, (int)ceil($total_orders / $per_page));
+$page         = min($page, $total_pages);
+$orders_page  = array_slice($orders, ($page - 1) * $per_page, $per_page);
+
+// Helper: build pagination URL
+function pageUrl(array $overrides = []): string {
+    $params = array_merge($_GET, $overrides);
+    return 'order_management.php?' . http_build_query(array_filter($params, fn($v) => $v !== ''));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
