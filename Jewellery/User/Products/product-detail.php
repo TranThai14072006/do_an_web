@@ -1,5 +1,7 @@
 <?php
-
+session_start();
+$logged_in_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
+$link_logout = '../users/logout.php';
 
 $conn = new mysqli("localhost", "root", "", "jewelry_db");
 $conn->set_charset("utf8");
@@ -40,35 +42,35 @@ if ($product) {
 <!-- 🔥 HEADER -->
 <header class="header-container">
   <div class="search-bar">
-
     <div class="left">
-      <a href="../indexprofile.php" class="home-btn">
-        <i class="fas fa-home"></i> Home
-      </a>
+      <a href="../indexprofile.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
 
     <div class="center">
       <a href="../indexprofile.php">
-        <img src="../../images/36-logo.png" class="header-logo">
+        <img src="../../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
       </a>
-
       <div class="search-box">
-        <input type="text" placeholder="Search products...">
-        <button onclick="window.location.href='../search.html'">
+        <input type="text" id="header-search" placeholder="Search products..."
+               onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+        <button onclick="applyHeaderSearch()">
           <i class="fas fa-search"></i>
         </button>
       </div>
     </div>
 
     <div class="right">
-      <a href="../users/cart.php" class="icon-link">
+      <a href="../users/cart.php" class="icon-link" title="Giỏ hàng">
         <i class="fas fa-shopping-cart"></i>
       </a>
-      <a href="../users/profile.php" class="icon-link">
-        <i class="fas fa-user"></i>
+      <a href="../users/profile.php" class="icon-link" title="Trang cá nhân">
+        <i class="fas fa-user-circle user-icon"></i>
+        <?php if ($logged_in_name): ?><span><?= htmlspecialchars($logged_in_name) ?></span><?php endif; ?>
+      </a>
+      <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Đăng xuất" style="color:#c0392b;">
+        <i class="fas fa-sign-out-alt"></i>
       </a>
     </div>
-
   </div>
 </header>
 
@@ -137,7 +139,7 @@ if ($product) {
         Add to cart
       </button>
 
-      <a href="../users/order_confirm.php" class="buy-now">
+      <a href="#" class="buy-now" onclick="buyNow(event, '<?php echo $product['id']; ?>')">
         <i class="fas fa-bolt"></i>
         Buy now
       </a>
@@ -202,6 +204,41 @@ async function addToCart(id, name) {
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to cart';
+  }
+}
+
+function applyHeaderSearch() {
+  const kw = document.getElementById('header-search').value.trim();
+  if (kw) {
+    window.location.href = `products_sp.php?q=${encodeURIComponent(kw)}`;
+  } else {
+    window.location.href = `products_sp.php`;
+  }
+}
+
+async function buyNow(event, id) {
+  event.preventDefault();
+  const sizeSelect = document.getElementById('ring-size');
+  const selectedSize = sizeSelect.value;
+
+  if (!selectedSize) {
+    alert('Please select a ring size before buying.');
+    return;
+  }
+
+  const btn = document.querySelector('.buy-now');
+  btn.style.pointerEvents = 'none';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+  try {
+    const url = `../users/cart.php?action=add&id=${encodeURIComponent(id)}&size=${encodeURIComponent(selectedSize)}`;
+    await fetch(url);
+    
+    window.location.href = '../users/order_confirm.php';
+  } catch (err) {
+    alert('Network error, please try again.');
+    btn.style.pointerEvents = 'auto';
+    btn.innerHTML = '<i class="fas fa-bolt"></i> Buy now';
   }
 }
 </script>

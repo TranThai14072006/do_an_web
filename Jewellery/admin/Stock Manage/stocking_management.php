@@ -88,14 +88,30 @@ $active_tab = isset($_GET['tab']) ? trim($_GET['tab']) : 'stock-lookup';
 $search_name     = trim($_GET['search_name']     ?? '');
 $search_category = trim($_GET['search_category'] ?? 'All');
 $search_date     = trim($_GET['search_date']      ?? '');
+$page            = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page        = 5;
 
 $where1 = []; $params1 = []; $types1 = '';
 if ($search_name !== '')         { $where1[] = 'name LIKE ?';  $params1[] = '%'.$search_name.'%'; $types1 .= 's'; }
 if ($search_category !== 'All') { $where1[] = 'category = ?'; $params1[] = $search_category;      $types1 .= 's'; }
 $where1_sql = $where1 ? 'WHERE ' . implode(' AND ', $where1) : '';
 
-$stmt1 = $conn->prepare("SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC");
-if ($params1) $stmt1->bind_param($types1, ...$params1);
+// Get total count
+$count_sql = "SELECT COUNT(*) as total FROM products $where1_sql";
+$count_stmt = $conn->prepare($count_sql);
+if ($params1) $count_stmt->bind_param($types1, ...$params1);
+$count_stmt->execute();
+$total_products = $count_stmt->get_result()->fetch_assoc()['total'];
+$count_stmt->close();
+
+$total_pages = ceil($total_products / $per_page);
+$offset = ($page - 1) * $per_page;
+
+// Get paginated products
+$stmt1 = $conn->prepare("SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC LIMIT ? OFFSET ?");
+$params1[] = $per_page; $params1[] = $offset;
+$types1 .= 'ii';
+$stmt1->bind_param($types1, ...$params1);
 $stmt1->execute();
 $base_products = $stmt1->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt1->close();
@@ -413,7 +429,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
   <div class="tabs">
     <div class="tab <?= $active_tab==='stock-lookup' ?'active':'' ?>" data-tab="stock-lookup">Stock Lookup</div>
     <div class="tab <?= $active_tab==='stock-alert'  ?'active':'' ?>" data-tab="stock-alert">Low Stock Alert</div>
-    <div class="tab <?= $active_tab==='stock-report' ?'active':'' ?>" data-tab="stock-report">Import - Export - Balance</div>
+    <div class="tab <?= $active_tab==='stock-report' ?'active':'' ?>" data-tab="stock-report">Import - Export</div>
   </div>
 
   <!-- ====== TAB 1: Stock Lookup ====== -->
@@ -485,6 +501,28 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
         <?php endforeach; endif; ?>
       </tbody>
     </table>
+
+    <?php if ($total_pages > 1): ?>
+      <div style="text-align:center; margin:20px 0;">
+        <?php
+        $query_params = $_GET;
+        unset($query_params['page']);
+        $base_url = 'stocking_management.php?' . http_build_query($query_params) . '&page=';
+        ?>
+        <?php if ($page > 1): ?>
+          <a href="<?= $base_url . ($page - 1) ?>" class="btn secondary" style="margin-right:10px;">&laquo; Previous</a>
+        <?php endif; ?>
+        <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
+          <a href="<?= $base_url . $i ?>" class="btn <?= $i == $page ? '' : 'secondary' ?>" style="margin:0 2px;"><?= $i ?></a>
+        <?php endfor; ?>
+        <?php if ($page < $total_pages): ?>
+          <a href="<?= $base_url . ($page + 1) ?>" class="btn secondary" style="margin-left:10px;">Next &raquo;</a>
+        <?php endif; ?>
+        <div style="margin-top:10px; font-size:14px; color:#666;">
+          Page <?= $page ?> of <?= $total_pages ?> (<?= $total_products ?> total products)
+        </div>
+      </div>
+    <?php endif; ?>
 
     <div class="alert-section" style="margin-top:16px;">
       <div class="alert-title">Note</div>
