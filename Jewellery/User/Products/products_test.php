@@ -53,7 +53,7 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Products (Test Version)</title>
+  <title>Products</title>
   
   <!-- Giữ nguyên các file CSS -->
   <link rel="stylesheet" href="../../style.css">
@@ -130,8 +130,8 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
       <div class="search-box">
         <!-- Chuyển ID thành header-search để tương thích bộ lọc dưới -->
         <input type="text" id="header-search" placeholder="Search products..."
-               onkeydown="if(event.key==='Enter') applyFilter()">
-        <button onclick="applyFilter()">
+               onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+        <button onclick="applyHeaderSearch()">
           <i class="fas fa-search"></i>
         </button>
       </div>
@@ -349,16 +349,24 @@ function addToCart(productId, productName, btn) {
 }
 
 async function doAddToCart(productId, productName, size, btn) {
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+  }
+  
+  // cart.php yêu cầu bắt buộc phải có size, nếu không sẽ bị lỗi
+  if (!size || size.trim() === '') {
+    size = 'Standard';
+  }
+
   try {
-    const res = await fetch('../Cart/jewelry_cart.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'add', product_id: productId, quantity: 1, size: size }),
-    });
-    const data = await res.json();
-    if (data.success) showNotification(productName, size);
-    else alert(data.message || 'Failed to add to cart');
-  } catch {
+    // Dùng fetch để gọi GET ngầm vào cart.php, nó sẽ xử lý thêm vào DB mà không bắt người dùng chuyển trang
+    const url = `../users/cart.php?action=add&id=${encodeURIComponent(productId)}&size=${encodeURIComponent(size)}`;
+    await fetch(url);
+    
+    // Hiện bảng thông báo nhỏ nhắn ở góc màn hình
+    showNotification(productName, size);
+  } catch (error) {
     alert('Network error, please try again.');
   } finally {
     if (btn) {
@@ -411,14 +419,26 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   });
 });
 
-function applyFilter() {
-  const headerSearch = document.getElementById('header-search').value.trim();
-  if (headerSearch) document.getElementById('search').value = headerSearch;
+// Đã tắt đồng bộ 2 ô tìm kiếm (header và advanced bar)
+/*
+document.getElementById('header-search').addEventListener('input', function() {
+  document.getElementById('search').value = this.value;
+});
+document.getElementById('search').addEventListener('input', function() {
+  document.getElementById('header-search').value = this.value;
+});
+*/
 
+function applyHeaderSearch() {
+  const kw = document.getElementById('header-search').value.trim().toLowerCase();
+  applyFilter(kw);
+}
+
+function applyFilter(customKeyword = null) {
   const category = currentGender;
   const price    = document.getElementById('price').value;
   const sort     = document.getElementById('sort').value;
-  const search   = document.getElementById('search').value.trim().toLowerCase();
+  const search   = customKeyword !== null ? customKeyword : document.getElementById('search').value.trim().toLowerCase();
 
   filteredProducts = allProducts.filter(p => {
     if (category !== 'all' && p.gender !== category) return false;

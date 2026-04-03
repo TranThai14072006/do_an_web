@@ -132,7 +132,7 @@ if ($product) {
 
     <div class="action-buttons">
       <button class="add-to-cart"
-        onclick="addToCart('<?php echo $product['id']; ?>','<?php echo $product['name']; ?>')">
+        onclick="addToCart('<?php echo $product['id']; ?>','<?php echo addslashes($product['name']); ?>')">
         <i class="fas fa-shopping-cart"></i>
         Add to cart
       </button>
@@ -193,24 +193,10 @@ async function addToCart(id, name) {
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
 
   try {
-    const res = await fetch('../Cart/jewelry_cart.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        action: 'add', 
-        product_id: id, 
-        quantity: 1,
-        size: selectedSize
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      showNotification(`${name} (Size ${selectedSize})`);
-    } else {
-      alert(data.message || 'Failed to add to cart');
-    }
+    const url = `../users/cart.php?action=add&id=${encodeURIComponent(id)}&size=${encodeURIComponent(selectedSize)}`;
+    await fetch(url);
+    
+    showNotification(`${name} (Size ${selectedSize})`);
   } catch (err) {
     alert('Network error, please try again.');
   } finally {
