@@ -88,14 +88,30 @@ $active_tab = isset($_GET['tab']) ? trim($_GET['tab']) : 'stock-lookup';
 $search_name     = trim($_GET['search_name']     ?? '');
 $search_category = trim($_GET['search_category'] ?? 'All');
 $search_date     = trim($_GET['search_date']      ?? '');
+$page            = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page        = 5;
 
 $where1 = []; $params1 = []; $types1 = '';
 if ($search_name !== '')         { $where1[] = 'name LIKE ?';  $params1[] = '%'.$search_name.'%'; $types1 .= 's'; }
 if ($search_category !== 'All') { $where1[] = 'category = ?'; $params1[] = $search_category;      $types1 .= 's'; }
 $where1_sql = $where1 ? 'WHERE ' . implode(' AND ', $where1) : '';
 
-$stmt1 = $conn->prepare("SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC");
-if ($params1) $stmt1->bind_param($types1, ...$params1);
+// Get total count
+$count_sql = "SELECT COUNT(*) as total FROM products $where1_sql";
+$count_stmt = $conn->prepare($count_sql);
+if ($params1) $count_stmt->bind_param($types1, ...$params1);
+$count_stmt->execute();
+$total_products = $count_stmt->get_result()->fetch_assoc()['total'];
+$count_stmt->close();
+
+$total_pages = ceil($total_products / $per_page);
+$offset = ($page - 1) * $per_page;
+
+// Get paginated products
+$stmt1 = $conn->prepare("SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC LIMIT ? OFFSET ?");
+$params1[] = $per_page; $params1[] = $offset;
+$types1 .= 'ii';
+$stmt1->bind_param($types1, ...$params1);
 $stmt1->execute();
 $base_products = $stmt1->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt1->close();
@@ -308,13 +324,13 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .stat-card.clickable { cursor:pointer; }
 .stat-card.clickable:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(142,75,0,.2); }
 .stat-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; letter-spacing:0; }
-/* Total — màu chính */
+/* Total — main color */
 .si-gold   { background:#fdf0e0; color:#8e4b00; border:2px solid #e8c98a; }
-/* In Stock — xanh lá */
+/* In Stock — green */
 .si-green  { background:#e8f5e9; color:#2e7d32; border:2px solid #a5d6a7; }
-/* Low Stock — cam */
+/* Low Stock — orange */
 .si-orange { background:#fff3e0; color:#e65100; border:2px solid #ffcc80; }
-/* Out of Stock — đỏ */
+/* Out of Stock — red */
 .si-red    { background:#ffebee; color:#c62828; border:2px solid #ef9a9a; }
 .stat-info h3 { font-size:22px; font-weight:700; color:#333; line-height:1; }
 .stat-info p  { font-size:12px; color:#888; margin-top:3px; }
@@ -326,7 +342,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .modal { background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.3); width:100%; max-width:900px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; animation:modalIn .25s ease; }
 @keyframes modalIn { from { opacity:0; transform:translateY(20px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
 
-/* Modal headers — tất cả dùng màu nâu chính */
+/* Modal headers — all using main brown color */
 .modal-header { padding:18px 24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #f0e2d0; flex-shrink:0; }
 .modal-header.import-header { background:#8e4b00; color:#f8ce86; }
 .modal-header.export-header { background:#5a2d00; color:#f8ce86; }
@@ -413,7 +429,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
   <div class="tabs">
     <div class="tab <?= $active_tab==='stock-lookup' ?'active':'' ?>" data-tab="stock-lookup">Stock Lookup</div>
     <div class="tab <?= $active_tab==='stock-alert'  ?'active':'' ?>" data-tab="stock-alert">Low Stock Alert</div>
-    <div class="tab <?= $active_tab==='stock-report' ?'active':'' ?>" data-tab="stock-report">Import - Export - Balance</div>
+    <div class="tab <?= $active_tab==='stock-report' ?'active':'' ?>" data-tab="stock-report">Import - Export</div>
   </div>
 
   <!-- ====== TAB 1: Stock Lookup ====== -->
@@ -485,6 +501,28 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
         <?php endforeach; endif; ?>
       </tbody>
     </table>
+
+    <?php if ($total_pages > 1): ?>
+      <div style="text-align:center; margin:20px 0;">
+        <?php
+        $query_params = $_GET;
+        unset($query_params['page']);
+        $base_url = 'stocking_management.php?' . http_build_query($query_params) . '&page=';
+        ?>
+        <?php if ($page > 1): ?>
+          <a href="<?= $base_url . ($page - 1) ?>" class="btn secondary" style="margin-right:10px;">&laquo; Previous</a>
+        <?php endif; ?>
+        <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
+          <a href="<?= $base_url . $i ?>" class="btn <?= $i == $page ? '' : 'secondary' ?>" style="margin:0 2px;"><?= $i ?></a>
+        <?php endfor; ?>
+        <?php if ($page < $total_pages): ?>
+          <a href="<?= $base_url . ($page + 1) ?>" class="btn secondary" style="margin-left:10px;">Next &raquo;</a>
+        <?php endif; ?>
+        <div style="margin-top:10px; font-size:14px; color:#666;">
+          Page <?= $page ?> of <?= $total_pages ?> (<?= $total_products ?> total products)
+        </div>
+      </div>
+    <?php endif; ?>
 
     <div class="alert-section" style="margin-top:16px;">
       <div class="alert-title">Note</div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Entry Form Management</title>
@@ -195,7 +195,7 @@ function build_url($page, $params = []) {
 
   <?php if (isset($_GET['success'])): ?>
     <div class="alert-success" id="success-alert">
-      ✅ Phiếu nhập #<?= (int)$_GET['receipt_id'] ?> đã được lưu thành công!
+      ✅ Entry form #<?= (int)$_GET['receipt_id'] ?> has been saved successfully!
       <button onclick="document.getElementById('success-alert').remove()">×</button>
     </div>
   <?php endif; ?>
@@ -207,7 +207,7 @@ function build_url($page, $params = []) {
         <div class="search-group wide">
           <label class="search-label">Order Number</label>
           <input type="text" name="order" class="search-input"
-                 placeholder="Tìm theo mã phiếu..."
+                 placeholder="Search by order number..."
                  value="<?= htmlspecialchars($search_order) ?>">
         </div>
         <div class="search-group narrow">
@@ -266,7 +266,7 @@ function build_url($page, $params = []) {
     <tbody>
       <?php if (empty($rows)): ?>
         <tr class="no-results"><td colspan="8">
-          <?= $is_searching ? 'Không tìm thấy phiếu nhập nào phù hợp.' : 'Chưa có phiếu nhập nào.' ?>
+          <?= $is_searching ? 'No matching entry forms found.' : 'No entry forms yet.' ?>
         </td></tr>
       <?php else: ?>
         <?php
@@ -288,7 +288,7 @@ function build_url($page, $params = []) {
             <?php if ($row['status'] === 'Draft'): ?>
               <a href="edit_entry_form.php?id=<?= $row['id'] ?>" class="tbl-link">Edit</a>
             <?php else: ?>
-              <span style="color:#ccc;font-size:13px;" title="Phiếu đã hoàn thành, không thể sửa">🔒 Locked</span>
+              <span style="color:#ccc;font-size:13px;" title="This form is completed and cannot be edited">🔒 Locked</span>
             <?php endif; ?>
           </td>
         </tr>

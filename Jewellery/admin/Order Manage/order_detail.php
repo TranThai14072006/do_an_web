@@ -30,13 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
         }
         $stmt->close();
     } else {
-        $update_error = 'Trạng thái không hợp lệ.';
+        $update_error = 'Invalid status value.';
     }
 }
 
-// ============================================================
-// Lấy thông tin đơn hàng từ jewelry_db
-// ============================================================
+// Get order info from jewelry_db
 $stmt = $conn->prepare("
     SELECT id, order_number, customer_id, order_date, total_amount, status
     FROM orders
@@ -48,7 +46,7 @@ $order = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$order) {
-    echo "<p style='padding:40px;color:red;font-family:sans-serif;'>❌ Không tìm thấy đơn hàng.</p>";
+    echo "<p style='padding:40px;color:red;font-family:sans-serif;'>❌ Order not found.</p>";
     $conn->close();
     exit;
 }
