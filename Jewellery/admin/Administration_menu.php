@@ -9,48 +9,82 @@ if (empty($_SESSION['admin_logged_in'])) {
 }
 
 // ──────────────────────────────────────────────
-// JEWELRY LIST — pagination per tab
+// KPI STATS
 // ──────────────────────────────────────────────
-$prod_limit = 6;
+// Total products
+$total_products = 0;
+$r = $conn->query("SELECT COUNT(*) AS cnt FROM products");
+if ($r) $total_products = (int)$r->fetch_assoc()['cnt'];
 
-// Tab-aware page params (male_page, female_page, unisex_page)
-$male_page   = isset($_GET['male_page'])   && is_numeric($_GET['male_page'])   ? max(1,(int)$_GET['male_page'])   : 1;
-$female_page = isset($_GET['female_page']) && is_numeric($_GET['female_page']) ? max(1,(int)$_GET['female_page']) : 1;
-$unisex_page = isset($_GET['unisex_page']) && is_numeric($_GET['unisex_page']) ? max(1,(int)$_GET['unisex_page']) : 1;
+// Total customers
+$total_customers = 0;
+$r = $conn->query("SELECT COUNT(*) AS cnt FROM customers");
+if ($r) $total_customers = (int)$r->fetch_assoc()['cnt'];
 
-// Search params per tab
-$male_name   = isset($_GET['male_name'])   ? trim($_GET['male_name'])   : '';
-$female_name = isset($_GET['female_name']) ? trim($_GET['female_name']) : '';
-$unisex_name = isset($_GET['unisex_name']) ? trim($_GET['unisex_name']) : '';
+// Total orders & revenue
+$total_orders = 0; $total_revenue = 0; $pending_orders = 0;
+$r = $conn->query("SELECT COUNT(*) AS cnt, COALESCE(SUM(total_amount),0) AS rev FROM orders");
+if ($r) { $row = $r->fetch_assoc(); $total_orders = (int)$row['cnt']; $total_revenue = (float)$row['rev']; }
+$r = $conn->query("SELECT COUNT(*) AS cnt FROM orders WHERE status = 'Pending'");
+if ($r) $pending_orders = (int)$r->fetch_assoc()['cnt'];
 
-// Customer search/pagination params (used in hidden inputs)
-$cust_page   = isset($_GET['cust_page'])   && is_numeric($_GET['cust_page'])   ? max(1,(int)$_GET['cust_page'])   : 1;
-$cust_name   = isset($_GET['cust_name'])   ? trim($_GET['cust_name'])   : '';
-$cust_status = isset($_GET['cust_status']) ? trim($_GET['cust_status']) : '';
+// Low stock products (stock <= 5)
+$low_stock = 0;
+$r = $conn->query("SELECT COUNT(*) AS cnt FROM products WHERE stock <= 5");
+if ($r) $low_stock = (int)$r->fetch_assoc()['cnt'];
 
-function fetchProducts($conn, $gender, $search_name, $page, $limit) {
-    $offset = ($page - 1) * $limit;
-    $where  = "WHERE gender = '" . $conn->real_escape_string($gender) . "'";
-    if (!empty($search_name)) {
-        $where .= " AND name LIKE '%" . $conn->real_escape_string($search_name) . "%'";
-    }
-    $rows  = [];
-    $r     = $conn->query("SELECT id, name, image, category, gender FROM products $where ORDER BY id ASC LIMIT $offset, $limit");
-    if ($r) while ($row = $r->fetch_assoc()) $rows[] = $row;
-    $cnt   = $conn->query("SELECT COUNT(id) AS total FROM products $where");
-    $total = $cnt ? (int)$cnt->fetch_assoc()['total'] : 0;
-    $pages = max(1, (int)ceil($total / $limit));
-    return [$rows, $total, $pages];
-}
+// Revenue this month
+$revenue_month = 0;
+$r = $conn->query("SELECT COALESCE(SUM(total_amount),0) AS rev FROM orders WHERE MONTH(order_date)=MONTH(CURDATE()) AND YEAR(order_date)=YEAR(CURDATE())");
+if ($r) $revenue_month = (float)$r->fetch_assoc()['rev'];
 
-[$male_products,   $male_total,   $male_pages]   = fetchProducts($conn, 'Male',   $male_name,   $male_page,   $prod_limit);
-[$female_products, $female_total, $female_pages] = fetchProducts($conn, 'Female', $female_name, $female_page, $prod_limit);
-[$unisex_products, $unisex_total, $unisex_pages] = fetchProducts($conn, 'Unisex', $unisex_name, $unisex_page, $prod_limit);
+// ──────────────────────────────────────────────
+// RECENT ORDERS (last 8)
+// ──────────────────────────────────────────────
+$recent_orders = [];
+$r = $conn->query("
+    SELECT o.id, o.order_number, o.order_date, o.total_amount, o.status,
+           COALESCE(c.full_name, 'Unknown') AS customer_name
+    FROM orders o
+    LEFT JOIN customers c ON o.customer_id = c.id
+    ORDER BY o.order_date DESC, o.id DESC
+    LIMIT 8
+");
+if ($r) while ($row = $r->fetch_assoc()) $recent_orders[] = $row;
 
-// Helper: build query string keeping all GET params, overriding specific keys
-function pageUrl($overrides = []) {
-    $params = array_merge($_GET, $overrides);
-    return '?' . http_build_query($params);
+// ──────────────────────────────────────────────
+// RECENT IMPORTS (last 6)
+// ──────────────────────────────────────────────
+$recent_imports = [];
+$r = $conn->query("
+    SELECT id, order_number, entry_date, supplier, total_quantity, total_value, status
+    FROM goods_receipt
+    ORDER BY entry_date DESC, id DESC
+    LIMIT 6
+");
+if ($r) while ($row = $r->fetch_assoc()) $recent_imports[] = $row;
+
+// ──────────────────────────────────────────────
+// TOP SELLING PRODUCTS (by order_items quantity)
+// ──────────────────────────────────────────────
+$top_products = [];
+$r = $conn->query("
+    SELECT p.name, p.image, p.category, SUM(oi.quantity) AS total_sold, SUM(oi.total_price) AS revenue
+    FROM order_items oi
+    JOIN products p ON oi.product_id = p.id
+    GROUP BY p.id
+    ORDER BY total_sold DESC
+    LIMIT 5
+");
+if ($r) while ($row = $r->fetch_assoc()) $top_products[] = $row;
+
+// ──────────────────────────────────────────────
+// ORDER STATUS COUNTS (for mini chart)
+// ──────────────────────────────────────────────
+$status_counts = ['Pending'=>0,'Processed'=>0,'Shipping'=>0,'Delivered'=>0,'Cancelled'=>0];
+$r = $conn->query("SELECT status, COUNT(*) AS cnt FROM orders GROUP BY status");
+if ($r) while ($row = $r->fetch_assoc()) {
+    if (isset($status_counts[$row['status']])) $status_counts[$row['status']] = (int)$row['cnt'];
 }
 ?>
 <!DOCTYPE html>
@@ -61,241 +95,427 @@ function pageUrl($overrides = []) {
   <title>Luxury Jewelry Admin Panel</title>
   <link rel="stylesheet" href="admin_function.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <style>
-    .product-img { border-radius:6px; object-fit:cover; width:60px; height:60px; }
-    .no-image { width:60px; height:60px; border-radius:6px; background:#f0f0f0;
-                display:inline-flex; align-items:center; justify-content:center;
-                color:#aaa; font-size:10px; text-align:center; }
-    .pagination-info { text-align:center; color:#888; font-size:13px; margin-top:4px; }
-    .logout-btn { display:inline-flex; align-items:center; gap:10px; padding:12px 24px;
-      background:linear-gradient(135deg,#d9534f,#c9302c); color:white; text-decoration:none;
-      border-radius:8px; font-weight:600; transition:all .3s;
-      box-shadow:0 4px 10px rgba(217,83,79,.3); border:none; cursor:pointer; }
-    .logout-btn:hover { transform:translateY(-2px); background:linear-gradient(135deg,#c9302c,#ac2925);
-      box-shadow:0 6px 15px rgba(217,83,79,.4); }
-    .logout-btn i { font-size:18px; }
-    .tab-search { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;
-                  background:#fdf7ee; border:1px solid #e8d5b0; border-radius:8px;
-                  padding:12px 16px; margin-bottom:14px; }
-    .tab-search input { padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:14px; }
-    .tab-search button { padding:8px 16px; border:none; border-radius:6px; cursor:pointer;
-                         font-size:14px; font-weight:600; background:#8e4b00; color:#fff; }
-    .tab-search button:hover { background:#a3670b; }
-    .tab-search a.reset-btn { padding:8px 14px; border-radius:6px; font-size:14px;
-                               background:#e0e0e0; color:#333; text-decoration:none; font-weight:600; }
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .page-header h1 { font-size: 24px; color: #8e4b00; font-weight: 700; }
+    .page-header .date-badge {
+      background: #fff; border: 1px solid #e8d5b0; border-radius: 8px;
+      padding: 8px 16px; font-size: 13px; color: #666; display:flex; align-items:center; gap:6px;
+    }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 22px 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      display: flex; align-items: center; gap: 16px;
+      transition: transform .2s, box-shadow .2s;
+      border-left: 4px solid transparent;
+    }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+    .kpi-card.orange { border-left-color: #f59e0b; }
+    .kpi-card.green  { border-left-color: #10b981; }
+    .kpi-card.blue   { border-left-color: #3b82f6; }
+    .kpi-card.red    { border-left-color: #ef4444; }
+    .kpi-card.purple { border-left-color: #8b5cf6; }
+    .kpi-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .kpi-card.orange .kpi-icon { background: #fef3c7; color: #d97706; }
+    .kpi-card.green  .kpi-icon { background: #d1fae5; color: #059669; }
+    .kpi-card.blue   .kpi-icon { background: #dbeafe; color: #2563eb; }
+    .kpi-card.red    .kpi-icon { background: #fee2e2; color: #dc2626; }
+    .kpi-card.purple .kpi-icon { background: #ede9fe; color: #7c3aed; }
+    .kpi-info { flex: 1; min-width: 0; }
+    .kpi-label { font-size: 12px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+    .kpi-value { font-size: 26px; font-weight: 800; color: #1a1a1a; line-height: 1; }
+    .kpi-sub   { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+    /* ── SECTION ROW ── */
+    .section-row {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .section-row.two-col { grid-template-columns: 1fr 1fr; }
+    .section-row.three-col { grid-template-columns: 1fr 1.2fr 0.8fr; }
+
+    /* ── PANEL ── */
+    .panel {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 18px 22px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #f0ebe3;
+    }
+    .panel-title { font-size: 15px; font-weight: 700; color: #4a2800; display:flex; align-items:center; gap:8px; }
+    .panel-title i { color: #8e4b00; }
+    .panel-link { font-size: 13px; color: #8e4b00; text-decoration: none; font-weight: 600; }
+    .panel-link:hover { text-decoration: underline; }
+    .panel-body { padding: 0; }
+
+    /* ── ORDERS TABLE ── */
+    .orders-table { width: 100%; border-collapse: collapse; }
+    .orders-table th {
+      background: #fdf7ee; color: #8e4b00; font-size: 12px;
+      text-transform: uppercase; letter-spacing: .5px;
+      padding: 10px 16px; text-align: left; font-weight: 700;
+    }
+    .orders-table td {
+      padding: 11px 16px; border-bottom: 1px solid #f5f0e8;
+      font-size: 14px; color: #333; vertical-align: middle;
+    }
+    .orders-table tr:last-child td { border-bottom: none; }
+    .orders-table tr:hover td { background: #fefcf7; }
+
+    /* Order status badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+    }
+    .badge-pending   { background: #fef3c7; color: #92400e; }
+    .badge-processed { background: #dbeafe; color: #1d4ed8; }
+    .badge-shipping  { background: #ede9fe; color: #6d28d9; }
+    .badge-delivered { background: #d1fae5; color: #065f46; }
+    .badge-cancelled { background: #fee2e2; color: #991b1b; }
+
+    /* ── IMPORT TABLE ── */
+    .import-table { width: 100%; border-collapse: collapse; }
+    .import-table th {
+      background: #fdf7ee; color: #8e4b00; font-size: 12px;
+      text-transform: uppercase; letter-spacing: .5px;
+      padding: 10px 16px; text-align: left; font-weight: 700;
+    }
+    .import-table td {
+      padding: 11px 16px; border-bottom: 1px solid #f5f0e8;
+      font-size: 14px; color: #333; vertical-align: middle;
+    }
+    .import-table tr:last-child td { border-bottom: none; }
+    .import-table tr:hover td { background: #fefcf7; }
+    .badge-draft     { background: #fff3cd; color: #856404; }
+    .badge-completed { background: #d4edda; color: #155724; }
+
+    /* ── TOP PRODUCTS ── */
+    .top-product-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 22px; border-bottom: 1px solid #f5f0e8;
+    }
+    .top-product-item:last-child { border-bottom: none; }
+    .top-product-img {
+      width: 44px; height: 44px; border-radius: 8px; object-fit: cover;
+      border: 1px solid #eee; flex-shrink: 0;
+      background: #f5f5f5; display:flex; align-items:center; justify-content:center;
+    }
+    .top-product-img img { width:44px; height:44px; border-radius:8px; object-fit:cover; }
+    .top-product-info { flex: 1; min-width: 0; }
+    .top-product-name { font-size: 14px; font-weight: 600; color: #222; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .top-product-cat  { font-size: 12px; color: #888; }
+    .top-product-sold { font-size: 13px; font-weight: 700; color: #8e4b00; }
+
+    /* ── STATUS DONUT (pure CSS) ── */
+    .status-summary { padding: 18px 22px; }
+    .status-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid #f5f0e8;
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .status-row-label { flex: 1; font-size: 13px; color: #555; }
+    .status-row-count { font-size: 13px; font-weight: 700; color: #333; }
+    .status-bar-wrap { width: 80px; height: 6px; background: #eee; border-radius: 3px; }
+    .status-bar-fill { height: 6px; border-radius: 3px; }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 18px 22px; }
+    .qa-btn {
+      display: flex; align-items: center; gap: 10px; padding: 13px 16px;
+      border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px;
+      transition: .2s; border: 1.5px solid transparent;
+    }
+    .qa-btn:hover { transform: translateY(-1px); }
+    .qa-btn.primary   { background: #8e4b00; color: #f8ce86; }
+    .qa-btn.primary:hover { background: #a3670b; }
+    .qa-btn.secondary { background: #fdf7ee; color: #8e4b00; border-color: #e8d5b0; }
+    .qa-btn.secondary:hover { background: #f8ce86; }
+    .qa-btn i { font-size: 16px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-row td { text-align: center; padding: 30px; color: #aaa; font-size: 14px; }
+
+    /* ── ORDER NUMBER ── */
+    .order-num { font-family: monospace; font-weight: 700; color: #8e4b00; font-size: 13px; }
+
+    /* View link */
+    .view-link { font-size: 13px; color: #8e4b00; text-decoration: none; font-weight: 600; }
+    .view-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 <?php include 'sidebar_include.php'; ?>
 
-  <div class="content">
+<div class="content">
 
-    <!-- ======= Jewelry Inventory ======= -->
-    <section id="products" class="section">
-      <header><h1>Jewelry Inventory</h1></header>
+  <!-- ── PAGE HEADER ── -->
+  <div class="page-header">
+    <h1><i class="fas fa-tachometer-alt" style="margin-right:10px; opacity:.8;"></i>Dashboard</h1>
+    <div class="date-badge">
+      <i class="fas fa-calendar-alt"></i>
+      <?php echo date('l, F j, Y'); ?>
+    </div>
+  </div>
 
-      <div class="tabs">
-        <div class="tab active" data-tab="tab1">Male (<?php echo $male_total; ?>)</div>
-        <div class="tab" data-tab="tab2">Female (<?php echo $female_total; ?>)</div>
-        <div class="tab" data-tab="tab3">Unisex (<?php echo $unisex_total; ?>)</div>
+  <!-- ── KPI CARDS ── -->
+  <div class="kpi-grid">
+    <div class="kpi-card orange">
+      <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value">$<?php echo number_format($total_revenue, 0); ?></div>
+        <div class="kpi-sub">This month: $<?php echo number_format($revenue_month, 0); ?></div>
+      </div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-icon"><i class="fas fa-shopping-bag"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Total Orders</div>
+        <div class="kpi-value"><?php echo number_format($total_orders); ?></div>
+        <div class="kpi-sub"><?php echo $pending_orders; ?> pending</div>
+      </div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-icon"><i class="fas fa-users"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Customers</div>
+        <div class="kpi-value"><?php echo number_format($total_customers); ?></div>
+        <div class="kpi-sub">Registered accounts</div>
+      </div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-icon"><i class="fas fa-boxes"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Products</div>
+        <div class="kpi-value"><?php echo number_format($total_products); ?></div>
+        <div class="kpi-sub"><?php echo $low_stock; ?> low stock</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ROW 1: Recent Orders + Order Status ── -->
+  <div class="section-row two-col" style="grid-template-columns: 2fr 1fr;">
+
+    <!-- Recent Orders Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><i class="fas fa-shopping-cart"></i> Recent Orders</div>
+        <a href="Order Manage/order_management.php" class="panel-link">View All →</a>
+      </div>
+      <div class="panel-body">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (empty($recent_orders)): ?>
+            <tr class="empty-row"><td colspan="5">No orders yet.</td></tr>
+            <?php else: ?>
+            <?php foreach ($recent_orders as $order):
+              $badge_map = [
+                'Pending'   => 'badge-pending',
+                'Processed' => 'badge-processed',
+                'Processing'=> 'badge-processed',
+                'Shipping'  => 'badge-shipping',
+                'Shipped'   => 'badge-shipping',
+                'Delivered' => 'badge-delivered',
+                'Cancelled' => 'badge-cancelled',
+              ];
+              $ic_map = [
+                'Pending'   => 'fa-clock',
+                'Processed' => 'fa-cogs',
+                'Processing'=> 'fa-cogs',
+                'Shipping'  => 'fa-truck',
+                'Shipped'   => 'fa-truck',
+                'Delivered' => 'fa-check-circle',
+                'Cancelled' => 'fa-times-circle',
+              ];
+              $bc = $badge_map[$order['status']] ?? 'badge-pending';
+              $ic = $ic_map[$order['status']] ?? 'fa-question-circle';
+            ?>
+            <tr>
+              <td><span class="order-num"><?php echo htmlspecialchars($order['order_number']); ?></span></td>
+              <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
+              <td><?php echo date('d/m/Y', strtotime($order['order_date'])); ?></td>
+              <td style="font-weight:700; color:#8e4b00;">$<?php echo number_format($order['total_amount'], 2); ?></td>
+              <td>
+                <span class="badge <?php echo $bc; ?>">
+                  <i class="fas <?php echo $ic; ?>"></i>
+                  <?php echo htmlspecialchars($order['status']); ?>
+                </span>
+              </td>
+            </tr>
+            <?php endforeach; ?>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Order Status Summary Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><i class="fas fa-chart-pie"></i> Order Status</div>
+      </div>
+      <div class="status-summary">
+        <?php
+        $status_colors = [
+          'Pending'   => '#f59e0b',
+          'Processed' => '#3b82f6',
+          'Shipping'  => '#8b5cf6',
+          'Delivered' => '#10b981',
+          'Cancelled' => '#ef4444',
+        ];
+        $total_status = max(1, array_sum($status_counts));
+        foreach ($status_counts as $st => $cnt):
+          $pct = round($cnt / $total_status * 100);
+          $col = $status_colors[$st] ?? '#ccc';
+        ?>
+        <div class="status-row">
+          <div class="status-dot" style="background:<?php echo $col; ?>;"></div>
+          <div class="status-row-label"><?php echo $st; ?></div>
+          <div class="status-bar-wrap">
+            <div class="status-bar-fill" style="width:<?php echo $pct; ?>%; background:<?php echo $col; ?>;"></div>
+          </div>
+          <div class="status-row-count"><?php echo $cnt; ?></div>
+        </div>
+        <?php endforeach; ?>
       </div>
 
-      <div class="product-list">
-
-        <!-- TAB1 – Male -->
-        <div class="tab-content active" id="tab1">
-          <form class="tab-search" method="GET" action="Administration_menu.php">
-            <input type="hidden" name="female_name"  value="<?php echo htmlspecialchars($female_name); ?>">
-            <input type="hidden" name="unisex_name"  value="<?php echo htmlspecialchars($unisex_name); ?>">
-            <input type="hidden" name="female_page"  value="<?php echo $female_page; ?>">
-            <input type="hidden" name="unisex_page"  value="<?php echo $unisex_page; ?>">
-            <input type="hidden" name="cust_page"    value="<?php echo $cust_page; ?>">
-            <input type="hidden" name="cust_name"    value="<?php echo htmlspecialchars($cust_name); ?>">
-            <input type="hidden" name="cust_status"  value="<?php echo htmlspecialchars($cust_status); ?>">
-            <input type="text" name="male_name" placeholder="Search product name…" value="<?php echo htmlspecialchars($male_name); ?>">
-            <button type="submit"><i class="fas fa-search"></i> Search</button>
-            <?php if (!empty($male_name)): ?>
-              <a class="reset-btn" href="<?php echo pageUrl(['male_name'=>'','male_page'=>1]); ?>">Reset</a>
-            <?php endif; ?>
-          </form>
-          <table>
-            <thead><tr><th>#</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
-            <tbody>
-              <?php if (empty($male_products)): ?>
-              <tr><td colspan="4" style="text-align:center;color:#888;padding:20px;">No products found.</td></tr>
-              <?php else: ?>
-              <?php foreach ($male_products as $i => $p): ?>
-              <tr>
-                <td><?php echo ($male_page-1)*$prod_limit + $i + 1; ?></td>
-                <td>
-                  <?php if (!empty($p['image'])): ?>
-                    <img src="../images/<?php echo htmlspecialchars($p['image']); ?>" class="product-img"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';">
-                    <span class="no-image" style="display:none;">No img</span>
-                  <?php else: ?><span class="no-image">No img</span><?php endif; ?>
-                </td>
-                <td><?php echo htmlspecialchars($p['name']); ?></td>
-                <td><?php echo htmlspecialchars($p['category']); ?></td>
-              </tr>
-              <?php endforeach; endif; ?>
-            </tbody>
-          </table>
-          <?php if ($male_pages > 1): ?>
-          <div class="pagination">
-            <?php if ($male_page > 1): ?>
-              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['male_page'=>$male_page-1]); ?>#products'">&#10094;</button>
-            <?php endif; ?>
-            <?php for ($i=1; $i<=$male_pages; $i++): ?>
-              <button class="pagination-btn <?php echo ($i==$male_page)?'active':''; ?>"
-                      onclick="window.location.href='<?php echo pageUrl(['male_page'=>$i]); ?>#products'"><?php echo $i; ?></button>
-            <?php endfor; ?>
-            <?php if ($male_page < $male_pages): ?>
-              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['male_page'=>$male_page+1]); ?>#products'">&#10095;</button>
-            <?php endif; ?>
-          </div>
-          <div class="pagination-info">Page <?php echo $male_page; ?>/<?php echo $male_pages; ?> — <?php echo $male_total; ?> product(s)</div>
-          <?php endif; ?>
-        </div>
-
-        <!-- TAB2 – Female -->
-        <div class="tab-content" id="tab2">
-          <form class="tab-search" method="GET" action="Administration_menu.php">
-            <input type="hidden" name="male_name"    value="<?php echo htmlspecialchars($male_name); ?>">
-            <input type="hidden" name="unisex_name"  value="<?php echo htmlspecialchars($unisex_name); ?>">
-            <input type="hidden" name="male_page"    value="<?php echo $male_page; ?>">
-            <input type="hidden" name="unisex_page"  value="<?php echo $unisex_page; ?>">
-            <input type="hidden" name="cust_page"    value="<?php echo $cust_page; ?>">
-            <input type="hidden" name="cust_name"    value="<?php echo htmlspecialchars($cust_name); ?>">
-            <input type="hidden" name="cust_status"  value="<?php echo htmlspecialchars($cust_status); ?>">
-            <input type="text" name="female_name" placeholder="Search product name…" value="<?php echo htmlspecialchars($female_name); ?>">
-            <button type="submit"><i class="fas fa-search"></i> Search</button>
-            <?php if (!empty($female_name)): ?>
-              <a class="reset-btn" href="<?php echo pageUrl(['female_name'=>'','female_page'=>1]); ?>">Reset</a>
-            <?php endif; ?>
-          </form>
-          <table>
-            <thead><tr><th>#</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
-            <tbody>
-              <?php if (empty($female_products)): ?>
-              <tr><td colspan="4" style="text-align:center;color:#888;padding:20px;">No products found.</td></tr>
-              <?php else: ?>
-              <?php foreach ($female_products as $i => $p): ?>
-              <tr>
-                <td><?php echo ($female_page-1)*$prod_limit + $i + 1; ?></td>
-                <td>
-                  <?php if (!empty($p['image'])): ?>
-                    <img src="../images/<?php echo htmlspecialchars($p['image']); ?>" class="product-img"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';">
-                    <span class="no-image" style="display:none;">No img</span>
-                  <?php else: ?><span class="no-image">No img</span><?php endif; ?>
-                </td>
-                <td><?php echo htmlspecialchars($p['name']); ?></td>
-                <td><?php echo htmlspecialchars($p['category']); ?></td>
-              </tr>
-              <?php endforeach; endif; ?>
-            </tbody>
-          </table>
-          <?php if ($female_pages > 1): ?>
-          <div class="pagination">
-            <?php if ($female_page > 1): ?>
-              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['female_page'=>$female_page-1]); ?>#products'">&#10094;</button>
-            <?php endif; ?>
-            <?php for ($i=1; $i<=$female_pages; $i++): ?>
-              <button class="pagination-btn <?php echo ($i==$female_page)?'active':''; ?>"
-                      onclick="window.location.href='<?php echo pageUrl(['female_page'=>$i]); ?>#products'"><?php echo $i; ?></button>
-            <?php endfor; ?>
-            <?php if ($female_page < $female_pages): ?>
-              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['female_page'=>$female_page+1]); ?>#products'">&#10095;</button>
-            <?php endif; ?>
-          </div>
-          <div class="pagination-info">Page <?php echo $female_page; ?>/<?php echo $female_pages; ?> — <?php echo $female_total; ?> product(s)</div>
-          <?php endif; ?>
-        </div>
-
-        <!-- TAB3 – Unisex -->
-        <div class="tab-content" id="tab3">
-          <form class="tab-search" method="GET" action="Administration_menu.php">
-            <input type="hidden" name="male_name"    value="<?php echo htmlspecialchars($male_name); ?>">
-            <input type="hidden" name="female_name"  value="<?php echo htmlspecialchars($female_name); ?>">
-            <input type="hidden" name="male_page"    value="<?php echo $male_page; ?>">
-            <input type="hidden" name="female_page"  value="<?php echo $female_page; ?>">
-            <input type="hidden" name="cust_page"    value="<?php echo $cust_page; ?>">
-            <input type="hidden" name="cust_name"    value="<?php echo htmlspecialchars($cust_name); ?>">
-            <input type="hidden" name="cust_status"  value="<?php echo htmlspecialchars($cust_status); ?>">
-            <input type="text" name="unisex_name" placeholder="Search product name…" value="<?php echo htmlspecialchars($unisex_name); ?>">
-            <button type="submit"><i class="fas fa-search"></i> Search</button>
-            <?php if (!empty($unisex_name)): ?>
-              <a class="reset-btn" href="<?php echo pageUrl(['unisex_name'=>'','unisex_page'=>1]); ?>">Reset</a>
-            <?php endif; ?>
-          </form>
-          <table>
-            <thead><tr><th>#</th><th>Image</th><th>Product Name</th><th>Category</th></tr></thead>
-            <tbody>
-              <?php if (empty($unisex_products)): ?>
-              <tr><td colspan="4" style="text-align:center;color:#888;padding:20px;">No products found.</td></tr>
-              <?php else: ?>
-              <?php foreach ($unisex_products as $i => $p): ?>
-              <tr>
-                <td><?php echo ($unisex_page-1)*$prod_limit + $i + 1; ?></td>
-                <td>
-                  <?php if (!empty($p['image'])): ?>
-                    <img src="../images/<?php echo htmlspecialchars($p['image']); ?>" class="product-img"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex';">
-                    <span class="no-image" style="display:none;">No img</span>
-                  <?php else: ?><span class="no-image">No img</span><?php endif; ?>
-                </td>
-                <td><?php echo htmlspecialchars($p['name']); ?></td>
-                <td><?php echo htmlspecialchars($p['category']); ?></td>
-              </tr>
-              <?php endforeach; endif; ?>
-            </tbody>
-          </table>
-          <?php if ($unisex_pages > 1): ?>
-          <div class="pagination">
-            <?php if ($unisex_page > 1): ?>
-              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['unisex_page'=>$unisex_page-1]); ?>#products'">&#10094;</button>
-            <?php endif; ?>
-            <?php for ($i=1; $i<=$unisex_pages; $i++): ?>
-              <button class="pagination-btn <?php echo ($i==$unisex_page)?'active':''; ?>"
-                      onclick="window.location.href='<?php echo pageUrl(['unisex_page'=>$i]); ?>#products'"><?php echo $i; ?></button>
-            <?php endfor; ?>
-            <?php if ($unisex_page < $unisex_pages): ?>
-              <button class="pagination-btn" onclick="window.location.href='<?php echo pageUrl(['unisex_page'=>$unisex_page+1]); ?>#products'">&#10095;</button>
-            <?php endif; ?>
-          </div>
-          <div class="pagination-info">Page <?php echo $unisex_page; ?>/<?php echo $unisex_pages; ?> — <?php echo $unisex_total; ?> product(s)</div>
-          <?php endif; ?>
-        </div>
-
+      <!-- Quick Actions -->
+      <div class="panel-header" style="margin-top:0; padding-top:14px;">
+        <div class="panel-title"><i class="fas fa-bolt"></i> Quick Actions</div>
       </div>
-    </section>
+      <div class="quick-actions">
+        <a href="product_management.php" class="qa-btn primary"><i class="fas fa-plus"></i> Add Product</a>
+        <a href="Order Manage/order_management.php" class="qa-btn secondary"><i class="fas fa-list"></i> All Orders</a>
+        <a href="Import_product/import_management.php" class="qa-btn secondary"><i class="fas fa-file-import"></i> Imports</a>
+        <a href="customer_management.php" class="qa-btn secondary"><i class="fas fa-users"></i> Customers</a>
+      </div>
+    </div>
 
-  </div><!-- /.content -->
+  </div><!-- /section-row -->
 
-  <script>
-    // Tab switching — remember active tab in localStorage
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.tab).classList.add('active');
-        localStorage.setItem('activeTabProducts', tab.dataset.tab);
-      });
-    });
+  <!-- ── ROW 2: Recent Imports + Top Products ── -->
+  <div class="section-row two-col" style="grid-template-columns: 1.4fr 1fr;">
 
-    window.addEventListener('load', () => {
-      const activeTab = localStorage.getItem('activeTabProducts');
-      if (activeTab) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        const tabEl     = document.querySelector(`.tab[data-tab="${activeTab}"]`);
-        const contentEl = document.getElementById(activeTab);
-        if (tabEl)     tabEl.classList.add('active');
-        if (contentEl) contentEl.classList.add('active');
-      }
-    });
-  </script>
+    <!-- Recent Imports Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><i class="fas fa-file-import"></i> Recent Import Receipts</div>
+        <a href="Import_product/import_management.php" class="panel-link">View All →</a>
+      </div>
+      <div class="panel-body">
+        <table class="import-table">
+          <thead>
+            <tr>
+              <th>Receipt #</th>
+              <th>Date</th>
+              <th>Supplier</th>
+              <th>Qty</th>
+              <th>Value</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (empty($recent_imports)): ?>
+            <tr class="empty-row"><td colspan="6">No import records yet.</td></tr>
+            <?php else: ?>
+            <?php foreach ($recent_imports as $imp):
+              $imp_badge = $imp['status'] === 'Completed' ? 'badge-completed' : 'badge-draft';
+            ?>
+            <tr>
+              <td>
+                <a href="Import_product/entry_form_detail.php?id=<?php echo $imp['id']; ?>" class="view-link">
+                  <?php echo htmlspecialchars($imp['order_number']); ?>
+                </a>
+              </td>
+              <td><?php echo htmlspecialchars($imp['entry_date']); ?></td>
+              <td style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                <?php echo htmlspecialchars($imp['supplier'] ?? '—'); ?>
+              </td>
+              <td style="text-align:center; font-weight:600;"><?php echo (int)$imp['total_quantity']; ?></td>
+              <td style="font-weight:700; color:#8e4b00;">$<?php echo number_format($imp['total_value'], 2); ?></td>
+              <td><span class="badge <?php echo $imp_badge; ?>"><?php echo $imp['status']; ?></span></td>
+            </tr>
+            <?php endforeach; ?>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top Products Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title"><i class="fas fa-fire"></i> Top Selling Products</div>
+        <a href="product_management.php" class="panel-link">View All →</a>
+      </div>
+      <div class="panel-body">
+        <?php if (empty($top_products)): ?>
+        <div style="text-align:center; padding:40px; color:#aaa; font-size:14px;">No sales data yet.</div>
+        <?php else: ?>
+        <?php foreach ($top_products as $rank => $tp): ?>
+        <div class="top-product-item">
+          <div><?php
+            $rank_colors = ['#f59e0b','#94a3b8','#cd7c3e','#aaa','#bbb'];
+            echo '<div style="width:22px; height:22px; border-radius:50%; background:' . $rank_colors[$rank] . '; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0;">' . ($rank+1) . '</div>';
+          ?></div>
+          <div class="top-product-img">
+            <?php if (!empty($tp['image'])): ?>
+            <img src="../images/<?php echo htmlspecialchars($tp['image']); ?>"
+                 onerror="this.style.opacity='.2'" alt="<?php echo htmlspecialchars($tp['name']); ?>">
+            <?php else: ?>
+            <i class="fas fa-gem" style="color:#ccc; font-size:20px;"></i>
+            <?php endif; ?>
+          </div>
+          <div class="top-product-info">
+            <div class="top-product-name"><?php echo htmlspecialchars($tp['name']); ?></div>
+            <div class="top-product-cat"><?php echo htmlspecialchars($tp['category']); ?></div>
+          </div>
+          <div class="top-product-sold"><?php echo (int)$tp['total_sold']; ?> sold</div>
+        </div>
+        <?php endforeach; ?>
+        <?php endif; ?>
+      </div>
+    </div>
+
+  </div><!-- /section-row -->
+
+</div><!-- /.content -->
+
+<script>
+  // Nothing needed — pure PHP/CSS dashboard
+</script>
 </body>
 </html>

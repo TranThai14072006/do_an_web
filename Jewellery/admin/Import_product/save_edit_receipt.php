@@ -64,81 +64,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         WHERE id = $id
     ");
 
-    // ── Tính giá bình quân khi Completed ─────────────────
-    if ($status === 'Completed') {
-        for ($i = 0; $i < count($product_ids); $i++) {
-            $pid = $product_ids[$i];
-            if (empty($pid)) continue;
-
-            $new_qty   = intval($quantities[$i]);
-            $new_price = floatval(str_replace('.', '', $prices[$i]));
-
-            // Stock trước khi phiếu này tính vào
-            // (= tổng các phiếu Completed KHÁC trừ đơn bán)
-            $cur = $conn->query("
-                SELECT
-                    GREATEST(0,
-                        COALESCE((
-                            SELECT SUM(gri.quantity)
-                            FROM goods_receipt_items gri
-                            JOIN goods_receipt gr ON gri.receipt_id = gr.id
-                            WHERE gri.product_id = '$pid'
-                              AND gr.status = 'Completed'
-                              AND gr.id != $id
-                        ), 0)
-                        -
-                        COALESCE((
-                            SELECT SUM(oi.quantity)
-                            FROM order_items oi
-                            WHERE oi.product_id = '$pid'
-                        ), 0)
-                    ) AS cur_stock,
-                    cost_price
-                FROM products
-                WHERE id = '$pid'
-            ")->fetch_assoc();
-
-            $cur_stock = floatval($cur['cur_stock']  ?? 0);
-            $cur_cost  = floatval($cur['cost_price'] ?? 0);
-
-            // ── Công thức bình quân ───────────────────────
-            // (tồn * giá cũ + nhập mới * giá mới) / (tồn + nhập mới)
-            $total_units = $cur_stock + $new_qty;
-            $avg_cost    = $total_units > 0
-                ? ($cur_stock * $cur_cost + $new_qty * $new_price) / $total_units
-                : $new_price;
-
-            // ── Cập nhật cost_price bình quân + giá bán ──
-            $stmt_upd = $conn->prepare("
-                UPDATE products
-                SET cost_price = ROUND(?, 4),
-                    price      = ROUND(? * (1 + profit_percent / 100.0), 2)
-                WHERE id = ?
-            ");
-            $stmt_upd->bind_param('dds', $avg_cost, $avg_cost, $pid);
-            $stmt_upd->execute();
-            $stmt_upd->close();
-
-            // ── Cập nhật stock ────────────────────────────
-            $conn->query("
-                UPDATE products p
-                SET p.stock = (
-                    COALESCE((
-                        SELECT SUM(gri.quantity)
-                        FROM goods_receipt_items gri
-                        JOIN goods_receipt gr ON gri.receipt_id = gr.id
-                        WHERE gri.product_id = p.id
-                          AND gr.status = 'Completed'
-                    ), 0)
-                    -
-                    COALESCE((
-                        SELECT SUM(oi.quantity)
-                        FROM order_items oi
-                        WHERE oi.product_id = p.id
-                    ), 0)
-                )
-                WHERE p.id = '$pid'
-            ");
+    require_once "../admin_sync.php";
+    // ── Đồng bộ hóa sản phẩm ─────────────────
+    foreach (array_unique($product_ids) as $pid) {
+        if (!empty($pid)) {
+            syncProduct($conn, $pid);
         }
     }
 

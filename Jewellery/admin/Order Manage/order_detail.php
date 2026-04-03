@@ -27,6 +27,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
         $update_success = $stmt->execute();
         if (!$update_success) {
             $update_error = $conn->error;
+        } else {
+            // ── ĐỒNG BỘ HÓA KHO ──────────────────────────────
+            require_once "../admin_sync.php";
+            $res_items = $conn->query("SELECT product_id FROM order_items WHERE order_id = $order_id");
+            while ($item = $res_items->fetch_assoc()) {
+                syncProduct($conn, $item['product_id']);
+            }
         }
         $stmt->close();
     } else {

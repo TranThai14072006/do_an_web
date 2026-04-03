@@ -71,16 +71,16 @@ CREATE TABLE `products` (
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
 INSERT INTO `products` (`id`, `name`, `price`, `image`, `cost_price`, `profit_percent`, `stock`, `category`, `gender`) VALUES
-('R001', 'Kane Moissanite Ring', 1326.00, 'R001.jpg', 1020.00, 30, 10, 'Ring', 'Male'),
-('R002', 'Winston Anchor Ring', 1708.00, 'R002.jpg', 1220.00, 40, 5, 'Ring', 'Male'),
-('R003', 'Ula Opal Teardrop Ring', 49.38, 'R003.jpg', 39.50, 25, 15, 'Ring', 'Female'),
-('R004', 'Platinum Clover Charm Ring', 1633.50, 'R004.jpg', 1210.00, 35, 8, 'Ring', 'Female'),
-('R005', 'Paisley Moissanite Ring', 1176.00, 'R005.jpg', 980.00, 20, 12, 'Ring', 'Female'),
-('R006', 'Niche Crown Stack Ring', 120.00, 'R006.jpg', 60.00, 100, 10, 'Ring', 'Female'),
-('R007', 'The Zenith Ring', 130.00, 'R007.jpg', 70.00, 85, 15, 'Ring', 'Male'),
-('R008', 'Silver Eminence Ring', 150.00, 'R008.jpg', 90.00, 67, 8, 'Ring', 'Male'),
-('R009', 'Elysian Flow', 200.00, 'R009.jpg', 120.00, 67, 5, 'Ring', 'Unisex'),
-('R010', 'Onyx Edge', 95.00, 'R010.jpg', 50.00, 90, 12, 'Ring', 'Unisex');
+('R001', 'Kane Moissanite Ring', 1326.00, 'R001.jpg', 1020.00, 30, 59, 'Ring', 'Male'),
+('R002', 'Winston Anchor Ring', 1708.00, 'R002.jpg', 1220.00, 40, 52, 'Ring', 'Male'),
+('R003', 'Ula Opal Teardrop Ring', 49.38, 'R003.jpg', 39.50, 25, 50, 'Ring', 'Female'),
+('R004', 'Platinum Clover Charm Ring', 1633.50, 'R004.jpg', 1210.00, 35, 50, 'Ring', 'Female'),
+('R005', 'Paisley Moissanite Ring', 1176.00, 'R005.jpg', 980.00, 20, 50, 'Ring', 'Female'),
+('R006', 'Niche Crown Stack Ring', 120.00, 'R006.jpg', 60.00, 100, 50, 'Ring', 'Female'),
+('R007', 'The Zenith Ring', 130.00, 'R007.jpg', 70.00, 85, 50, 'Ring', 'Male'),
+('R008', 'Silver Eminence Ring', 150.00, 'R008.jpg', 90.00, 67, 50, 'Ring', 'Male'),
+('R009', 'Elysian Flow', 200.00, 'R009.jpg', 120.00, 67, 50, 'Ring', 'Unisex'),
+('R010', 'Onyx Edge', 95.00, 'R010.jpg', 50.00, 90, 50, 'Ring', 'Unisex');
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -98,7 +98,7 @@ CREATE TABLE `goods_receipt` (
   `status` enum('Draft','Completed') DEFAULT 'Draft',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 LOCK TABLES `goods_receipt` WRITE;
 /*!40000 ALTER TABLE `goods_receipt` DISABLE KEYS */;
@@ -111,7 +111,8 @@ INSERT INTO `goods_receipt` VALUES
 (7,'ORD006','2026-03-13','Pearl Store',5,1000.00,'Draft','2026-03-18 13:02:02'),
 (8,'ORD007','2026-03-12','Gold & Silver Co.',2,300.00,'Completed','2026-03-18 13:02:02'),
 (9,'ORD008','2026-03-11','Fine Jewelry Ltd.',7,1500.00,'Draft','2026-03-18 13:02:02'),
-(10,'ORD.546','2026-12-24',NULL,11,2900000.00,'Completed','2026-03-19 06:00:03');
+(10,'ORD.546','2026-03-19',NULL,11,2900000.00,'Completed','2026-03-19 06:00:03'),
+(11,'BULK001','2026-04-01','Global Supply',500,185200.00,'Completed','2026-04-01 10:00:00');
 /*!40000 ALTER TABLE `goods_receipt` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -207,7 +208,19 @@ CREATE TABLE `goods_receipt_items` (
 
 LOCK TABLES `goods_receipt_items` WRITE;
 /*!40000 ALTER TABLE `goods_receipt_items` DISABLE KEYS */;
-INSERT INTO `goods_receipt_items` VALUES (3,10,'R001','Unknown',9,100000.00,900000.00),(4,10,'R002','Unknown',2,1000000.00,2000000.00);
+INSERT INTO `goods_receipt_items` VALUES 
+(3,10,'R001','Unknown',9,100000.00,900000.00),
+(4,10,'R002','Unknown',2,1000000.00,2000000.00),
+(5,11,'R001','Kane Moissanite Ring',50,1020.00,51000.00),
+(6,11,'R002','Winston Anchor Ring',50,1220.00,61000.00),
+(7,11,'R003','Ula Opal Teardrop Ring',50,39.50,1975.00),
+(8,11,'R004','Platinum Clover Charm Ring',50,1210.00,60500.00),
+(9,11,'R005','Paisley Moissanite Ring',50,980.00,49000.00),
+(10,11,'R006','Niche Crown Stack Ring',50,60.00,3000.00),
+(11,11,'R007','The Zenith Ring',50,70.00,3500.00),
+(12,11,'R008','Silver Eminence Ring',50,90.00,4500.00),
+(13,11,'R009','Elysian Flow',50,120.00,6000.00),
+(14,11,'R010','Onyx Edge',50,50.00,2500.00);
 /*!40000 ALTER TABLE `goods_receipt_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
