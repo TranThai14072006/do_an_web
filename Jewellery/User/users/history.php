@@ -2,11 +2,16 @@
 session_start();
 require_once __DIR__ . '/../../config/config.php';
 
+<<<<<<< Updated upstream
 // Define constants BEFORE use
 if (!defined('BASE_URL')) define('BASE_URL', '/Jewellery/');
+=======
+// Define constants before use
+if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
+>>>>>>> Stashed changes
 if (!defined('IMG_URL'))  define('IMG_URL', BASE_URL . 'images/');
 
-// Kiểm tra đăng nhập
+// Check login
 if (!isset($_SESSION['user_id'])) {
     header('Location: ' . BASE_URL . 'User/users/login.php');
     exit();
@@ -22,11 +27,19 @@ $result = $stmt->get_result();
 $customer = $result->fetch_assoc();
 
 if (!$customer) {
+<<<<<<< Updated upstream
     // If no customer information found
     $orders = [];
 } else {
     $customer_id = $customer['id'];
     // Get orders list for the customer
+=======
+    // No customer profile yet
+    $orders = [];
+} else {
+    $customer_id = $customer['id'];
+    // Fetch all orders for this customer
+>>>>>>> Stashed changes
     $stmt = $conn->prepare("SELECT id, order_number, order_date, total_amount, status FROM orders WHERE customer_id = ? ORDER BY order_date DESC");
     $stmt->bind_param("i", $customer_id);
     $stmt->execute();
@@ -66,7 +79,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ===== HEADER STYLING - ĐỒNG BỘ VỚI SEARCH ===== */
+/* ===== HEADER STYLING ===== */
 .header-container {
   width: 100%;
   position: sticky;
@@ -417,20 +430,20 @@ body {
         </thead>
         <tbody>
           <?php foreach ($orders as $order):
-              $order_date = date('d/m/Y', strtotime($order['order_date']));
+              $order_date = date('M d, Y', strtotime($order['order_date']));
               switch ($order['status']) {
                   case 'Pending':
-                      $sc = 'pending';   $si = 'fa-clock';        $sl = 'Chờ xác nhận'; break;
+                      $sc = 'pending';   $si = 'fa-clock';        $sl = 'Pending'; break;
                   case 'Processed':
                   case 'Processing':
-                      $sc = 'processed'; $si = 'fa-cogs';         $sl = 'Đang xử lý'; break;
+                      $sc = 'processed'; $si = 'fa-cogs';         $sl = 'Processing'; break;
                   case 'Shipping':
                   case 'Shipped':
-                      $sc = 'shipping';  $si = 'fa-truck';        $sl = 'Đang giao'; break;
+                      $sc = 'shipping';  $si = 'fa-truck';        $sl = 'Shipping'; break;
                   case 'Delivered':
-                      $sc = 'delivered'; $si = 'fa-check-circle'; $sl = 'Đã nhận hàng'; break;
+                      $sc = 'delivered'; $si = 'fa-check-circle'; $sl = 'Delivered'; break;
                   case 'Cancelled':
-                      $sc = 'cancelled'; $si = 'fa-times-circle'; $sl = 'Đã hủy'; break;
+                      $sc = 'cancelled'; $si = 'fa-times-circle'; $sl = 'Cancelled'; break;
                   default:
                       $sc = 'pending';   $si = 'fa-question-circle'; $sl = htmlspecialchars($order['status']);
               }
@@ -440,7 +453,7 @@ body {
               <td><?= $order_date ?></td>
               <td>$<?= number_format($order['total_amount'], 2) ?></td>
               <td><span class="status <?= $sc ?>"><i class="fas <?= $si ?>"></i><?= $sl ?></span></td>
-              <td><button class="view-details-btn" data-order-id="<?= $order['id'] ?>">Chi tiết</button></td>
+              <td><button class="view-details-btn" data-order-id="<?= $order['id'] ?>">View Details</button></td>
             </tr>
           <?php endforeach; ?>
         </tbody>
@@ -462,7 +475,7 @@ body {
     }
   }
 
-  // Xử lý nút View Details
+  // Handle View Details buttons
   const buttons = document.querySelectorAll(".view-details-btn");
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -470,7 +483,7 @@ body {
       if (orderId) {
         window.location.href = "<?= $link_view ?>?order_id=" + encodeURIComponent(orderId);
       } else {
-        // fallback (nếu là link cũ)
+        // fallback
         window.location.href = "view_details.html";
       }
     });

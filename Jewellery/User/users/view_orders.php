@@ -19,14 +19,14 @@ $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
 $link_search  = BASE_URL . 'User/Search/search.html';
 
-// ── Xử lý HỦY ĐƠN (POST) ─────────────────────────────────
+// ── Handle Cancel Order (POST) ─────────────────────────────
 $cancel_msg   = '';
 $cancel_error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order_id'])) {
     $cancel_id = (int)$_POST['cancel_order_id'];
 
-    // Xác nhận đơn thuộc về customer này và đang Pending
+    // Verify order belongs to this customer and is Pending
     $chk = $conn->prepare("
         SELECT o.id, o.status
         FROM orders o
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order_id'])) {
     $chk->close();
 
     if ($can) {
-        // Hoàn stock trước khi hủy
+        // Restore stock before cancelling
         $items_q = $conn->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
         $items_q->bind_param('i', $cancel_id);
         $items_q->execute();
@@ -53,18 +53,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order_id'])) {
         }
         $items_q->close();
 
-        // Cập nhật trạng thái đơn → Cancelled
+        // Update order status → Cancelled
         $upd_order = $conn->prepare("UPDATE orders SET status = 'Cancelled' WHERE id = ?");
         $upd_order->bind_param('i', $cancel_id);
         $upd_order->execute();
         $upd_order->close();
-        $cancel_msg = 'Đơn hàng đã được hủy thành công.';
+        $cancel_msg = 'Your order has been cancelled successfully.';
     } else {
-        $cancel_error = 'Không thể hủy đơn hàng này (chỉ có thể hủy đơn đang chờ xử lý).';
+        $cancel_error = 'Unable to cancel this order (only Pending orders can be cancelled).';
     }
 }
 
-// ── Lấy thông tin khách hàng ──────────────────────────────
+// ── Fetch customer info ────────────────────────────────────
 $stmt = $conn->prepare("
     SELECT u.email, COALESCE(c.full_name, u.username, '') AS full_name,
            COALESCE(c.phone,'') AS phone, COALESCE(c.address,'') AS address,
@@ -78,7 +78,7 @@ $user_info = $stmt->get_result()->fetch_assoc();
 if (!$user_info) $user_info = ['email'=>'','full_name'=>'','phone'=>'','address'=>'','customer_id'=>null];
 $stmt->close();
 
-// ── Lấy danh sách đơn hàng ────────────────────────────────
+// ── Fetch orders ───────────────────────────────────────────
 $orders = [];
 if ($user_info['customer_id']) {
     $order_stmt = $conn->prepare("
@@ -98,11 +98,12 @@ if ($user_info['customer_id']) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Orders | 36 Jewelry</title>
+  <meta name="description" content="View and manage all your orders at 36 Jewelry. Track status, cancel pending orders, and review your purchase history.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -216,14 +217,15 @@ if ($user_info['customer_id']) {
     /* Cancel button */
     .btn-cancel {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 7px 14px; border-radius: 8px; border: 1.5px solid #f44336;
-      background: rgba(244,67,54,.15); color: #ef9a9a;
+      padding: 7px 16px; border-radius: 8px; border: 1.5px solid #f44336;
+      background: rgba(244,67,54,.18); color: #ef9a9a;
       font-size: 13px; font-weight: 700; cursor: pointer;
       transition: .2s; letter-spacing: .3px; font-family: inherit;
+      white-space: nowrap;
     }
-    .btn-cancel:hover { background: rgba(244,67,54,.35); color: #fff; border-color: #e53935; }
+    .btn-cancel:hover { background: rgba(244,67,54,.42); color: #fff; border-color: #e53935; transform: scale(1.03); }
 
-    /* Received badge for shipping */
+    /* Info note for shipping */
     .delivered-note {
       display: inline-flex; align-items: center; gap: 5px;
       font-size: 12px; color: #a5d6a7; font-style: italic;
@@ -287,8 +289,8 @@ if ($user_info['customer_id']) {
     .modal-box h3 { font-size: 22px; color: #f8ce86; margin-bottom: 8px; }
     .modal-box p { font-size: 14px; color: rgba(255,255,255,.6); margin-bottom: 24px; line-height: 1.6; }
     .modal-actions { display: flex; gap: 12px; justify-content: center; }
-    .btn-modal-cancel { padding: 10px 22px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,.2); background: transparent; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; transition: .2s; font-family: inherit; }
-    .btn-modal-cancel:hover { border-color: rgba(255,255,255,.5); }
+    .btn-modal-back { padding: 10px 22px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,.2); background: transparent; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; transition: .2s; font-family: inherit; }
+    .btn-modal-back:hover { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.07); }
     .btn-modal-confirm { padding: 10px 22px; border-radius: 8px; border: none; background: #f44336; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; transition: .2s; font-family: inherit; }
     .btn-modal-confirm:hover { background: #d32f2f; }
 
@@ -330,7 +332,7 @@ if ($user_info['customer_id']) {
 
 <div class="page-wrapper">
   <h1 class="page-title"><i class="fas fa-box-open" style="margin-right:10px;"></i>Your Orders</h1>
-  <p class="page-sub">Xem và quản lý các đơn hàng của bạn</p>
+  <p class="page-sub">View and manage all your orders</p>
 
   <?php if ($cancel_msg): ?>
     <div class="alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($cancel_msg) ?></div>
@@ -342,8 +344,8 @@ if ($user_info['customer_id']) {
   <?php if (empty($orders)): ?>
     <div class="empty-state">
       <i class="fas fa-shopping-bag"></i>
-      <p>Bạn chưa có đơn hàng nào.</p>
-      <a href="<?= $link_home ?>"><i class="fas fa-gem"></i> Khám phá sản phẩm</a>
+      <p>You have no orders yet.</p>
+      <a href="<?= $link_home ?>"><i class="fas fa-gem"></i> Explore Products</a>
     </div>
   <?php else: ?>
     <?php foreach ($orders as $order):
@@ -354,29 +356,29 @@ if ($user_info['customer_id']) {
         case 'Pending':
           $badge_class = 'status-pending';
           $badge_icon  = 'fa-clock';
-          $badge_label = 'Chờ xác nhận';
+          $badge_label = 'Pending';
           break;
         case 'Processed':
         case 'Processing':
           $badge_class = 'status-processed';
           $badge_icon  = 'fa-cogs';
-          $badge_label = 'Đang xử lý';
+          $badge_label = 'Processing';
           break;
         case 'Shipping':
         case 'Shipped':
           $badge_class = 'status-shipping';
           $badge_icon  = 'fa-truck';
-          $badge_label = 'Đang giao hàng';
+          $badge_label = 'Shipping';
           break;
         case 'Delivered':
           $badge_class = 'status-delivered';
           $badge_icon  = 'fa-check-circle';
-          $badge_label = 'Đã nhận được hàng';
+          $badge_label = 'Delivered';
           break;
         case 'Cancelled':
           $badge_class = 'status-cancelled';
           $badge_icon  = 'fa-times-circle';
-          $badge_label = 'Đã hủy';
+          $badge_label = 'Cancelled';
           break;
         default:
           $badge_class = 'status-pending';
@@ -384,22 +386,22 @@ if ($user_info['customer_id']) {
           $badge_label = htmlspecialchars($status);
       }
 
-      // Chỉ cho phép hủy khi Pending
+      // Only allow cancellation when status is Pending
       $can_cancel = ($status === 'Pending');
     ?>
     <div class="order-card">
       <div class="order-header">
         <div class="order-header-item">
-          <span class="lbl">Mã đơn hàng</span>
+          <span class="lbl">Order Number</span>
           <span class="val"><?= htmlspecialchars($order['order_number']) ?></span>
         </div>
         <div class="order-header-item">
-          <span class="lbl">Ngày đặt</span>
-          <span class="val"><?= date('d/m/Y', strtotime($order['order_date'])) ?></span>
+          <span class="lbl">Order Date</span>
+          <span class="val"><?= date('M d, Y', strtotime($order['order_date'])) ?></span>
         </div>
         <?php if (!empty($order['payment_method'])): ?>
         <div class="order-header-item">
-          <span class="lbl">Thanh toán</span>
+          <span class="lbl">Payment</span>
           <span class="val"><?= htmlspecialchars($order['payment_method']) ?></span>
         </div>
         <?php endif; ?>
@@ -410,12 +412,12 @@ if ($user_info['customer_id']) {
           </span>
 
           <?php if ($can_cancel): ?>
-            <button class="btn-cancel"
-                    onclick="openCancelModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number']) ?>')">
-              <i class="fas fa-times"></i> Hủy đơn
+            <button id="cancel-btn-<?= $order['id'] ?>" class="btn-cancel"
+                    onclick="openCancelModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
+              <i class="fas fa-times"></i> Cancel Order
             </button>
           <?php elseif ($status === 'Shipping' || $status === 'Shipped'): ?>
-            <span class="delivered-note"><i class="fas fa-info-circle"></i> Đơn hàng đang trên đường giao</span>
+            <span class="delivered-note"><i class="fas fa-info-circle"></i> Out for delivery</span>
           <?php endif; ?>
         </div>
       </div>
@@ -424,10 +426,10 @@ if ($user_info['customer_id']) {
         <table class="order-table">
           <thead>
             <tr>
-              <th>Sản phẩm</th>
-              <th>Đơn giá</th>
-              <th>Số lượng</th>
-              <th>Thành tiền</th>
+              <th>Product</th>
+              <th>Unit Price</th>
+              <th>Qty</th>
+              <th>Subtotal</th>
             </tr>
           </thead>
           <tbody>
@@ -445,28 +447,28 @@ if ($user_info['customer_id']) {
 
       <div class="order-footer">
         <i class="fas fa-receipt" style="color:rgba(248,206,134,.5);"></i>
-        Tổng cộng: $<?= number_format($order['total_amount'], 2) ?>
+        Order Total: $<?= number_format($order['total_amount'], 2) ?>
       </div>
     </div>
     <?php endforeach; ?>
   <?php endif; ?>
 </div>
 
-<!-- CANCEL MODAL -->
+<!-- CANCEL CONFIRMATION MODAL -->
 <div class="modal-overlay" id="cancel-modal">
   <div class="modal-box">
     <i class="fas fa-exclamation-triangle"></i>
-    <h3>Xác nhận hủy đơn</h3>
-    <p>Bạn có chắc muốn hủy đơn hàng <strong id="modal-order-num" style="color:#f8ce86;"></strong>?<br>
-       Hành động này không thể hoàn tác.</p>
+    <h3>Cancel Order?</h3>
+    <p>Are you sure you want to cancel order <strong id="modal-order-num" style="color:#f8ce86;"></strong>?<br>
+       This action cannot be undone.</p>
     <div class="modal-actions">
-      <button class="btn-modal-cancel" onclick="closeCancelModal()">
-        <i class="fas fa-arrow-left"></i> Quay lại
+      <button class="btn-modal-back" onclick="closeCancelModal()">
+        <i class="fas fa-arrow-left"></i> Go Back
       </button>
       <form method="POST" style="display:inline;">
         <input type="hidden" name="cancel_order_id" id="modal-order-id">
         <button type="submit" class="btn-modal-confirm">
-          <i class="fas fa-times-circle"></i> Xác nhận hủy
+          <i class="fas fa-times-circle"></i> Confirm Cancel
         </button>
       </form>
     </div>
@@ -484,7 +486,7 @@ if ($user_info['customer_id']) {
   }
 
   function openCancelModal(orderId, orderNum) {
-    document.getElementById('modal-order-id').value  = orderId;
+    document.getElementById('modal-order-id').value = orderId;
     document.getElementById('modal-order-num').textContent = orderNum;
     document.getElementById('cancel-modal').classList.add('active');
   }
@@ -493,7 +495,7 @@ if ($user_info['customer_id']) {
     document.getElementById('cancel-modal').classList.remove('active');
   }
 
-  // Đóng modal khi click nền
+  // Close modal when clicking the backdrop
   document.getElementById('cancel-modal').addEventListener('click', function(e) {
     if (e.target === this) closeCancelModal();
   });

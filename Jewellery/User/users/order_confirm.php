@@ -35,6 +35,50 @@ $link_logout = BASE_URL . 'User/users/logout.php';
 $link_search = BASE_URL . 'User/Search/search.html';
 $logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
 
+// ── AJAX: Remove item from cart (must run before any output) ──
+// product_id is VARCHAR in the cart table → use 's' bind type
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_product_id'])) {
+  // Define calcPrice here so it is available for the total re-calc below
+  if (!function_exists('calcPrice')) {
+    function calcPrice(array $r): float {
+      $cost   = (float)($r['cost_price']    ?? 0);
+      $profit = (int)  ($r['profit_percent'] ?? 0);
+      $price  = (float)($r['price']          ?? 0);
+      return $cost > 0 ? $cost * (1 + $profit / 100) : $price;
+    }
+  }
+
+  $remove_pid = trim($_POST['remove_product_id']); // keep as string
+  $del = $conn->prepare('DELETE FROM cart WHERE user_id = ? AND product_id = ?');
+  $del->bind_param('is', $user_id, $remove_pid);
+  $del->execute();
+  $affected = $del->affected_rows;
+  $del->close();
+  
+  file_put_contents('debug_remove.txt', "AJAX FIRED. User: $user_id, PID: $remove_pid, Affected: $affected\n", FILE_APPEND);
+
+  // Re-calculate totals from remaining cart rows
+  $cst2 = $conn->prepare("
+    SELECT c.quantity, p.price, p.cost_price, p.profit_percent
+    FROM cart c JOIN products p ON c.product_id = p.id
+    WHERE c.user_id = ?
+  ");
+  $cst2->bind_param('i', $user_id);
+  $cst2->execute();
+  $res2      = $cst2->get_result();
+  $new_total = 0.0;
+  $new_count = 0;
+  while ($r2 = $res2->fetch_assoc()) {
+    $new_total += calcPrice($r2) * (int)$r2['quantity'];
+    $new_count++;
+  }
+  $cst2->close();
+
+  header('Content-Type: application/json');
+  echo json_encode(['success' => true, 'total' => round($new_total, 2), 'count' => $new_count]);
+  exit();
+}
+
 // ── Hàm tính giá bán ─────────────────────────────────────
 function calcPrice(array $r): float
 {
@@ -90,7 +134,9 @@ while ($row = $cres->fetch_assoc()) {
 }
 $cst->close();
 
-// ── Xử lý đặt hàng (POST) ────────────────────────────────
+// ── Handle Place Order (POST) ─────────────────────────────
+
+// ── Handle Place Order (POST) ─────────────────────────────
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
@@ -720,8 +766,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
     }
 
     @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(-6px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .bank-panel-header {
@@ -909,6 +962,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       font-weight: 700;
       color: var(--gold);
       white-space: nowrap;
+    }
+
+    .sum-item-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .btn-remove-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #e53935;
+      background: rgba(244, 67, 54, .08);
+      border: 1px solid rgba(244, 67, 54, .25);
+      border-radius: 6px;
+      padding: 3px 8px;
+      cursor: pointer;
+      transition: .18s;
+      font-family: 'DM Sans', sans-serif;
+      white-space: nowrap;
+    }
+
+    .btn-remove-item:hover {
+      background: #e53935;
+      color: #fff;
+      border-color: #e53935;
+    }
+
+    .sum-item.removing {
+      opacity: .4;
+      pointer-events: none;
+      transition: opacity .3s;
     }
 
     hr.sum-div {
@@ -1212,19 +1302,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
                 <!-- Thông tin ngân hàng cố định của cửa hàng -->
                 <div class="bank-row">
-                  <span class="b-label"><i class="fas fa-landmark" style="width:14px;text-align:center;color:#d4af37;"></i> Ngân hàng:</span>
+                  <span class="b-label"><i class="fas fa-landmark"
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Ngân hàng:</span>
                   <span class="b-value">Vietcombank (VCB)</span>
                 </div>
                 <div class="bank-row">
-                  <span class="b-label"><i class="fas fa-hashtag" style="width:14px;text-align:center;color:#d4af37;"></i> Số tài khoản:</span>
+                  <span class="b-label"><i class="fas fa-hashtag" style="width:14px;text-align:center;color:#d4af37;"></i>
+                    Số tài khoản:</span>
                   <span class="b-value">1234 5678 9012 3456</span>
                 </div>
                 <div class="bank-row">
-                  <span class="b-label"><i class="fas fa-user-tie" style="width:14px;text-align:center;color:#d4af37;"></i> Chủ tài khoản:</span>
+                  <span class="b-label"><i class="fas fa-user-tie"
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Chủ tài khoản:</span>
                   <span class="b-value">CONG TY TNHH TRANG SUC 36</span>
                 </div>
                 <div class="bank-row">
-                  <span class="b-label"><i class="fas fa-map-pin" style="width:14px;text-align:center;color:#d4af37;"></i> Chi nhánh:</span>
+                  <span class="b-label"><i class="fas fa-map-pin" style="width:14px;text-align:center;color:#d4af37;"></i>
+                    Chi nhánh:</span>
                   <span class="b-value">TP. Hồ Chí Minh</span>
                 </div>
 
@@ -1232,20 +1326,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
                 <!-- Thông tin người dùng (tự động điền) -->
                 <div class="bank-row">
-                  <span class="b-label"><i class="fas fa-user" style="width:14px;text-align:center;color:#d4af37;"></i> Người chuyển:</span>
+                  <span class="b-label"><i class="fas fa-user" style="width:14px;text-align:center;color:#d4af37;"></i>
+                    Người chuyển:</span>
                   <span class="b-value" id="bp-sender"><?= htmlspecialchars($user['full_name'] ?? '') ?></span>
                 </div>
                 <div class="bank-row">
-                  <span class="b-label"><i class="fas fa-phone" style="width:14px;text-align:center;color:#d4af37;"></i> Số điện thoại:</span>
+                  <span class="b-label"><i class="fas fa-phone" style="width:14px;text-align:center;color:#d4af37;"></i>
+                    Số điện thoại:</span>
                   <span class="b-value" id="bp-phone"><?= htmlspecialchars($user['phone'] ?? '') ?></span>
                 </div>
                 <div class="bank-row">
-                  <span class="b-label"><i class="fas fa-money-bill-wave" style="width:14px;text-align:center;color:#d4af37;"></i> Số tiền:</span>
+                  <span class="b-label"><i class="fas fa-money-bill-wave"
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Số tiền:</span>
                   <span class="b-value highlight" id="bp-amount">$<?= number_format($total_amount, 2) ?></span>
                 </div>
                 <div class="bank-row">
-                  <span class="b-label"><i class="fas fa-comment-alt" style="width:14px;text-align:center;color:#d4af37;"></i> Nội dung CK:</span>
-                  <span class="b-value" id="bp-content">36JW <?= htmlspecialchars($user['full_name'] ?? 'KHACH HANG') ?> <?= htmlspecialchars($user['phone'] ?? '') ?></span>
+                  <span class="b-label"><i class="fas fa-comment-alt"
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Nội dung CK:</span>
+                  <span class="b-value" id="bp-content">36JW <?= htmlspecialchars($user['full_name'] ?? 'KHACH HANG') ?>
+                    <?= htmlspecialchars($user['phone'] ?? '') ?></span>
                 </div>
 
                 <p class="bank-note">
@@ -1277,9 +1376,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       <?php if (empty($cart_items)): ?>
         <p class="empty-note">No items in cart.</p>
       <?php else: ?>
-        <div class="sum-items-list">
+        <div class="sum-items-list" id="sum-items-list">
           <?php foreach ($cart_items as $item): ?>
-            <div class="sum-item">
+            <div class="sum-item" data-product-id="<?= $item['id'] ?>" id="sum-item-<?= $item['id'] ?>">
               <img src="<?= IMG_URL . htmlspecialchars($item['image'] ?? '') ?>"
                 alt="<?= htmlspecialchars($item['name']) ?>" class="sum-thumb"
                 onerror="this.src='<?= IMG_URL ?>default-avatar.png'">
@@ -1287,7 +1386,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
                 <div class="sum-name"><?= htmlspecialchars($item['name']) ?></div>
                 <div class="sum-qty">SKU: <?= htmlspecialchars($item['id']) ?> · Qty: <?= $item['quantity'] ?></div>
               </div>
-              <span class="sum-price">$<?= number_format($item['total'], 2) ?></span>
+              <div class="sum-item-right">
+                <span class="sum-price">$<?= number_format($item['total'], 2) ?></span>
+                <button type="button" class="btn-remove-item" onclick="removeItem('<?= htmlspecialchars($item['id']) ?>', this)">
+                  <i class="fas fa-times"></i> Remove
+                </button>
+              </div>
             </div>
           <?php endforeach; ?>
         </div>
@@ -1295,8 +1399,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
         <hr class="sum-div">
 
         <div class="sum-row">
-          <span class="lbl">Subtotal (<?= count($cart_items) ?> items)</span>
-          <span class="val">$<?= number_format($total_amount, 2) ?></span>
+          <span class="lbl">Subtotal (<span id="sum-count"><?= count($cart_items) ?></span> items)</span>
+          <span class="val" id="sum-subtotal">$<?= number_format($total_amount, 2) ?></span>
         </div>
         <div class="sum-row">
           <span class="lbl">Shipping</span>
@@ -1311,7 +1415,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
         <div class="sum-total-row">
           <span>Total</span>
-          <span class="amt">$<?= number_format($total_amount, 2) ?></span>
+          <span class="amt" id="sum-total">$<?= number_format($total_amount, 2) ?></span>
         </div>
 
         <p class="sum-note"><i class="fas fa-shield-alt"></i> Free shipping · Secure checkout</p>
@@ -1327,6 +1431,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
     }
 
+    // ── Remove item from cart ────────────────────────────────
+    function removeItem(productId, btn) {
+      const itemEl = document.getElementById('sum-item-' + productId);
+      if (!itemEl) return;
+
+      itemEl.classList.add('removing');
+
+      const formData = new FormData();
+      formData.append('remove_product_id', productId);
+
+      fetch(window.location.href, { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            itemEl.remove();
+
+            const fmt = n => '$' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+            const countEl = document.getElementById('sum-count');
+            const subtotalEl = document.getElementById('sum-subtotal');
+            const totalEl = document.getElementById('sum-total');
+            const btnOrder = document.getElementById('btn-place-order');
+
+            if (countEl) countEl.textContent = data.count;
+            if (subtotalEl) subtotalEl.textContent = fmt(data.total);
+            if (totalEl) totalEl.textContent = fmt(data.total);
+
+            // Update Place Order button total
+            if (btnOrder) {
+              btnOrder.innerHTML = '<i class="fas fa-check-circle"></i> Place Order — ' + fmt(data.total);
+            }
+
+            // If no items left, reload to show empty state
+            if (data.count === 0) {
+              window.location.reload();
+            }
+          }
+        })
+        .catch(() => {
+          itemEl.classList.remove('removing');
+          alert('Failed to remove item. Please try again.');
+        });
+    }
+
     // ── Toggle bank panel ────────────────────────────────────
     const bankPanel = document.getElementById('bank-panel');
     function toggleBankPanel() {
@@ -1339,19 +1487,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
     }));
     // Sync sender/phone in bank panel when fullname/phone fields change
     const fullnameInput = document.getElementById('fullname');
-    const phoneInput    = document.getElementById('phone');
-    const bpSender  = document.getElementById('bp-sender');
-    const bpPhone   = document.getElementById('bp-phone');
+    const phoneInput = document.getElementById('phone');
+    const bpSender = document.getElementById('bp-sender');
+    const bpPhone = document.getElementById('bp-phone');
     const bpContent = document.getElementById('bp-content');
     function syncBankInfo() {
-      const name  = fullnameInput ? fullnameInput.value.trim() : '';
-      const phone = phoneInput    ? phoneInput.value.trim()    : '';
-      if (bpSender)  bpSender.textContent  = name  || '—';
-      if (bpPhone)   bpPhone.textContent   = phone || '—';
+      const name = fullnameInput ? fullnameInput.value.trim() : '';
+      const phone = phoneInput ? phoneInput.value.trim() : '';
+      if (bpSender) bpSender.textContent = name || '—';
+      if (bpPhone) bpPhone.textContent = phone || '—';
       if (bpContent) bpContent.textContent = '36JW ' + (name || 'KHACH HANG') + ' ' + phone;
     }
     if (fullnameInput) fullnameInput.addEventListener('input', syncBankInfo);
-    if (phoneInput)    phoneInput.addEventListener('input', syncBankInfo);
+    if (phoneInput) phoneInput.addEventListener('input', syncBankInfo);
     toggleBankPanel(); // init on page load
 
     // ── Toggle address sections ──────────────────────────────
@@ -1396,24 +1544,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
         if (addrOpt === 'saved') {
           const savedAddr = document.getElementById('saved_address')?.value.trim();
           if (!savedAddr) {
-             e.preventDefault();
-             alert('You do not have a saved address. Please select New Address and enter your address.');
-             return;
+            e.preventDefault();
+            alert('You do not have a saved address. Please select New Address and enter your address.');
+            return;
           }
         }
-        
+
         if (!confirm('Confirm your order?\n\nTotal: $<?= number_format($total_amount, 2) ?>\n\nClick OK to place order.')) {
           e.preventDefault();
           return;
-        } 
-        
+        }
+
         // Disable button AFTER submit event is queued
         const btn = document.getElementById('btn-place-order');
         if (btn) {
-           setTimeout(() => {
-              btn.disabled = true;
-              btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
-           }, 0);
+          setTimeout(() => {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
+          }, 0);
         }
       });
     }
