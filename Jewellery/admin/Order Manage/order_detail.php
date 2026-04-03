@@ -30,13 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
         }
         $stmt->close();
     } else {
-        $update_error = 'Invalid status.';
+        $update_error = 'Invalid status value.';
     }
 }
 
-// ============================================================
-// Lấy thông tin đơn hàng từ jewelry_db
-// ============================================================
+// Get order info from jewelry_db
 $stmt = $conn->prepare("
     SELECT id, order_number, customer_id, order_date, total_amount, status
     FROM orders

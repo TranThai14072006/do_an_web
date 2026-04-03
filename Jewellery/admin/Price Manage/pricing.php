@@ -2,7 +2,7 @@
 require_once "../../config/config.php";
 
 // ============================================================
-// Xử lý update profit_percent inline (Tab 2 - by product)
+// Handle inline profit_percent update (Tab 2 - by product)
 // ============================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
@@ -34,13 +34,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 // ============================================================
-// Tab đang active
+// Active tab
 // ============================================================
 $active_tab = $_GET['tab'] ?? 'tab1';
 $saved      = isset($_GET['saved']);
 
 // ============================================================
-// Tab 1: Selling Price Lookup — tìm kiếm
+// Tab 1: Selling Price Lookup — search
 // ============================================================
 $q_name     = trim($_GET['name']     ?? '');
 $q_category = trim($_GET['category'] ?? 'All');
@@ -84,7 +84,7 @@ $categories = $conn->query("SELECT category, AVG(profit_percent) as avg_profit,
                     ->fetch_all(MYSQLI_ASSOC);
 
 // ============================================================
-// Tab 4: Giá vốn theo lô hàng (breakdown per receipt)
+// Tab 4: Cost Price by Lot (breakdown per receipt)
 // ============================================================
 $q4_name = trim($_GET['lot_name'] ?? '');
 $q4_from = trim($_GET['lot_from'] ?? '');
@@ -137,7 +137,7 @@ $stmt4->execute();
 $lot_rows = $stmt4->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt4->close();
 
-// Lấy danh sách categories cho dropdown
+// Get category list for dropdown
 $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY category")->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -185,7 +185,7 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
   <header><h1>Pricing & Profit Management</h1></header>
 
   <?php if ($saved): ?>
-    <div class="alert-success">✅ Update successful!</div>
+    <div class="alert-success">✅ Updated successfully!</div>
   <?php endif; ?>
 
   <!-- TABS -->
@@ -246,7 +246,7 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
 
   <!-- ====== TAB 2: Profit by Product ====== -->
   <div id="tab2" class="tab-content <?= $active_tab==='tab2'?'active':'' ?>">
-    <p style="color:#666;font-size:14px;margin-bottom:16px;">Update profit % for each product — selling price will automatically recalculate.</p>
+    <p style="color:#666;font-size:14px;margin-bottom:16px;">Edit each product's profit percentage — the selling price will be recalculated automatically.</p>
     <table>
       <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit %</th><th>Selling Price</th><th>Save</th></tr></thead>
       <tbody>
@@ -288,7 +288,7 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
 
   <!-- ====== TAB 3: Profit by Category ====== -->
   <div id="tab3" class="tab-content <?= $active_tab==='tab3'?'active':'' ?>">
-    <p style="color:#666;font-size:14px;margin-bottom:16px;">Update profit % for all products in a category.</p>
+    <p style="color:#666;font-size:14px;margin-bottom:16px;">Update the profit percentage for all products in a category at once.</p>
     <table>
       <thead><tr><th>No.</th><th>Category</th><th>Products</th><th>Avg Profit %</th><th>Set Profit % for All</th></tr></thead>
       <tbody>
@@ -315,7 +315,7 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
   <!-- ====== TAB 4: Cost Price by Lot ====== -->
   <div id="tab4" class="tab-content <?= $active_tab==='tab4'?'active':'' ?>">
     <p style="color:#666;font-size:14px;margin-bottom:16px;">
-      Lookup cost price for each batch — compare with current average cost and corresponding selling price.
+      Look up cost price per import lot — compare against the current average cost and corresponding selling price.
     </p>
 
     <!-- Search -->
@@ -400,10 +400,10 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
 
     <?php if (!empty($lot_rows)): ?>
     <div style="margin-top:14px;font-size:13px;color:#666;padding:10px 0;border-top:1px solid #eee;">
-      <strong>Notes:</strong>
-      <span class="diff-up">+X.XX</span> = batch is more expensive than average &nbsp;|&nbsp;
-      <span class="diff-dn">-X.XX</span> = batch is cheaper than average &nbsp;|&nbsp;
-      Lot Sell Price = price calculated based on that batch's cost (not average)
+      <strong>Legend:</strong>
+      <span class="diff-up">+X.XX</span> = lot cost higher than average &nbsp;|&nbsp;
+      <span class="diff-dn">-X.XX</span> = lot cost lower than average &nbsp;|&nbsp;
+      Lot Sell Price = selling price calculated based on that lot's cost (not the average)
     </div>
     <?php endif; ?>
   </div>
@@ -417,13 +417,13 @@ function switchTab(id) {
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.tab-btn')[['tab1','tab2','tab3','tab4'].indexOf(id)].classList.add('active');
-  // Cập nhật URL không reload
+  // Update URL without reloading
   const url = new URL(window.location.href);
   url.searchParams.set('tab', id);
   history.replaceState(null, '', url);
 }
 
-// ── Preview giá bán khi gõ profit% (Tab 2) ───────────────
+// ── Preview selling price when typing profit% (Tab 2) ────
 function previewPrice(input) {
   const id     = input.dataset.id;
   const cost   = parseFloat(input.dataset.cost) || 0;
@@ -435,7 +435,7 @@ function previewPrice(input) {
   }
 }
 
-// ── Sync hidden input trước khi submit (Tab 2) ────────────
+// ── Sync hidden input before submit (Tab 2) ─────────────
 function syncHidden(id) {
   const val = document.getElementById('profit-' + id).value;
   document.getElementById('hidden-' + id).value = val;

@@ -98,7 +98,7 @@ CREATE TABLE `goods_receipt` (
   `status` enum('Draft','Completed') DEFAULT 'Draft',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 LOCK TABLES `goods_receipt` WRITE;
 /*!40000 ALTER TABLE `goods_receipt` DISABLE KEYS */;
@@ -111,7 +111,27 @@ INSERT INTO `goods_receipt` VALUES
 (7,'ORD006','2026-03-13','Pearl Store',5,1000.00,'Draft','2026-03-18 13:02:02'),
 (8,'ORD007','2026-03-12','Gold & Silver Co.',2,300.00,'Completed','2026-03-18 13:02:02'),
 (9,'ORD008','2026-03-11','Fine Jewelry Ltd.',7,1500.00,'Draft','2026-03-18 13:02:02'),
-(10,'ORD.546','2026-12-24',NULL,11,2900000.00,'Completed','2026-03-19 06:00:03');
+(10,'ORD.546','2026-12-24',NULL,11,2900000.00,'Completed','2026-03-19 06:00:03'),
+(11,'IMP001','2025-10-05','Premium Gems Co.',5,3626.76,'Completed','2025-10-05 09:00:00'),
+(12,'IMP002','2025-10-05','Luxury Imports',3,360.00,'Completed','2025-10-05 14:30:00'),
+(13,'IMP003','2025-10-12','Diamond Wholesale',4,520.00,'Completed','2025-10-12 10:15:00'),
+(14,'IMP004','2025-10-12','Gold Chain Suppliers',2,300.00,'Completed','2025-10-12 16:45:00'),
+(15,'IMP005','2025-11-01','Silver Works Inc.',6,8571.00,'Completed','2025-11-01 11:20:00'),
+(16,'IMP006','2025-11-01','Pearl Distributors',3,5124.00,'Completed','2025-11-01 15:10:00'),
+(17,'IMP007','2025-11-15','Crystal Clear Gems',4,6534.00,'Completed','2025-11-15 09:45:00'),
+(18,'IMP008','2025-11-15','Fine Metals Ltd.',2,400.00,'Completed','2025-11-15 13:30:00'),
+(19,'IMP009','2025-12-03','Jewel Masters',5,246.90,'Completed','2025-12-03 10:00:00'),
+(20,'IMP010','2025-12-03','Gemstone Imports',3,3528.00,'Completed','2025-12-03 14:20:00'),
+(21,'IMP011','2025-12-10','Luxury Rings Co.',4,480.00,'Completed','2025-12-10 11:15:00'),
+(22,'IMP012','2025-12-10','Chain Manufacturers',2,260.00,'Completed','2025-12-10 15:40:00'),
+(23,'IMP013','2026-01-08','Diamond Cutters Inc.',6,735.00,'Completed','2026-01-08 09:30:00'),
+(24,'IMP014','2026-01-08','Goldsmith Workshop',3,3978.00,'Completed','2026-01-08 13:50:00'),
+(25,'IMP015','2026-01-20','Silver Smiths',4,6832.00,'Completed','2026-01-20 10:25:00'),
+(26,'IMP016','2026-01-20','Pearl Importers',2,3267.00,'Completed','2026-01-20 14:35:00'),
+(27,'IMP017','2026-02-05','Gem Traders',5,1000.00,'Completed','2026-02-05 11:40:00'),
+(28,'IMP018','2026-02-05','Luxury Accessories',3,148.14,'Completed','2026-02-05 15:55:00'),
+(29,'IMP019','2026-02-18','Fine Jewelry Imports',4,4704.00,'Completed','2026-02-18 09:15:00'),
+(30,'IMP020','2026-02-18','Chain & Ring Co.',2,240.00,'Completed','2026-02-18 13:25:00');
 /*!40000 ALTER TABLE `goods_receipt` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -203,11 +223,36 @@ CREATE TABLE `goods_receipt_items` (
   PRIMARY KEY (`id`),
   KEY `receipt_id` (`receipt_id`),
   CONSTRAINT `goods_receipt_items_ibfk_1` FOREIGN KEY (`receipt_id`) REFERENCES `goods_receipt` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 LOCK TABLES `goods_receipt_items` WRITE;
 /*!40000 ALTER TABLE `goods_receipt_items` DISABLE KEYS */;
-INSERT INTO `goods_receipt_items` VALUES (3,10,'R001','Unknown',9,100000.00,900000.00),(4,10,'R002','Unknown',2,1000000.00,2000000.00);
+INSERT INTO `goods_receipt_items` VALUES 
+(3,10,'R001','Unknown',9,100000.00,900000.00),
+(4,10,'R002','Unknown',2,1000000.00,2000000.00),
+(5,11,'R003','Ula Opal Teardrop Ring',2,49.38,98.76),
+(6,11,'R005','Paisley Moissanite Ring',3,1176.00,3528.00),
+(7,12,'R006','Niche Crown Stack Ring',3,120.00,360.00),
+(8,13,'R007','The Zenith Ring',4,130.00,520.00),
+(9,14,'R008','Silver Eminence Ring',2,150.00,300.00),
+(10,15,'R010','Onyx Edge',2,95.00,190.00),
+(11,15,'R001','Kane Moissanite Ring',4,1326.00,5304.00),
+(12,16,'R002','Winston Anchor Ring',3,1708.00,5124.00),
+(13,17,'R004','Platinum Clover Charm Ring',4,1633.50,6534.00),
+(14,18,'R009','Elysian Flow',2,200.00,400.00),
+(15,19,'R003','Ula Opal Teardrop Ring',5,49.38,246.90),
+(16,20,'R005','Paisley Moissanite Ring',3,1176.00,3528.00),
+(17,21,'R006','Niche Crown Stack Ring',4,120.00,480.00),
+(18,22,'R007','The Zenith Ring',2,130.00,260.00),
+(19,23,'R008','Silver Eminence Ring',3,150.00,450.00),
+(20,23,'R010','Onyx Edge',3,95.00,285.00),
+(21,24,'R001','Kane Moissanite Ring',3,1326.00,3978.00),
+(22,25,'R002','Winston Anchor Ring',4,1708.00,6832.00),
+(23,26,'R004','Platinum Clover Charm Ring',2,1633.50,3267.00),
+(24,27,'R009','Elysian Flow',5,200.00,1000.00),
+(25,28,'R003','Ula Opal Teardrop Ring',3,49.38,148.14),
+(26,29,'R005','Paisley Moissanite Ring',4,1176.00,4704.00),
+(27,30,'R006','Niche Crown Stack Ring',2,120.00,240.00);
 /*!40000 ALTER TABLE `goods_receipt_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -277,6 +322,31 @@ CREATE TABLE `order_items` (
   KEY `product_id` (`product_id`),
   CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+LOCK TABLES `order_items` WRITE;
+/*!40000 ALTER TABLE `order_items` DISABLE KEYS */;
+INSERT INTO `order_items` VALUES
+(1,1,'R003','Ula Opal Teardrop Ring',2,49.38,98.76),
+(2,1,'R005','Paisley Moissanite Ring',1,1176.00,1176.00),
+(3,1,'R006','Niche Crown Stack Ring',3,120.00,360.00),
+(4,2,'R007','The Zenith Ring',1,130.00,130.00),
+(5,2,'R008','Silver Eminence Ring',1,150.00,150.00),
+(6,2,'R010','Onyx Edge',1,95.00,95.00),
+(7,3,'R001','Kane Moissanite Ring',1,1326.00,1326.00),
+(8,3,'R002','Winston Anchor Ring',1,1708.00,1708.00),
+(9,4,'R004','Platinum Clover Charm Ring',1,1633.50,1633.50),
+(10,5,'R009','Elysian Flow',1,200.00,200.00),
+(11,5,'R003','Ula Opal Teardrop Ring',1,49.38,49.38),
+(12,6,'R005','Paisley Moissanite Ring',1,1176.00,1176.00),
+(13,7,'R006','Niche Crown Stack Ring',2,120.00,240.00),
+(14,7,'R007','The Zenith Ring',1,130.00,130.00),
+(15,8,'R008','Silver Eminence Ring',1,150.00,150.00),
+(16,8,'R001','Kane Moissanite Ring',1,1326.00,1326.00),
+(17,9,'R002','Winston Anchor Ring',1,1708.00,1708.00),
+(18,10,'R004','Platinum Clover Charm Ring',1,1633.50,1633.50),
+(19,10,'R010','Onyx Edge',1,95.00,95.00);
+/*!40000 ALTER TABLE `order_items` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table: cart (FK → users)

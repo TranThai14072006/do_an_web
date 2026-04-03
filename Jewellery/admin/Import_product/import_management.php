@@ -165,7 +165,7 @@ function build_url($page, $params = []) {
 
   <?php if (isset($_GET['success'])): ?>
     <div class="alert-success" id="success-alert">
-      ✅ Receipt #<?= (int)$_GET['receipt_id'] ?> saved successfully!
+      ✅ Entry form #<?= (int)$_GET['receipt_id'] ?> has been saved successfully!
       <button onclick="document.getElementById('success-alert').remove()">×</button>
     </div>
   <?php endif; ?>
@@ -258,7 +258,7 @@ function build_url($page, $params = []) {
             <?php if ($row['status'] === 'Draft'): ?>
               <a href="edit_entry_form.php?id=<?= $row['id'] ?>" class="tbl-link">Edit</a>
             <?php else: ?>
-              <span style="color:#ccc;font-size:13px;" title="Completed form cannot be edited">🔒 Locked</span>
+              <span style="color:#ccc;font-size:13px;" title="This form is completed and cannot be edited">🔒 Locked</span>
             <?php endif; ?>
           </td>
         </tr>

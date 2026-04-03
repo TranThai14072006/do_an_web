@@ -138,14 +138,14 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
     </div>
 
     <div class="right">
-      <a href="../users/cart.php" class="icon-link" title="Giỏ hàng">
+      <a href="../users/cart.php" class="icon-link" title="Cart">
         <i class="fas fa-shopping-cart"></i>
       </a>
-      <a href="../users/profile.php" class="icon-link" title="Trang cá nhân">
+      <a href="../users/profile.php" class="icon-link" title="Profile">
         <i class="fas fa-user-circle user-icon"></i>
         <?php if ($logged_in_name): ?><span><?= htmlspecialchars($logged_in_name) ?></span><?php endif; ?>
       </a>
-      <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Đăng xuất" style="color:#c0392b;">
+      <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Logout" style="color:#111;">
         <i class="fas fa-sign-out-alt"></i>
       </a>
     </div>
@@ -210,7 +210,7 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
         <div class="col-lg-3 col-sm-6">
           <div class="footer-menu menu-001">
             <img src="../../images/36-logo.png" alt="logo">
-            <p>Questions? Contact us at <a href="mailto:yourinfo@gmail.com">yourinfo@gmail.com</a></p>
+            <p>Questions? Contact us at <span class="disabled-link">yourinfo@gmail.com</span></p>
           </div>
         </div>
         <div class="col-lg-2 col-sm-6">
@@ -218,8 +218,8 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
             <h5 class="widget-title">Quick Links</h5>
             <ul class="menu-list list-unstyled text-uppercase">
               <li class="menu-item"><a href="../indexprofile.php">Home</a></li>
-              <li class="menu-item"><a href="Products.html">Products</a></li> <!-- Giữ tạm href cũ -->
-              <li class="menu-item"><a href="#">Contact</a></li>
+              
+              <li class="menu-item"><span class="disabled-link">Contact</span></li> <!-- disabled -->
             </ul>
           </div>
         </div>
@@ -227,9 +227,9 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
           <div class="footer-menu text-uppercase menu-003">
             <h5 class="widget-title">Help & Info</h5>
             <ul class="menu-list list-unstyled">
-              <li class="menu-item"><a href="#">Shipping</a></li>
-              <li class="menu-item"><a href="#">Returns</a></li>
-              <li class="menu-item"><a href="#">Faqs</a></li>
+              <li class="menu-item"><span class="disabled-link">Shipping</span></li> <!-- disabled -->
+              <li class="menu-item"><span class="disabled-link">Returns</span></li> <!-- disabled -->
+              <li class="menu-item"><span class="disabled-link">Faqs</span></li>   <!-- disabled -->
             </ul>
           </div>
         </div>

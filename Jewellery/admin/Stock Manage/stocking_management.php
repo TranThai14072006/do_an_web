@@ -8,74 +8,83 @@ require_once "../../config/config.php";
 if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     header('Content-Type: application/json; charset=utf-8');
 
-    $type        = $_GET['type']       ?? '';
-    $date_from   = $_GET['date_from']  ?? '';
-    $date_to     = $_GET['date_to']    ?? '';
-    $date_single = $_GET['date']       ?? '';
-    $product     = $_GET['product']    ?? '';
+    try {
+        $type        = $_GET['type']       ?? '';
+        $date_from   = $_GET['date_from']  ?? '';
+        $date_to     = $_GET['date_to']    ?? '';
+        $date_single = $_GET['date']       ?? '';
+        $product     = $_GET['product']    ?? '';
 
-    if ($date_single !== '') {
-        $date_from = $date_to = $date_single;
+        if ($date_single !== '') {
+            $date_from = $date_to = $date_single;
+        }
+
+        $rows = [];
+
+        if ($type === 'import') {
+            $where  = ["gr.status = 'Completed'"];
+            $params = []; $types = '';
+            if ($date_from !== '') { $where[] = 'gr.entry_date >= ?'; $params[] = $date_from; $types .= 's'; }
+            if ($date_to   !== '') { $where[] = 'gr.entry_date <= ?'; $params[] = $date_to;   $types .= 's'; }
+            if ($product   !== '') { $where[] = 'gri.product_name LIKE ?'; $params[] = '%'.$product.'%'; $types .= 's'; }
+
+            $sql = "SELECT gr.order_number, gr.entry_date, gr.supplier, gr.status, gr.created_at,
+                           gri.product_id, gri.product_name, gri.quantity, gri.unit_price, gri.total_price
+                    FROM goods_receipt gr
+                    JOIN goods_receipt_items gri ON gr.id = gri.receipt_id
+                    WHERE " . implode(' AND ', $where) . "
+                    ORDER BY gr.entry_date DESC, gr.order_number ASC";
+
+            $stmt = $conn->prepare($sql);
+            if ($params) $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+
+        } elseif ($type === 'export') {
+            $where  = ['1=1'];
+            $params = []; $types = '';
+            if ($date_from !== '') { $where[] = 'o.order_date >= ?'; $params[] = $date_from; $types .= 's'; }
+            if ($date_to   !== '') { $where[] = 'o.order_date <= ?'; $params[] = $date_to;   $types .= 's'; }
+            if ($product   !== '') { $where[] = 'oi.product_name LIKE ?'; $params[] = '%'.$product.'%'; $types .= 's'; }
+
+            // FIX: orders table has no created_at column — use order_date AS created_at instead
+            $sql = "SELECT o.order_number, o.order_date AS entry_date, c.full_name AS supplier,
+                           o.status, o.order_date AS created_at,
+                           oi.product_id, oi.product_name,
+                           oi.quantity, oi.unit_price, oi.total_price
+                    FROM orders o
+                    JOIN order_items oi ON o.id = oi.order_id
+                    LEFT JOIN customers c ON o.customer_id = c.id
+                    WHERE " . implode(' AND ', $where) . "
+                    ORDER BY o.order_date DESC, o.order_number ASC";
+
+            $stmt = $conn->prepare($sql);
+            if ($params) $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt->close();
+        }
+
+        echo json_encode(['success' => true, 'type' => $type, 'rows' => $rows]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
-
-    $rows = [];
-
-    if ($type === 'import') {
-        $where  = ["gr.status = 'Completed'"];
-        $params = []; $types = '';
-        if ($date_from !== '') { $where[] = 'gr.entry_date >= ?'; $params[] = $date_from; $types .= 's'; }
-        if ($date_to   !== '') { $where[] = 'gr.entry_date <= ?'; $params[] = $date_to;   $types .= 's'; }
-        if ($product   !== '') { $where[] = 'gri.product_name LIKE ?'; $params[] = '%'.$product.'%'; $types .= 's'; }
-
-        $sql = "SELECT gr.order_number, gr.entry_date, gr.supplier, gr.status, gr.created_at,
-                       gri.product_id, gri.product_name, gri.quantity, gri.unit_price, gri.total_price
-                FROM goods_receipt gr
-                JOIN goods_receipt_items gri ON gr.id = gri.receipt_id
-                WHERE " . implode(' AND ', $where) . "
-                ORDER BY gr.entry_date DESC, gr.order_number ASC";
-
-        $stmt = $conn->prepare($sql);
-        if ($params) $stmt->bind_param($types, ...$params);
-        $stmt->execute();
-        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-
-    } elseif ($type === 'export') {
-        $where  = ['1=1'];
-        $params = []; $types = '';
-        if ($date_from !== '') { $where[] = 'o.order_date >= ?'; $params[] = $date_from; $types .= 's'; }
-        if ($date_to   !== '') { $where[] = 'o.order_date <= ?'; $params[] = $date_to;   $types .= 's'; }
-        if ($product   !== '') { $where[] = 'oi.product_name LIKE ?'; $params[] = '%'.$product.'%'; $types .= 's'; }
-
-        $sql = "SELECT o.order_number, o.order_date AS entry_date, c.full_name AS supplier,
-                       o.status, o.created_at, oi.product_id, oi.product_name,
-                       oi.quantity, oi.unit_price, oi.total_price
-                FROM orders o
-                JOIN order_items oi ON o.id = oi.order_id
-                LEFT JOIN customers c ON o.customer_id = c.id
-                WHERE " . implode(' AND ', $where) . "
-                ORDER BY o.order_date DESC, o.order_number ASC";
-
-        $stmt = $conn->prepare($sql);
-        if ($params) $stmt->bind_param($types, ...$params);
-        $stmt->execute();
-        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-    }
-
-    echo json_encode(['success' => true, 'type' => $type, 'rows' => $rows]);
     $conn->close();
     exit;
 }
 
 // ============================================================
 // Sync stock
+// FIX: added entry_date <= CURDATE() to exclude future-dated imports
 // ============================================================
 $conn->query("
     UPDATE products p SET p.stock = (
         COALESCE((SELECT SUM(gri.quantity) FROM goods_receipt_items gri
                   JOIN goods_receipt gr ON gri.receipt_id = gr.id
-                  WHERE gri.product_id = p.id AND gr.status = 'Completed'), 0)
+                  WHERE gri.product_id = p.id
+                    AND gr.status = 'Completed'
+                    AND gr.entry_date <= CURDATE()), 0)
         - COALESCE((SELECT SUM(oi.quantity) FROM order_items oi WHERE oi.product_id = p.id), 0)
     )
 ");
@@ -88,14 +97,30 @@ $active_tab = isset($_GET['tab']) ? trim($_GET['tab']) : 'stock-lookup';
 $search_name     = trim($_GET['search_name']     ?? '');
 $search_category = trim($_GET['search_category'] ?? 'All');
 $search_date     = trim($_GET['search_date']      ?? '');
+$page            = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page        = 5;
 
 $where1 = []; $params1 = []; $types1 = '';
 if ($search_name !== '')         { $where1[] = 'name LIKE ?';  $params1[] = '%'.$search_name.'%'; $types1 .= 's'; }
 if ($search_category !== 'All') { $where1[] = 'category = ?'; $params1[] = $search_category;      $types1 .= 's'; }
 $where1_sql = $where1 ? 'WHERE ' . implode(' AND ', $where1) : '';
 
-$stmt1 = $conn->prepare("SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC");
-if ($params1) $stmt1->bind_param($types1, ...$params1);
+// Get total count
+$count_sql = "SELECT COUNT(*) as total FROM products $where1_sql";
+$count_stmt = $conn->prepare($count_sql);
+if ($params1) $count_stmt->bind_param($types1, ...$params1);
+$count_stmt->execute();
+$total_products = $count_stmt->get_result()->fetch_assoc()['total'];
+$count_stmt->close();
+
+$total_pages = ceil($total_products / $per_page);
+$offset = ($page - 1) * $per_page;
+
+// Get paginated products
+$stmt1 = $conn->prepare("SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC LIMIT ? OFFSET ?");
+$params1[] = $per_page; $params1[] = $offset;
+$types1 .= 'ii';
+$stmt1->bind_param($types1, ...$params1);
 $stmt1->execute();
 $base_products = $stmt1->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt1->close();
@@ -157,6 +182,9 @@ $imp_where = ["gr.status = 'Completed'"]; $imp_params = []; $imp_types = '';
 if ($report_from    !== '') { $imp_where[] = 'gr.entry_date >= ?'; $imp_params[] = $report_from;           $imp_types .= 's'; }
 if ($report_to      !== '') { $imp_where[] = 'gr.entry_date <= ?'; $imp_params[] = $report_to;             $imp_types .= 's'; }
 if ($report_product !== '') { $imp_where[] = 'gri.product_name LIKE ?'; $imp_params[] = '%'.$report_product.'%'; $imp_types .= 's'; }
+
+// FIX: also exclude future-dated imports from report
+$imp_where[] = 'gr.entry_date <= CURDATE()';
 
 $stmt_imp = $conn->prepare("SELECT gr.entry_date AS report_date, SUM(gri.quantity) AS import_qty
     FROM goods_receipt gr JOIN goods_receipt_items gri ON gr.id=gri.receipt_id
@@ -298,13 +326,9 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .stat-card.clickable { cursor:pointer; }
 .stat-card.clickable:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(142,75,0,.2); }
 .stat-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; letter-spacing:0; }
-/* Total — màu chính */
 .si-gold   { background:#fdf0e0; color:#8e4b00; border:2px solid #e8c98a; }
-/* In Stock — xanh lá */
 .si-green  { background:#e8f5e9; color:#2e7d32; border:2px solid #a5d6a7; }
-/* Low Stock — cam */
 .si-orange { background:#fff3e0; color:#e65100; border:2px solid #ffcc80; }
-/* Out of Stock — đỏ */
 .si-red    { background:#ffebee; color:#c62828; border:2px solid #ef9a9a; }
 .stat-info h3 { font-size:22px; font-weight:700; color:#333; line-height:1; }
 .stat-info p  { font-size:12px; color:#888; margin-top:3px; }
@@ -316,7 +340,6 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .modal { background:#fff; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.3); width:100%; max-width:900px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; animation:modalIn .25s ease; }
 @keyframes modalIn { from { opacity:0; transform:translateY(20px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
 
-/* Modal headers — tất cả dùng màu nâu chính */
 .modal-header { padding:18px 24px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #f0e2d0; flex-shrink:0; }
 .modal-header.import-header { background:#8e4b00; color:#f8ce86; }
 .modal-header.export-header { background:#5a2d00; color:#f8ce86; }
@@ -327,7 +350,6 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .modal-close:hover { background:rgba(248,206,134,.4); }
 .modal-body { overflow-y:auto; flex:1; padding:0; }
 
-/* Summary bars */
 .modal-summary { display:flex; background:#fafafa; border-bottom:1px solid #f0e2d0; flex-shrink:0; }
 .modal-summary .sum-item { flex:1; padding:12px 20px; text-align:center; border-right:1px solid #f0e2d0; font-size:13px; color:#888; }
 .modal-summary .sum-item:last-child { border-right:none; }
@@ -337,7 +359,6 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .stock-summary .s-item:last-child { border-right:none; }
 .stock-summary .s-item strong { display:block; font-size:18px; }
 
-/* Drill-down table */
 .modal-table { width:100%; border-collapse:collapse; }
 .modal-table th { background:#fdf5ec; color:#8e4b00; font-weight:600; font-size:13px; padding:10px 14px; text-align:left; border-bottom:2px solid #f0e2d0; position:sticky; top:0; }
 .modal-table td { padding:12px 14px; font-size:14px; border-bottom:1px solid #fdf0e0; vertical-align:middle; }
@@ -354,24 +375,20 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .pill-cancelled { background:#ffebee; color:#c62828; }
 .group-row td { background:#fdf0e0; font-weight:700; color:#8e4b00; font-size:13px; padding:8px 14px; border-bottom:1px solid #e8c98a; }
 
-/* Stock detail table */
 .stock-modal-table { width:100%; border-collapse:collapse; }
 .stock-modal-table th { background:#fdf5ec; color:#8e4b00; font-size:12px; font-weight:700; padding:10px 14px; text-align:left; border-bottom:2px solid #f0e2d0; position:sticky; top:0; }
 .stock-modal-table td { padding:11px 14px; font-size:14px; border-bottom:1px solid #fdf0e0; vertical-align:middle; }
 .stock-modal-table tr:hover td { background:#fdf5ec; }
 
-/* Qty badges */
 .qty-badge { display:inline-block; padding:3px 14px; border-radius:20px; font-size:13px; font-weight:700; color:#fff; }
 .qty-green  { background:#43a047; }
 .qty-orange { background:#fb8c00; }
 .qty-red    { background:#e53935; }
 
-/* Legend */
 .stock-legend { display:flex; gap:14px; flex-wrap:wrap; padding:12px 16px; border-top:1px solid #f0e2d0; font-size:12px; color:#888; background:#fafafa; }
 .stock-legend span { display:flex; align-items:center; gap:5px; }
 .leg-dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
 
-/* Loading / empty */
 .modal-loading { text-align:center; padding:50px; color:#aaa; font-size:15px; }
 .modal-loading .spinner { width:36px; height:36px; border:3px solid #f0e2d0; border-top-color:#8e4b00; border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 14px; }
 @keyframes spin { to { transform:rotate(360deg); } }
@@ -388,7 +405,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
   <div class="tabs">
     <div class="tab <?= $active_tab==='stock-lookup' ?'active':'' ?>" data-tab="stock-lookup">Stock Lookup</div>
     <div class="tab <?= $active_tab==='stock-alert'  ?'active':'' ?>" data-tab="stock-alert">Low Stock Alert</div>
-    <div class="tab <?= $active_tab==='stock-report' ?'active':'' ?>" data-tab="stock-report">Import - Export - Balance</div>
+    <div class="tab <?= $active_tab==='stock-report' ?'active':'' ?>" data-tab="stock-report">Import - Export</div>
   </div>
 
   <!-- ====== TAB 1: Stock Lookup ====== -->
@@ -461,13 +478,35 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
       </tbody>
     </table>
 
+    <?php if ($total_pages > 1): ?>
+      <div style="text-align:center; margin:20px 0;">
+        <?php
+        $query_params = $_GET;
+        unset($query_params['page']);
+        $base_url = 'stocking_management.php?' . http_build_query($query_params) . '&page=';
+        ?>
+        <?php if ($page > 1): ?>
+          <a href="<?= $base_url . ($page - 1) ?>" class="btn secondary" style="margin-right:10px;">&laquo; Previous</a>
+        <?php endif; ?>
+        <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
+          <a href="<?= $base_url . $i ?>" class="btn <?= $i == $page ? '' : 'secondary' ?>" style="margin:0 2px;"><?= $i ?></a>
+        <?php endfor; ?>
+        <?php if ($page < $total_pages): ?>
+          <a href="<?= $base_url . ($page + 1) ?>" class="btn secondary" style="margin-left:10px;">Next &raquo;</a>
+        <?php endif; ?>
+        <div style="margin-top:10px; font-size:14px; color:#666;">
+          Page <?= $page ?> of <?= $total_pages ?> (<?= $total_products ?> total products)
+        </div>
+      </div>
+    <?php endif; ?>
+
     <div class="alert-section" style="margin-top:16px;">
       <div class="alert-title">Note</div>
       <?php if ($search_date !== ''): ?>
         Stock at <strong><?= htmlspecialchars($search_date) ?></strong>
         = Total imported (Completed, entry date up to selected date) minus Total sold (order date up to selected date).
       <?php else: ?>
-        Current stock = Total imported (Completed) minus Total sold.
+        Current stock = Total imported (Completed, up to today) minus Total sold.
         Alert threshold: <strong><?= $min_stock ?></strong> — adjust in the Low Stock Alert tab.
       <?php endif; ?>
     </div>
@@ -602,7 +641,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
               <?php if ($r['import'] > 0): ?>
                 <button class="drill-link import-link"
                         onclick="openModal('import','<?= $r['date'] ?>','<?= $r['date'] ?>','<?= htmlspecialchars(addslashes($report_product)) ?>','<?= $r['date'] ?>')">
-                  <?= $r['import'] ?> <span class="drill-icon">v</span>
+                  <?= $r['import'] ?> <span class="drill-icon">▾</span>
                 </button>
               <?php else: ?>
                 <span class="drill-link zero">0</span>
@@ -612,7 +651,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
               <?php if ($r['export'] > 0): ?>
                 <button class="drill-link export-link"
                         onclick="openModal('export','<?= $r['date'] ?>','<?= $r['date'] ?>','<?= htmlspecialchars(addslashes($report_product)) ?>','<?= $r['date'] ?>')">
-                  <?= $r['export'] ?> <span class="drill-icon">v</span>
+                  <?= $r['export'] ?> <span class="drill-icon">▾</span>
                 </button>
               <?php else: ?>
                 <span class="drill-link zero">0</span>
@@ -626,7 +665,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
             <td>
               <button class="drill-link" onclick="openStockModal()"
                       style="color:#4a6741;background:#f0f7ee;border:1px solid #a5c8a0;font-size:15px;font-weight:700;">
-                <?= $current_stock ?> <span class="drill-icon">v</span>
+                <?= $current_stock ?> <span class="drill-icon">▾</span>
               </button>
               <span class="stock-note">actual stock</span>
             </td>
@@ -643,7 +682,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
           &nbsp;
           <button class="drill-link import-link" style="font-size:13px;"
                   onclick="openModal('import','<?= htmlspecialchars($report_from) ?>','<?= htmlspecialchars($report_to) ?>','<?= htmlspecialchars(addslashes($report_product)) ?>','')">
-            View all import orders <span class="drill-icon">v</span>
+            View all import orders <span class="drill-icon">▾</span>
           </button>
         <?php endif; ?>
       </p>
@@ -652,7 +691,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
           &nbsp;
           <button class="drill-link export-link" style="font-size:13px;"
                   onclick="openModal('export','<?= htmlspecialchars($report_from) ?>','<?= htmlspecialchars($report_to) ?>','<?= htmlspecialchars(addslashes($report_product)) ?>','')">
-            View all export orders <span class="drill-icon">v</span>
+            View all export orders <span class="drill-icon">▾</span>
           </button>
         <?php endif; ?>
       </p>
@@ -660,7 +699,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
         Current Stock:
         <button class="drill-link" onclick="openStockModal()"
                 style="color:#4a6741;background:#f0f7ee;border:1px solid #a5c8a0;font-size:14px;font-weight:700;">
-          <strong><?= $current_stock ?></strong> units <span class="drill-icon">v</span>
+          <strong><?= $current_stock ?></strong> units <span class="drill-icon">▾</span>
         </button>
       </p>
     </div>
@@ -679,7 +718,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
           Total: <?= number_format($total_stock) ?> units across <?= count($stock_details) ?> products
         </div>
       </div>
-      <button class="modal-close" onclick="closeStockModal()">X</button>
+      <button class="modal-close" onclick="closeStockModal()">✕</button>
     </div>
 
     <div class="stock-summary">
@@ -753,7 +792,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
         <h3 id="modalTitle">Order Details</h3>
         <div class="meta" id="modalMeta"></div>
       </div>
-      <button class="modal-close" onclick="closeModal()">X</button>
+      <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
 
     <div class="modal-summary" id="modalSummary" style="display:none">
@@ -823,13 +862,18 @@ function openModal(type, dateFrom, dateTo, product, dateSingle) {
   fetch('stocking_management.php?' + params.toString())
     .then(r => r.json())
     .then(data => {
-      if (!data.success || !data.rows.length) {
+      if (!data.success) {
+        body.innerHTML = '<div class="modal-empty">Error: ' + (data.error || 'Unknown error') + '</div>';
+        return;
+      }
+      if (!data.rows.length) {
         body.innerHTML = '<div class="modal-empty">No orders found for this period.</div>';
         return;
       }
       renderModal(data.rows, type);
     })
-    .catch(() => {
+    .catch(error => {
+      console.error('AJAX Error:', error);
       body.innerHTML = '<div class="modal-empty">Failed to load data. Please try again.</div>';
     });
 }
@@ -897,7 +941,11 @@ function renderModal(rows, type) {
 }
 
 function getStatusClass(status) {
-  const map = { Completed:'pill-completed', Draft:'pill-draft', Delivered:'pill-delivered', Pending:'pill-pending', Processed:'pill-processed', Cancelled:'pill-cancelled' };
+  const map = {
+    Completed: 'pill-completed', Draft: 'pill-draft',
+    Delivered: 'pill-delivered', Pending: 'pill-pending',
+    Processed: 'pill-processed', Cancelled: 'pill-cancelled'
+  };
   return map[status] || 'pill-draft';
 }
 

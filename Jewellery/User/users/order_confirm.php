@@ -709,6 +709,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       filter: none;
     }
 
+    /* ── Bank Transfer Panel ── */
+    .bank-panel {
+      display: none;
+      margin-top: 14px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1.5px solid #d4af37;
+      animation: fadeSlide .25s ease;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bank-panel-header {
+      background: linear-gradient(135deg, #d4af37, #b8860b);
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bank-panel-body {
+      background: #fffdf5;
+      padding: 14px 16px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .bank-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13.5px;
+    }
+
+    .bank-row .b-label {
+      min-width: 130px;
+      color: var(--muted);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .bank-row .b-value {
+      color: var(--dark);
+      font-weight: 700;
+      word-break: break-all;
+    }
+
+    .bank-row .b-value.highlight {
+      color: #d4af37;
+      font-size: 15px;
+    }
+
+    .bank-divider {
+      border: none;
+      border-top: 1px dashed #e0d8c0;
+      margin: 4px 0;
+    }
+
+    .bank-note {
+      font-size: 12px;
+      color: #b8860b;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
     /* Place order btn */
     .btn-order {
       width: 100%;
@@ -1129,6 +1203,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
               </div>
             </div>
 
+            <!-- ── Bank Transfer Info Panel ── -->
+            <div class="bank-panel" id="bank-panel">
+              <div class="bank-panel-header">
+                <i class="fas fa-university"></i> Thông tin chuyển khoản ngân hàng
+              </div>
+              <div class="bank-panel-body">
+
+                <!-- Thông tin ngân hàng cố định của cửa hàng -->
+                <div class="bank-row">
+                  <span class="b-label"><i class="fas fa-landmark" style="width:14px;text-align:center;color:#d4af37;"></i> Ngân hàng:</span>
+                  <span class="b-value">Vietcombank (VCB)</span>
+                </div>
+                <div class="bank-row">
+                  <span class="b-label"><i class="fas fa-hashtag" style="width:14px;text-align:center;color:#d4af37;"></i> Số tài khoản:</span>
+                  <span class="b-value">1234 5678 9012 3456</span>
+                </div>
+                <div class="bank-row">
+                  <span class="b-label"><i class="fas fa-user-tie" style="width:14px;text-align:center;color:#d4af37;"></i> Chủ tài khoản:</span>
+                  <span class="b-value">CONG TY TNHH TRANG SUC 36</span>
+                </div>
+                <div class="bank-row">
+                  <span class="b-label"><i class="fas fa-map-pin" style="width:14px;text-align:center;color:#d4af37;"></i> Chi nhánh:</span>
+                  <span class="b-value">TP. Hồ Chí Minh</span>
+                </div>
+
+                <hr class="bank-divider">
+
+                <!-- Thông tin người dùng (tự động điền) -->
+                <div class="bank-row">
+                  <span class="b-label"><i class="fas fa-user" style="width:14px;text-align:center;color:#d4af37;"></i> Người chuyển:</span>
+                  <span class="b-value" id="bp-sender"><?= htmlspecialchars($user['full_name'] ?? '') ?></span>
+                </div>
+                <div class="bank-row">
+                  <span class="b-label"><i class="fas fa-phone" style="width:14px;text-align:center;color:#d4af37;"></i> Số điện thoại:</span>
+                  <span class="b-value" id="bp-phone"><?= htmlspecialchars($user['phone'] ?? '') ?></span>
+                </div>
+                <div class="bank-row">
+                  <span class="b-label"><i class="fas fa-money-bill-wave" style="width:14px;text-align:center;color:#d4af37;"></i> Số tiền:</span>
+                  <span class="b-value highlight" id="bp-amount">$<?= number_format($total_amount, 2) ?></span>
+                </div>
+                <div class="bank-row">
+                  <span class="b-label"><i class="fas fa-comment-alt" style="width:14px;text-align:center;color:#d4af37;"></i> Nội dung CK:</span>
+                  <span class="b-value" id="bp-content">36JW <?= htmlspecialchars($user['full_name'] ?? 'KHACH HANG') ?> <?= htmlspecialchars($user['phone'] ?? '') ?></span>
+                </div>
+
+                <p class="bank-note">
+                  <i class="fas fa-info-circle"></i>
+                  Vui lòng ghi đúng nội dung chuyển khoản để đơn hàng được xác nhận nhanh nhất.
+                </p>
+              </div>
+            </div>
+
             <button type="submit" class="btn-order" id="btn-place-order">
               <i class="fas fa-check-circle"></i>
               Place Order — $<?= number_format($total_amount, 2) ?>
@@ -1200,6 +1326,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       const kw = document.getElementById('search-input').value.trim();
       if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
     }
+
+    // ── Toggle bank panel ────────────────────────────────────
+    const bankPanel = document.getElementById('bank-panel');
+    function toggleBankPanel() {
+      const val = document.querySelector('input[name="payment_radio"]:checked')?.value;
+      if (bankPanel) bankPanel.style.display = (val === 'bank') ? 'block' : 'none';
+    }
+    document.querySelectorAll('input[name="payment_radio"]').forEach(r => r.addEventListener('change', function () {
+      document.getElementById('payment-hidden').value = this.value;
+      toggleBankPanel();
+    }));
+    // Sync sender/phone in bank panel when fullname/phone fields change
+    const fullnameInput = document.getElementById('fullname');
+    const phoneInput    = document.getElementById('phone');
+    const bpSender  = document.getElementById('bp-sender');
+    const bpPhone   = document.getElementById('bp-phone');
+    const bpContent = document.getElementById('bp-content');
+    function syncBankInfo() {
+      const name  = fullnameInput ? fullnameInput.value.trim() : '';
+      const phone = phoneInput    ? phoneInput.value.trim()    : '';
+      if (bpSender)  bpSender.textContent  = name  || '—';
+      if (bpPhone)   bpPhone.textContent   = phone || '—';
+      if (bpContent) bpContent.textContent = '36JW ' + (name || 'KHACH HANG') + ' ' + phone;
+    }
+    if (fullnameInput) fullnameInput.addEventListener('input', syncBankInfo);
+    if (phoneInput)    phoneInput.addEventListener('input', syncBankInfo);
+    toggleBankPanel(); // init on page load
 
     // ── Toggle address sections ──────────────────────────────
     const savedSec = document.getElementById('saved-addr-section');
