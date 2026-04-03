@@ -278,6 +278,31 @@ CREATE TABLE `order_items` (
   CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+LOCK TABLES `order_items` WRITE;
+/*!40000 ALTER TABLE `order_items` DISABLE KEYS */;
+INSERT INTO `order_items` VALUES
+(1,1,'R003','Ula Opal Teardrop Ring',2,49.38,98.76),
+(2,1,'R005','Paisley Moissanite Ring',1,1176.00,1176.00),
+(3,1,'R006','Niche Crown Stack Ring',3,120.00,360.00),
+(4,2,'R007','The Zenith Ring',1,130.00,130.00),
+(5,2,'R008','Silver Eminence Ring',1,150.00,150.00),
+(6,2,'R010','Onyx Edge',1,95.00,95.00),
+(7,3,'R001','Kane Moissanite Ring',1,1326.00,1326.00),
+(8,3,'R002','Winston Anchor Ring',1,1708.00,1708.00),
+(9,4,'R004','Platinum Clover Charm Ring',1,1633.50,1633.50),
+(10,5,'R009','Elysian Flow',1,200.00,200.00),
+(11,5,'R003','Ula Opal Teardrop Ring',1,49.38,49.38),
+(12,6,'R005','Paisley Moissanite Ring',1,1176.00,1176.00),
+(13,7,'R006','Niche Crown Stack Ring',2,120.00,240.00),
+(14,7,'R007','The Zenith Ring',1,130.00,130.00),
+(15,8,'R008','Silver Eminence Ring',1,150.00,150.00),
+(16,8,'R001','Kane Moissanite Ring',1,1326.00,1326.00),
+(17,9,'R002','Winston Anchor Ring',1,1708.00,1708.00),
+(18,10,'R004','Platinum Clover Charm Ring',1,1633.50,1633.50),
+(19,10,'R010','Onyx Edge',1,95.00,95.00);
+/*!40000 ALTER TABLE `order_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
 --
 -- Table: cart (FK → users)
 --
