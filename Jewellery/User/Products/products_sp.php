@@ -398,10 +398,20 @@ window.addEventListener('DOMContentLoaded', () => {
   // Lấy parameter q từ URL khi redirect tới trang này (vd: products_test.php?q=abc)
   const urlParams = new URLSearchParams(window.location.search);
   const qParam = urlParams.get('q');
+  const genderParam = urlParams.get('gender');
   
   if (qParam && qParam.trim()) {
     document.getElementById('search').value = qParam.trim();
     document.getElementById('header-search').value = qParam.trim();
+  }
+  
+  if (genderParam) {
+    const tabMatch = Array.from(document.querySelectorAll('.filter-tab')).find(t => t.dataset.gender.toLowerCase() === genderParam.toLowerCase());
+    if (tabMatch) {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tabMatch.classList.add('active');
+      currentGender = tabMatch.dataset.gender;
+    }
   }
   
   // Lúc này allProducts đã có sẵn dữ liệu JSON do PHP truyền thẳng xuống

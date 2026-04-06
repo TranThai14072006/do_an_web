@@ -125,7 +125,7 @@ $link_home    = BASE_URL . 'User/indexprofile.php';
 $link_cart    = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout  = BASE_URL . 'User/users/logout.php';
-$link_search  = BASE_URL . 'User/Search/search.html';
+$link_search  = BASE_URL . 'User/Products/products_sp.php';
 $link_detail  = BASE_URL . 'User/Products/product-detail.php';
 $link_shop    = BASE_URL . 'User/Products/products_sp.php';
 ?>
@@ -591,7 +591,7 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
       <div class="category-content content-light">
         <h3 class="category-title"><?= htmlspecialchars($cat['name']) ?></h3>
         <div class="btn-left">
-          <a href="<?= $link_shop ?>" class="btn btn-medium <?= $bc ?>">Shop it now</a>
+          <a href="<?= $link_shop ?>?gender=<?= urlencode($cat['name']) ?>" class="btn btn-medium <?= $bc ?>">Shop it now</a>
         </div>
       </div>
     </div>
@@ -638,11 +638,11 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
             <div class="footer-menu text-uppercase menu-003">
               <h5 class="widget-title">Help & Info</h5>
               <ul class="menu-list list-unstyled">
-                <li class="menu-item"><a href="#">Track Your Order</a></li>
-                <li class="menu-item"><a href="#">Returns Policies</a></li>
-                <li class="menu-item"><a href="#">Shipping + Delivery</a></li>
-                <li class="menu-item"><a href="#">Contact Us</a></li>
-                <li class="menu-item"><a href="#">Faqs</a></li>
+                <li class="menu-item"><a href="javascript:void(0)" style="cursor: not-allowed;">Track Your Order</a></li>
+                <li class="menu-item"><a href="javascript:void(0)" style="cursor: not-allowed;">Returns Policies</a></li>
+                <li class="menu-item"><a href="javascript:void(0)" style="cursor: not-allowed;">Shipping + Delivery</a></li>
+                <li class="menu-item"><a href="javascript:void(0)" style="cursor: not-allowed;">Contact Us</a></li>
+                <li class="menu-item"><a href="javascript:void(0)" style="cursor: not-allowed;">Faqs</a></li>
               </ul>
             </div>
           </div>
@@ -650,9 +650,9 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
             <div class="footer-menu contact-item menu-004">
               <h5 class="widget-title">Contact Us</h5>
               <p>Do you have any queries or suggestions?
-                <a href="mailto:ThirtySixJewellery@gmail.com">ThirtySixJewellery@gmail.com</a></p>
+                <a href="javascript:void(0)" style="cursor: not-allowed;">ThirtySixJewellery@gmail.com</a></p>
               <p>If you need support? Just give us a call.
-                <a href="tel:+5511122233344">+55 111 222 333 44</a></p>
+                <a href="javascript:void(0)" style="cursor: not-allowed;">+55 111 222 333 44</a></p>
             </div>
           </div>
         </div>
@@ -723,18 +723,22 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
 <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 <script>
 
-  const productSwiper = new Swiper('.product-swiper', {
-    slidesPerView: 3,
-    spaceBetween: 30,
-    loop: true,
-    navigation: {
-      nextEl: '.swiper-button-next',
-      prevEl: '.swiper-button-prev',
-    },
-    breakpoints: {
-      768: { slidesPerView: 2 },
-      480: { slidesPerView: 1 }
-    }
+  // Swiper sản phẩm (khởi tạo riêng từng slider để tránh lỗi đè nút điều hướng)
+  document.querySelectorAll('.product-swiper').forEach(function(swiperEl) {
+    var parent = swiperEl.closest('.row');
+    new Swiper(swiperEl, {
+      slidesPerView: 3,
+      spaceBetween: 30,
+      loop: true,
+      navigation: {
+        nextEl: parent ? parent.querySelector('.swiper-button-next') : null,
+        prevEl: parent ? parent.querySelector('.swiper-button-prev') : null,
+      },
+      breakpoints: {
+        768: { slidesPerView: 2 },
+        480: { slidesPerView: 1 }
+      }
+    });
   });
 
   const testimonialSwiper = new Swiper('.testimonial-swiper', {
