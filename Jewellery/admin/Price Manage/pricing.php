@@ -145,7 +145,7 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
 <head>
 <meta charset="UTF-8">
 <title>Pricing Management</title>
-<link rel="stylesheet" href="../admin_function.css">
+<link rel="stylesheet" href="/do_an_web/Jewellery/admin/admin_function.css">
 <style>
 /* TABS */
 .tabs{display:flex;gap:0;border-bottom:2px solid #ddd;margin-bottom:24px;}

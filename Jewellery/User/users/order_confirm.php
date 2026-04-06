@@ -58,11 +58,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_product_id']))
   file_put_contents('debug_remove.txt', "AJAX FIRED. User: $user_id, PID: $remove_pid, Affected: $affected\n", FILE_APPEND);
 
   // Re-calculate totals from remaining cart rows
-  $cst2 = $conn->prepare("
+  $query2 = "
     SELECT c.quantity, p.price, p.cost_price, p.profit_percent
     FROM cart c JOIN products p ON c.product_id = p.id
     WHERE c.user_id = ?
-  ");
+  ";
+
+  if (isset($_POST['selected_items']) && is_array($_POST['selected_items'])) {
+      $safe_items = array_map(function($item) use ($conn) {
+          return "'" . $conn->real_escape_string($item) . "'";
+      }, $_POST['selected_items']);
+      if (!empty($safe_items)) {
+          $query2 .= " AND c.product_id IN (" . implode(",", $safe_items) . ")";
+      }
+  }
+
+  $cst2 = $conn->prepare($query2);
   $cst2->bind_param('i', $user_id);
   $cst2->execute();
   $res2      = $cst2->get_result();
@@ -104,17 +115,33 @@ $user = $stmt->get_result()->fetch_assoc() ?? [];
 $stmt->close();
 
 // ── Lấy giỏ hàng ─────────────────────────────────────────
+$requested_items = [];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selected_items'])) {
+  $requested_items = $_POST['selected_items'];
+} elseif (isset($_GET['items'])) {
+  $requested_items = array_map('trim', explode(',', $_GET['items']));
+}
+
 $cart_items = [];
 $total_amount = 0.0;
 
-$cst = $conn->prepare("
+$query = "
     SELECT c.product_id, c.quantity,
            p.name, p.price, p.image, p.cost_price, p.profit_percent, p.stock
     FROM cart c
     JOIN products p ON c.product_id = p.id
     WHERE c.user_id = ?
-    ORDER BY c.product_id ASC
-");
+";
+
+if (!empty($requested_items)) {
+  $safe_items = array_map(function($item) use ($conn) {
+    return "'" . $conn->real_escape_string($item) . "'";
+  }, $requested_items);
+  $query .= " AND c.product_id IN (" . implode(",", $safe_items) . ")";
+}
+$query .= " ORDER BY c.product_id ASC";
+
+$cst = $conn->prepare($query);
 $cst->bind_param('i', $user_id);
 $cst->execute();
 $cres = $cst->get_result();
@@ -235,10 +262,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       $us->close();
 
       // ── 4. Xóa giỏ hàng ──────────────────────────
-      $del = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
-      $del->bind_param('i', $user_id);
-      $del->execute();
-      $del->close();
+      if (!empty($requested_items)) {
+        $safe_items = array_map(function($item) use ($conn) {
+          return "'" . $conn->real_escape_string($item) . "'";
+        }, $requested_items);
+        $conn->query("DELETE FROM cart WHERE user_id = " . $user_id . " AND product_id IN (" . implode(",", $safe_items) . ")");
+      } else {
+        $del = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
+        $del->bind_param('i', $user_id);
+        $del->execute();
+        $del->close();
+      }
 
       $conn->commit();
 
@@ -1203,6 +1237,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
         <?php else: ?>
           <form method="POST" id="checkout-form" novalidate>
+            <?php foreach ($cart_items as $item): ?>
+              <input type="hidden" name="selected_items[]" class="selected-item-input" value="<?= htmlspecialchars($item['id']) ?>">
+            <?php endforeach; ?>
 
             <!-- ── Contact Details ── -->
             <div class="section-label"><i class="fas fa-user"></i> Contact Details</div>
@@ -1440,6 +1477,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
       const formData = new FormData();
       formData.append('remove_product_id', productId);
+      
+      document.querySelectorAll('input.selected-item-input').forEach(input => {
+          if (input.value !== productId) {
+              formData.append('selected_items[]', input.value);
+          }
+      });
 
       fetch(window.location.href, { method: 'POST', body: formData })
         .then(r => r.json())

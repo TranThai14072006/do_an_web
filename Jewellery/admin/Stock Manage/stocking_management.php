@@ -256,7 +256,7 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stocking Management</title>
-  <link rel="stylesheet" href="../admin_function.css">
+  <link rel="stylesheet" href="/do_an_web/Jewellery/admin/admin_function.css">
   <style>
     /* PAGE-SPECIFIC: main override for this layout */
     main { overflow-x: hidden; padding: 25px; }

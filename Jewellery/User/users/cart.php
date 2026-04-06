@@ -687,11 +687,13 @@ $added_flash = isset($_GET['added']);
       box-shadow: 0 6px 24px rgba(184, 134, 11, .4);
     }
 
-    .btn-checkout:disabled {
-      background: #ccc;
-      box-shadow: none;
-      cursor: not-allowed;
-      transform: none;
+    .btn-checkout:disabled,
+    .btn-checkout.disabled {
+      background: #ccc !important;
+      box-shadow: none !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+      pointer-events: none;
     }
 
     .btn-continue {
@@ -870,6 +872,7 @@ $added_flash = isset($_GET['added']);
         <table class="cart-table" id="cart-table">
           <thead>
             <tr>
+              <th style="width: 40px; text-align: center;"><input type="checkbox" id="select-all" checked></th>
               <th>Product</th>
               <th>Size</th>
               <th>Unit Price</th>
@@ -878,11 +881,16 @@ $added_flash = isset($_GET['added']);
               <th style="width:48px"></th>
             </tr>
           </thead>
+
           <tbody id="cart-body">
             <?php foreach ($cart_rows as $item): ?>
               <tr id="row-<?= htmlspecialchars($item['product_id']) ?>"
                 data-pid="<?= htmlspecialchars($item['product_id']) ?>" data-price="<?= $item['selling_price'] ?>">
+                <td style="text-align: center;">
+                  <input type="checkbox" class="item-checkbox" value="<?= htmlspecialchars($item['product_id']) ?>" checked>
+                </td>
                 <td>
+
                   <div class="product-cell">
                     <img src="<?= IMG_URL . htmlspecialchars($item['image'] ?? '') ?>"
                       alt="<?= htmlspecialchars($item['name']) ?>" class="product-thumb"
@@ -983,17 +991,60 @@ $added_flash = isset($_GET['added']);
     // ── Recalculate totals ──────────────────────────────────
     function recalcTotals() {
       let total = 0, count = 0;
+      let selectedIds = [];
       document.querySelectorAll('#cart-body tr[data-pid]').forEach(row => {
+        const checkbox = row.querySelector('.item-checkbox');
         const price = parseFloat(row.dataset.price) || 0;
         const qty = parseInt(row.querySelector('.qty-input').value) || 1;
         const itemTotal = price * qty;
         row.querySelector('.item-total').textContent = '$' + itemTotal.toFixed(2);
-        total += itemTotal;
-        count += qty;
+        
+        if (checkbox && checkbox.checked) {
+          total += itemTotal;
+          count += qty;
+          selectedIds.push(row.dataset.pid);
+        }
       });
       document.getElementById('subtotal').textContent = '$' + total.toFixed(2);
       document.getElementById('grand-total').textContent = '$' + total.toFixed(2);
+      
+      const summaryItemsLabel = document.querySelector('.summary-row .label');
+      if (summaryItemsLabel) {
+        summaryItemsLabel.textContent = `Subtotal (${count} items)`;
+      }
+
+      const checkoutBtn = document.getElementById('btn-checkout');
+      if (checkoutBtn && checkoutBtn.tagName === 'A') {
+        if (selectedIds.length > 0) {
+          checkoutBtn.classList.remove('disabled');
+          checkoutBtn.href = '<?= $link_checkout ?>?items=' + encodeURIComponent(selectedIds.join(','));
+        } else {
+          checkoutBtn.classList.add('disabled');
+          checkoutBtn.removeAttribute('href');
+        }
+      }
     }
+
+    // ── Checkboxes ───────────────────────────────────────────
+    document.getElementById('select-all')?.addEventListener('change', function() {
+      const isChecked = this.checked;
+      document.querySelectorAll('.item-checkbox').forEach(cb => {
+        cb.checked = isChecked;
+      });
+      recalcTotals();
+    });
+
+    document.querySelectorAll('.item-checkbox').forEach(cb => {
+      cb.addEventListener('change', function() {
+        const allChecked = document.querySelectorAll('.item-checkbox:not(:checked)').length === 0;
+        const selectAll = document.getElementById('select-all');
+        if (selectAll) selectAll.checked = allChecked;
+        recalcTotals();
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', recalcTotals);
+
 
     // ── AJAX helper ─────────────────────────────────────────
     function cartAjax(data) {
