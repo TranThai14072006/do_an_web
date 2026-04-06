@@ -18,8 +18,8 @@ $error_msg = match($error) {
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Add Entry Form</title>
-<style>
 <link rel="stylesheet" href="../admin_function.css">
+<style>
 main { padding: 0; }
 .top-nav { background: white; padding: 18px 22px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-weight: 700; color: #8e4b00; font-size: 18px; }
 .card { background: white; border-radius: 10px; margin: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
