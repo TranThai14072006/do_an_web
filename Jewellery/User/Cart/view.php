@@ -224,6 +224,8 @@ if (isset($_SESSION['user_id'])) {
 
 <div class="product-detail">
 
+  <button class="back-btn" onclick="window.history.back()">←</button>
+
   <!-- IMAGE -->
   <div class="product-image">
     <img src="../../images/<?php echo htmlspecialchars($product['image']); ?>"
