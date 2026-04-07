@@ -35,6 +35,47 @@ if ($product) {
   <title><?php echo $product['name'] ?? 'Product'; ?></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="pr_detail.css">
+  <style>
+    .stock-status {
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 5px;
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .status-in { background: #e8f5e9; color: #2e7d32; }
+    .status-out { background: #ffebee; color: #c62828; }
+    
+    .btn-out-of-stock {
+      background: #d8d8d8 !important;
+      color: #666 !important;
+      cursor: not-allowed !important;
+      border: 1px solid #ccc !important;
+      padding: 12px 30px;
+      font-weight: 700;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+    }
+    
+    .buy-now.disabled {
+      background: #f0f0f0;
+      color: #bbb;
+      border-color: #ddd;
+      pointer-events: none;
+    }
+    
+    select:disabled {
+      background-color: #f9f9f9;
+      cursor: not-allowed;
+      border-color: #eee;
+    }
+  </style>
 </head>
 
 <body>
@@ -92,6 +133,12 @@ if ($product) {
 
     <p class="price">
       $<?php echo number_format($sale_price, 2); ?>
+      <br>
+      <?php if ((int)$product['stock'] > 0): ?>
+        <span class="stock-status status-in"><i class="fas fa-check"></i> In Stock</span>
+      <?php else: ?>
+        <span class="stock-status status-out"><i class="fas fa-times"></i> Out of Stock</span>
+      <?php endif; ?>
     </p>
 
     <p class="description">
@@ -100,8 +147,8 @@ if ($product) {
 
     <div class="size-selection">
   <h3>Select Ring Size</h3>
-  <select id="ring-size" required>
-    <option value="" disabled selected>-- Choose size --</option>
+  <select id="ring-size" required <?php echo (int)$product['stock'] <= 0 ? 'disabled' : ''; ?>>
+    <option value="" disabled selected>-- <?php echo (int)$product['stock'] > 0 ? 'Choose size' : 'Unavailable'; ?> --</option>
     <option value="5">Size 5</option>
     <option value="6">Size 6</option>
     <option value="7">Size 7</option>
@@ -133,16 +180,23 @@ if ($product) {
     </ul>
 
     <div class="action-buttons">
-      <button class="add-to-cart"
-        onclick="addToCart('<?php echo $product['id']; ?>','<?php echo addslashes($product['name']); ?>')">
-        <i class="fas fa-shopping-cart"></i>
-        Add to cart
-      </button>
+      <?php if ((int)$product['stock'] > 0): ?>
+        <button class="add-to-cart"
+          onclick="addToCart('<?php echo $product['id']; ?>','<?php echo addslashes($product['name']); ?>')">
+          <i class="fas fa-shopping-cart"></i>
+          Add to cart
+        </button>
 
-      <a href="#" class="buy-now" onclick="buyNow(event, '<?php echo $product['id']; ?>')">
-        <i class="fas fa-bolt"></i>
-        Buy now
-      </a>
+        <a href="#" class="buy-now" onclick="buyNow(event, '<?php echo $product['id']; ?>')">
+          <i class="fas fa-bolt"></i>
+          Buy now
+        </a>
+      <?php else: ?>
+        <button class="btn-out-of-stock" disabled>
+          <i class="fas fa-ban"></i>
+          Currently Out of Stock
+        </button>
+      <?php endif; ?>
     </div>
 
   </div>

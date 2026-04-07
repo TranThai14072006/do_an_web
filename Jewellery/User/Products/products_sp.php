@@ -24,7 +24,7 @@ try {
 
 // Lấy toàn bộ sản phẩm từ DB
 $stmt = $pdo->query("
-    SELECT id, name, cost_price, profit_percent, image, gender 
+    SELECT id, name, cost_price, profit_percent, image, gender, stock 
     FROM products
     ORDER BY id ASC
 ");
@@ -42,6 +42,7 @@ foreach ($rows as $p) {
         'gender'     => $p['gender'],
         'sale_price' => $sale_price,
         'image'      => $p['image'] ?: 'placeholder.png',
+        'in_stock'   => (int)$p['stock'] > 0,
     ];
 }
 
@@ -111,6 +112,61 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
     .no-size-option {
       font-size: 12px; color: #aaa; margin-bottom: 18px;
       cursor: pointer; text-decoration: underline;
+    }
+    /* ===== OUT OF STOCK ===== */
+    .product-card.is-out-of-stock .image-holder {
+      position: relative;
+    }
+    .product-card.is-out-of-stock .image-holder::after {
+      content: 'Out of Stock';
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.42);
+      color: #fff;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-add.out-of-stock {
+      background: #d8d8d8 !important;
+      color: #666 !important;
+      cursor: not-allowed !important;
+      border: 1px solid #ccc !important;
+      font-weight: 600;
+    }
+    .out-of-stock-toast {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      z-index: 10000;
+      opacity: 0; visibility: hidden;
+      transform: translateY(100%);
+      transition: opacity .3s ease, transform .3s ease, visibility .3s;
+      max-width: 350px; width: 100%;
+      pointer-events: none;
+    }
+    .out-of-stock-toast.show {
+      opacity: 1; visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .out-of-stock-toast .oos-inner {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-left: 4px solid #b8860b;
+      border-radius: 10px;
+      padding: 15px 20px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .out-of-stock-toast .oos-icon i {
+      color: #b8860b; font-size: 1.8em;
+    }
+    .out-of-stock-toast .oos-text h3 {
+      margin: 0 0 3px; font-size: 1.05em; font-weight: 600;
+      color: #b8860b; font-family: 'Cormorant Garamond', serif;
+    }
+    .out-of-stock-toast .oos-text p {
+      margin: 0; font-size: 0.88em; color: #666;
     }
   </style>
 </head>
@@ -274,6 +330,17 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
   </div>
 </div>
 
+<!-- ===== OUT OF STOCK TOAST ===== -->
+<div class="out-of-stock-toast" id="oos-toast">
+  <div class="oos-inner">
+    <div class="oos-icon"><i class="fas fa-ban"></i></div>
+    <div class="oos-text">
+      <h3>Out of Stock</h3>
+      <p id="oos-toast-msg">This product is currently unavailable.</p>
+    </div>
+  </div>
+</div>
+
 <!-- ===== JAVASCRIPT GỘP ===== -->
 <script>
 // ----- NHẬN DỮ LIỆU TỪ PHP THÔNG QUA JSON ENCODE -----
@@ -393,6 +460,16 @@ function closeNotification() {
   clearTimeout(n._t);
 }
 
+// ===== OUT OF STOCK NOTIFICATION =====
+function showOutOfStockToast(productName) {
+  const t = document.getElementById('oos-toast');
+  const msg = document.getElementById('oos-toast-msg');
+  msg.textContent = `"${productName}" is currently unavailable. Please check back later.`;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
 // ===== XỬ LÝ KHỞI TẠO PAGE =====
 window.addEventListener('DOMContentLoaded', () => {
   // Lấy parameter q từ URL khi redirect tới trang này (vd: products_test.php?q=abc)
@@ -484,7 +561,8 @@ function renderPage(page) {
 
   pageProducts.forEach(p => {
     const card = document.createElement('article');
-    card.className = 'product-card';
+    card.className = 'product-card' + (p.in_stock ? '' : ' is-out-of-stock');
+    
     card.innerHTML = `
       <a href="product-detail.php?id=${p.id}" class="product-card-link">
         <div class="image-holder">
@@ -493,13 +571,23 @@ function renderPage(page) {
         <h3 class="product-title">${p.name}</h3>
         <span class="product-price">$${Number(p.sale_price).toFixed(2)}</span>
       </a>
-      <button class="btn-add" data-id="${p.id}" data-name="${p.name}">Add to Cart</button>
+      <button class="btn-add ${p.in_stock ? '' : 'out-of-stock'}" 
+              data-id="${p.id}" 
+              data-name="${p.name}" 
+              data-instock="${p.in_stock}">
+        ${p.in_stock ? 'Add to Cart' : 'Out of Stock'}
+      </button>
     `;
     grid.appendChild(card);
   });
 
   document.querySelectorAll('.btn-add').forEach(btn => {
     btn.addEventListener('click', function () {
+      const isStock = this.dataset.instock === 'true';
+      if (!isStock) {
+        showOutOfStockToast(this.dataset.name);
+        return;
+      }
       addToCart(this.dataset.id, this.dataset.name, this);
     });
   });
