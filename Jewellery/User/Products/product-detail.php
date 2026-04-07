@@ -26,6 +26,16 @@ if ($product) {
     // Giá bán = giá nhập bình quân × (1 + tỷ lệ lợi nhuận%)
     $sale_price = round($cost_price * (1 + $profit_percent / 100), 2);
 }
+
+// ===== TỔNG SỐ LƯỢNG GIỎ HÀNG =====
+$total_cart_count = 0;
+if (isset($_SESSION['user_id'])) {
+    $uid = (int)$_SESSION['user_id'];
+    $stmt_badge = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = $uid");
+    if ($stmt_badge && $row_b = $stmt_badge->fetch_assoc()) {
+        $total_cart_count = (int)$row_b['total_qty'];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -75,6 +85,25 @@ if ($product) {
       cursor: not-allowed;
       border-color: #eee;
     }
+    
+    /* ===== CART BADGE ===== */
+    .icon-link { position: relative; }
+    .cart-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #b8860b;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
   </style>
 </head>
 
@@ -103,10 +132,12 @@ if ($product) {
     <div class="right">
       <a href="../users/cart.php" class="icon-link" title="Cart">
         <i class="fas fa-shopping-cart"></i>
+        <?php if ($total_cart_count > 0): ?>
+          <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
+        <?php endif; ?>
       </a>
       <a href="../users/profile.php" class="icon-link" title="Profile">
         <i class="fas fa-user-circle user-icon"></i>
-        <?php if ($logged_in_name): ?><span><?= htmlspecialchars($logged_in_name) ?></span><?php endif; ?>
       </a>
       <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Logout" style="color:#111;">
         <i class="fas fa-sign-out-alt"></i>

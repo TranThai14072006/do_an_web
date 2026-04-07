@@ -48,6 +48,19 @@ foreach ($rows as $p) {
 
 // Convert sang JSON để truyền cho Javascript bên dưới
 $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
+
+// ===== TỔNG SỐ LƯỢNG GIỎ HÀNG =====
+$total_cart_count = 0;
+if (isset($_SESSION['user_id'])) {
+    $uid = (int)$_SESSION['user_id'];
+    // Dùng $pdo vì file này đang dùng PDO cho phần sản phẩm
+    $stmt_badge = $pdo->prepare("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = ?");
+    $stmt_badge->execute([$uid]);
+    $row_b = $stmt_badge->fetch();
+    if ($row_b) {
+        $total_cart_count = (int)$row_b['total_qty'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -168,6 +181,25 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
     .out-of-stock-toast .oos-text p {
       margin: 0; font-size: 0.88em; color: #666;
     }
+    
+    /* ===== CART BADGE ===== */
+    .icon-link { position: relative; }
+    .cart-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #b8860b;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
   </style>
 </head>
 <body class="homepage bg-accent-light">
@@ -196,6 +228,9 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
     <div class="right">
       <a href="../users/cart.php" class="icon-link" title="Cart">
         <i class="fas fa-shopping-cart"></i>
+        <?php if ($total_cart_count > 0): ?>
+          <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
+        <?php endif; ?>
       </a>
       <a href="../users/profile.php" class="icon-link" title="Profile">
         <i class="fas fa-user-circle user-icon"></i>

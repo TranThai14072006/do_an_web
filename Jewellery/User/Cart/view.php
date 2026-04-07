@@ -170,12 +170,24 @@ if (isset($_SESSION['user_id'])) {
       cursor: pointer; font-size: 13px; text-decoration: underline; text-transform: none; letter-spacing: 0;
     }
     
-    /* ── CUSTOM HEADER MATCHING CART ── */
+    /* ── CUSTOM HEADER BADGE (Đồng bộ với product-detail) ── */
     .icon-link { position: relative; }
-    .cart-badge { position: absolute; top: 4px; right: 4px; background: #b8860b; color: #fff; font-size: 10px; font-weight: 700; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; line-height: 1; }
-    .user-name { font-size: 13px; font-weight: 600; color: #111; text-decoration: none; display: flex; align-items: center; gap: 6px; }
-    .user-name:hover { color: #b8860b; }
-    .search-bar .right { gap: 4px; }
+    .cart-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #b8860b;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
   </style>
 </head>
 
@@ -185,18 +197,17 @@ if (isset($_SESSION['user_id'])) {
 <header class="header-container">
   <div class="search-bar">
     <div class="left">
-      <a href="../indexprofile.php" class="home-btn">
-        <i class="fas fa-home"></i> Home
-      </a>
+      <a href="../indexprofile.php" class="home-btn"><i class="fas fa-home"></i> Home</a>
     </div>
 
     <div class="center">
       <a href="../indexprofile.php">
-        <img src="../../images/36-logo.png" class="header-logo" alt="36 Jewelry">
+        <img src="../../images/36-logo.png" alt="Jewelry Store Logo" class="header-logo">
       </a>
       <div class="search-box">
-        <input type="text" id="view-search-input" placeholder="Search products..." onkeydown="if(event.key==='Enter') doSearchView()">
-        <button onclick="doSearchView()">
+        <input type="text" id="header-search" placeholder="Search products..."
+               onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+        <button onclick="applyHeaderSearch()">
           <i class="fas fa-search"></i>
         </button>
       </div>
@@ -209,11 +220,10 @@ if (isset($_SESSION['user_id'])) {
           <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
         <?php endif; ?>
       </a>
-      <a href="../users/profile.php" class="user-name" title="Profile">
-        <i class="fas fa-user-circle" style="font-size:20px;color:#b8860b"></i>
-        <span><?= $logged_in_name ?></span>
+      <a href="../users/profile.php" class="icon-link" title="Profile">
+        <i class="fas fa-user-circle user-icon"></i>
       </a>
-      <a href="../users/logout.php" class="icon-link" title="Logout">
+      <a href="../users/logout.php" class="icon-link" title="Logout" style="color:#111;">
         <i class="fas fa-sign-out-alt"></i>
       </a>
     </div>
@@ -326,9 +336,13 @@ if (isset($_SESSION['user_id'])) {
 
 </body>
 <script>
-function doSearchView() {
-  const kw = document.getElementById('view-search-input').value.trim();
-  if (kw) window.location.href = '../Search/search.html?q=' + encodeURIComponent(kw);
+function applyHeaderSearch() {
+  const kw = document.getElementById('header-search').value.trim();
+  if (kw) {
+    window.location.href = `../Products/products_sp.php?q=${encodeURIComponent(kw)}`;
+  } else {
+    window.location.href = `../Products/products_sp.php`;
+  }
 }
 </script>
 </html>
