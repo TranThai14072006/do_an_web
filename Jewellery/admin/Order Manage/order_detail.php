@@ -18,7 +18,7 @@ $update_success = false;
 $update_error   = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
-    $allowed    = ['Pending', 'Processed', 'Delivered', 'Cancelled'];
+    $allowed    = ['Pending', 'Processed', 'Delivered'];
     $new_status = trim($_POST['status']);
 
     if (in_array($new_status, $allowed)) {
@@ -239,7 +239,7 @@ $status_class = [
       <form method="POST" action="order_detail.php?id=<?= $order_id ?>" class="status-form">
         <label for="status"><strong>Update Status:</strong></label>
         <select id="status" name="status">
-          <?php foreach (['Pending','Processed','Delivered','Cancelled'] as $s): ?>
+          <?php foreach (['Pending','Processed','Delivered'] as $s): ?>
             <option value="<?= $s ?>" <?= $order['status'] === $s ? 'selected' : '' ?>><?= $s ?></option>
           <?php endforeach; ?>
         </select>
