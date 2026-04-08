@@ -260,12 +260,26 @@ if (isset($_SESSION['user_id'])) {
   <div class="filter-bar" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; margin-bottom: 40px; align-items: flex-end;">
     <div class="filter-group">
       <label for="price">Price Range:</label>
-      <select id="price">
+      <select id="price" onchange="toggleCustomPrice()">
         <option value="all">All</option>
         <option value="0-500">$0 – $500</option>
         <option value="500-1000">$500 – $1,000</option>
         <option value="1000-2000">$1,000 – $2,000</option>
+        <option value="custom">Custom Range...</option>
       </select>
+    </div>
+    
+    <!-- Phần nhập giá thủ công, mặc định ẩn -->
+    <div class="filter-group" id="custom-price-inputs" style="display: none;">
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <input type="number" id="min-price" placeholder="From" 
+               onkeydown="if(event.key==='Enter') applyFilter()"
+               style="width: 80px; padding: 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f6f6f6;">
+        <span style="color: #666;">–</span>
+        <input type="number" id="max-price" placeholder="To" 
+               onkeydown="if(event.key==='Enter') applyFilter()"
+               style="width: 80px; padding: 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f6f6f6;">
+      </div>
     </div>
     <div class="filter-group">
       <label for="sort">Sort by:</label>
@@ -573,16 +587,26 @@ function applyHeaderSearch() {
 
 function applyFilter(customKeyword = null) {
   const category = currentGender;
-  const price    = document.getElementById('price').value;
-  const sort     = document.getElementById('sort').value;
-  const search   = customKeyword !== null ? customKeyword : document.getElementById('search').value.trim().toLowerCase();
+  const dropPrice = document.getElementById('price').value;
+  const manualMin = document.getElementById('min-price').value;
+  const manualMax = document.getElementById('max-price').value;
+  const sort      = document.getElementById('sort').value;
+  const search    = customKeyword !== null ? customKeyword : document.getElementById('search').value.trim().toLowerCase();
 
   filteredProducts = allProducts.filter(p => {
     if (category !== 'all' && p.gender !== category) return false;
-    if (price !== 'all') {
-      const [min, max] = price.split('-').map(Number);
-      if (p.sale_price < min || p.sale_price > max) return false;
+    
+    // Logic lọc giá mới
+    if (dropPrice === 'custom') {
+      // Nếu chọn Custom: Dùng giá trị thủ công
+      if (manualMin !== '' && p.sale_price < parseFloat(manualMin)) return false;
+      if (manualMax !== '' && p.sale_price > parseFloat(manualMax)) return false;
+    } else if (dropPrice !== 'all') {
+      // Nếu chọn các khoảng sẵn có
+      const [dMin, dMax] = dropPrice.split('-').map(Number);
+      if (p.sale_price < dMin || p.sale_price > dMax) return false;
     }
+
     if (search && !p.name.toLowerCase().includes(search)) return false;
     return true;
   });
@@ -594,6 +618,21 @@ function applyFilter(customKeyword = null) {
   currentPage = 1;
   renderPage(currentPage);
   renderPagination();
+}
+
+// Hàm ẩn/hiện ô nhập giá tùy chỉnh
+function toggleCustomPrice() {
+  const val = document.getElementById('price').value;
+  const customDiv = document.getElementById('custom-price-inputs');
+  if (val === 'custom') {
+    customDiv.style.display = 'block';
+  } else {
+    customDiv.style.display = 'none';
+    // Xóa giá trị cũ khi ẩn đi để tránh gây nhầm lẫn khi lọc lại
+    document.getElementById('min-price').value = '';
+    document.getElementById('max-price').value = '';
+    applyFilter(); // Kích hoạt lại bộ lọc theo dropdown
+  }
 }
 
 function renderPage(page) {
