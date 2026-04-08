@@ -94,6 +94,7 @@ $items = $stmt2->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt2->close();
 
 $total_qty = array_sum(array_column($items, 'quantity'));
+$grand_total = array_sum(array_column($items, 'total_price'));
 
 $status_class = [
     'Pending'   => 'status-pending',
@@ -283,7 +284,7 @@ $status_class = [
         <div class="summary-row"><span>Total Quantity:</span><span><?= $total_qty ?></span></div>
         <div class="summary-row summary-total">
           <span>Grand Total:</span>
-          <span>$<?= number_format($order['total_amount'], 2) ?></span>
+          <span>$<?= number_format($grand_total, 2) ?></span>
         </div>
       </div>
     </div>
