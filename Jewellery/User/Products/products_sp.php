@@ -200,6 +200,22 @@ if (isset($_SESSION['user_id'])) {
       justify-content: center;
       line-height: 1;
     }
+
+    /* Hiệu ứng cho ô nhập giá tùy chỉnh */
+    #custom-price-inputs {
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #custom-price-inputs.show {
+      max-width: 300px;
+      opacity: 1;
+      margin-left: 5px;
+    }
   </style>
 </head>
 <body class="homepage bg-accent-light">
@@ -269,17 +285,15 @@ if (isset($_SESSION['user_id'])) {
       </select>
     </div>
     
-    <!-- Phần nhập giá thủ công, mặc định ẩn -->
-    <div class="filter-group" id="custom-price-inputs" style="display: none;">
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <input type="number" id="min-price" placeholder="From" 
-               onkeydown="if(event.key==='Enter') applyFilter()"
-               style="width: 80px; padding: 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f6f6f6;">
-        <span style="color: #666;">–</span>
-        <input type="number" id="max-price" placeholder="To" 
-               onkeydown="if(event.key==='Enter') applyFilter()"
-               style="width: 80px; padding: 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f6f6f6;">
-      </div>
+    <!-- Phần nhập giá thủ công, sử dụng class 'show' để điều khiển hiệu ứng -->
+    <div id="custom-price-inputs">
+      <input type="number" id="min-price" placeholder="From" 
+             onkeydown="if(event.key==='Enter') applyFilter()"
+             style="width: 80px; padding: 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f6f6f6;">
+      <span style="color: #666;">–</span>
+      <input type="number" id="max-price" placeholder="To" 
+             onkeydown="if(event.key==='Enter') applyFilter()"
+             style="width: 80px; padding: 10px; border-radius: 6px; border: 1px solid #ddd; background-color: #f6f6f6;">
     </div>
     <div class="filter-group">
       <label for="sort">Sort by:</label>
@@ -588,10 +602,23 @@ function applyHeaderSearch() {
 function applyFilter(customKeyword = null) {
   const category = currentGender;
   const dropPrice = document.getElementById('price').value;
-  const manualMin = document.getElementById('min-price').value;
-  const manualMax = document.getElementById('max-price').value;
+  let manualMin  = document.getElementById('min-price').value;
+  let manualMax  = document.getElementById('max-price').value;
   const sort      = document.getElementById('sort').value;
   const search    = customKeyword !== null ? customKeyword : document.getElementById('search').value.trim().toLowerCase();
+
+  // Xử lý logic Min > Max & Swap trên giao diện (Vấn đề #3 cập nhật)
+  if (manualMin !== '' && manualMax !== '') {
+    const minVal = parseFloat(manualMin);
+    const maxVal = parseFloat(manualMax);
+    if (minVal > maxVal) {
+      // Đổi chỗ trực tiếp trên ô nhập để người dùng thấy
+      document.getElementById('min-price').value = maxVal;
+      document.getElementById('max-price').value = minVal;
+      manualMin = String(maxVal);
+      manualMax = String(minVal);
+    }
+  }
 
   filteredProducts = allProducts.filter(p => {
     if (category !== 'all' && p.gender !== category) return false;
@@ -625,9 +652,11 @@ function toggleCustomPrice() {
   const val = document.getElementById('price').value;
   const customDiv = document.getElementById('custom-price-inputs');
   if (val === 'custom') {
-    customDiv.style.display = 'block';
+    customDiv.classList.add('show');
+    // Tự động focus vào ô Min khi hiện ra
+    setTimeout(() => document.getElementById('min-price').focus(), 400);
   } else {
-    customDiv.style.display = 'none';
+    customDiv.classList.remove('show');
     // Xóa giá trị cũ khi ẩn đi để tránh gây nhầm lẫn khi lọc lại
     document.getElementById('min-price').value = '';
     document.getElementById('max-price').value = '';
