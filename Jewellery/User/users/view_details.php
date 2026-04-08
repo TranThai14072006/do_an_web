@@ -30,74 +30,75 @@ if ($order_id <= 0) {
   die("Invalid order ID.");
 }
 
-// ── Handle Actions (POST) ─────────────────────────────
-$success_msg = '';
-$error_msg = '';
+// ── Handle Cancel Order (POST) ─────────────────────────────
+$cancel_msg = '';
+$cancel_error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  if (isset($_POST['cancel_order_id'])) {
-    $cancel_id = (int) $_POST['cancel_order_id'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order_id'])) {
+  $cancel_id = (int) $_POST['cancel_order_id'];
 
-    // Verify order belongs to this customer and is still Pending
-    $chk = $conn->prepare("
-          SELECT o.id FROM orders o
-          JOIN customers c ON o.customer_id = c.id
-          WHERE o.id = ? AND c.user_id = ? AND o.status = 'Pending'
-          LIMIT 1
-      ");
-    $chk->bind_param('ii', $cancel_id, $user_id);
-    $chk->execute();
-    $can = $chk->get_result()->fetch_assoc();
-    $chk->close();
+  // Verify order belongs to this customer and is still Pending
+  $chk = $conn->prepare("
+        SELECT o.id FROM orders o
+        JOIN customers c ON o.customer_id = c.id
+        WHERE o.id = ? AND c.user_id = ? AND o.status = 'Pending'
+        LIMIT 1
+    ");
+  $chk->bind_param('ii', $cancel_id, $user_id);
+  $chk->execute();
+  $can = $chk->get_result()->fetch_assoc();
+  $chk->close();
 
-    if ($can) {
-      // Restore stock before cancelling
-      $items_q = $conn->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
-      $items_q->bind_param('i', $cancel_id);
-      $items_q->execute();
-      $items_res = $items_q->get_result();
-      while ($it = $items_res->fetch_assoc()) {
-        $upd = $conn->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
-        $upd->bind_param('ii', $it['quantity'], $it['product_id']);
-        $upd->execute();
-        $upd->close();
-      }
-      $items_q->close();
-
-      // Update order status → Cancelled
-      $upd_order = $conn->prepare("UPDATE orders SET status = 'Cancelled' WHERE id = ?");
-      $upd_order->bind_param('i', $cancel_id);
-      $upd_order->execute();
-      $upd_order->close();
-      $success_msg = 'Your order has been cancelled successfully.';
-    } else {
-      $error_msg = 'Unable to cancel this order (only Pending orders can be cancelled).';
+  if ($can) {
+    // Restore stock before cancelling
+    $items_q = $conn->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
+    $items_q->bind_param('i', $cancel_id);
+    $items_q->execute();
+    $items_res = $items_q->get_result();
+    while ($it = $items_res->fetch_assoc()) {
+      $upd = $conn->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+      $upd->bind_param('ii', $it['quantity'], $it['product_id']);
+      $upd->execute();
+      $upd->close();
     }
-  } elseif (isset($_POST['receive_order_id'])) {
-    $receive_id = (int) $_POST['receive_order_id'];
+    $items_q->close();
 
-    // Verify order belongs to this customer and is Shipped/Shipping
-    $chk = $conn->prepare("
-          SELECT o.id FROM orders o
-          JOIN customers c ON o.customer_id = c.id
-          WHERE o.id = ? AND c.user_id = ? AND o.status IN ('Shipped', 'Shipping')
-          LIMIT 1
-      ");
-    $chk->bind_param('ii', $receive_id, $user_id);
-    $chk->execute();
-    $can = $chk->get_result()->fetch_assoc();
-    $chk->close();
+    // Update order status → Cancelled
+    $upd_order = $conn->prepare("UPDATE orders SET status = 'Cancelled' WHERE id = ?");
+    $upd_order->bind_param('i', $cancel_id);
+    $upd_order->execute();
+    $upd_order->close();
+    $cancel_msg = 'Your order has been cancelled successfully.';
+    $cancel_error = 'Unable to cancel this order (only Pending orders can be cancelled).';
+  }
+}
 
-    if ($can) {
-      // Update order status → Delivered
-      $upd_order = $conn->prepare("UPDATE orders SET status = 'Delivered' WHERE id = ?");
-      $upd_order->bind_param('i', $receive_id);
-      $upd_order->execute();
-      $upd_order->close();
-      $success_msg = 'Cảm ơn! Bạn đã xác nhận nhận hàng thành công.';
-    } else {
-      $error_msg = 'Unable to mark this order as received (only Shipped orders).';
-    }
+// ── Handle Receive Order (POST) ─────────────────────────────
+$receive_msg   = '';
+$receive_error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) {
+  $receive_id = (int) $_POST['receive_order_id'];
+
+  $chk = $conn->prepare("
+        SELECT o.id FROM orders o
+        JOIN customers c ON o.customer_id = c.id
+        WHERE o.id = ? AND c.user_id = ? AND o.status IN ('Processed', 'Shipping', 'Shipped')
+        LIMIT 1
+    ");
+  $chk->bind_param('ii', $receive_id, $user_id);
+  $chk->execute();
+  $can_receive_check = $chk->get_result()->fetch_assoc();
+  $chk->close();
+
+  if ($can_receive_check) {
+    $upd_order = $conn->prepare("UPDATE orders SET status = 'Delivered' WHERE id = ?");
+    $upd_order->bind_param('i', $receive_id);
+    $upd_order->execute();
+    $upd_order->close();
+    $receive_msg = 'Thank you! Your order has been marked as received.';
+  } else {
+    $receive_error = 'Unable to mark this order as received.';
   }
 }
 
@@ -134,7 +135,7 @@ $order_date = date('M d, Y', strtotime($order['order_date']));
 
 // Determine status class and label
 $can_cancel = ($order['status'] === 'Pending');
-$can_receive = ($order['status'] === 'Shipped' || $order['status'] === 'Shipping');
+$can_receive = in_array($order['status'], ['Processed', 'Shipping', 'Shipped']);
 switch ($order['status']) {
   case 'Pending':
     $status_class = 'pending';
@@ -365,13 +366,16 @@ switch ($order['status']) {
       flex-wrap: wrap;
     }
 
-    /* Action buttons */
-    .btn-cancel, .btn-receive {
+    /* Cancel button */
+    .btn-cancel {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 5px 14px;
       border-radius: 30px;
+      border: 1.5px solid #f44336;
+      background: rgba(244, 67, 54, .1);
+      color: #c62828;
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
@@ -379,24 +383,31 @@ switch ($order['status']) {
       font-family: inherit;
     }
 
-    .btn-cancel {
-      border: 1.5px solid #f44336;
-      background: rgba(244, 67, 54, .1);
-      color: #c62828;
-    }
     .btn-cancel:hover {
       background: #f44336;
       color: #fff;
       transform: scale(1.04);
     }
 
+    /* Receive button */
     .btn-receive {
-      border: 1.5px solid #4CAF50;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 30px;
+      border: 1.5px solid #4caf50;
       background: rgba(76, 175, 80, .1);
-      color: #2E7D32;
+      color: #388e3c;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: inherit;
     }
+
     .btn-receive:hover {
-      background: #4CAF50;
+      background: #4caf50;
       color: #fff;
       transform: scale(1.04);
     }
@@ -707,11 +718,17 @@ switch ($order['status']) {
 
     <h2>Order #<?= htmlspecialchars($order['order_number']) ?> Details</h2>
 
-    <?php if ($success_msg): ?>
-      <div class="alert-success"><i class="fas fa-check-circle"></i> <?= htmlspecialchars($success_msg) ?></div>
+    <?php if ($cancel_msg): ?>
+      <div class="alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($cancel_msg) ?></div>
     <?php endif; ?>
-    <?php if ($error_msg): ?>
-      <div class="alert-error"><i class="fas fa-exclamation-triangle"></i> <?= htmlspecialchars($error_msg) ?></div>
+    <?php if ($cancel_error): ?>
+      <div class="alert-error"><i class="fas fa-exclamation-triangle"></i><?= htmlspecialchars($cancel_error) ?></div>
+    <?php endif; ?>
+    <?php if ($receive_msg): ?>
+      <div class="alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($receive_msg) ?></div>
+    <?php endif; ?>
+    <?php if ($receive_error): ?>
+      <div class="alert-error"><i class="fas fa-exclamation-triangle"></i><?= htmlspecialchars($receive_error) ?></div>
     <?php endif; ?>
 
     <div class="order-info">
@@ -725,12 +742,10 @@ switch ($order['status']) {
               id="cancel-btn">
               <i class="fas fa-times"></i> Cancel Order
             </button>
-          <?php endif; ?>
-          <?php if ($can_receive): ?>
+          <?php elseif ($can_receive): ?>
             <button class="btn-receive"
-              onclick="openReceiveModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')"
-              id="receive-btn">
-              <i class="fas fa-check-double"></i> Đã nhận hàng
+              onclick="openReceiveModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
+              <i class="fas fa-check"></i> Đã nhận hàng
             </button>
           <?php endif; ?>
         </span>
@@ -785,18 +800,17 @@ switch ($order['status']) {
   <!-- RECEIVE CONFIRMATION MODAL -->
   <div class="modal-overlay" id="receive-modal">
     <div class="modal-box">
-      <div class="modal-icon" style="color: #4CAF50;"><i class="fas fa-box-open"></i></div>
-      <h3>Xác nhận nhận hàng?</h3>
-      <p>Bạn có chắc chắn đã nhận được đơn <strong id="modal-receive-num" style="color:#b8860b;"></strong>?<br>
-        Hành động này không thể hoàn tác.</p>
+      <div class="modal-icon"><i class="fas fa-box-open" style="color:#4caf50;"></i></div>
+      <h3>Confirm Received?</h3>
+      <p>Are you sure you have received order <strong id="modal-receive-num" style="color:#b8860b;"></strong>?<br></p>
       <div class="modal-actions">
         <button class="btn-modal-back" onclick="closeReceiveModal()">
-          <i class="fas fa-arrow-left"></i> Quay lại
+          <i class="fas fa-arrow-left"></i> Go Back
         </button>
         <form method="POST" style="display:inline;">
           <input type="hidden" name="receive_order_id" id="modal-receive-id">
-          <button type="submit" class="btn-modal-confirm" style="background:#4CAF50;">
-            <i class="fas fa-check-double"></i> Xác nhận
+          <button type="submit" class="btn-modal-confirm" style="background:#4caf50;">
+            <i class="fas fa-check-circle"></i> Confirm
           </button>
         </form>
       </div>
@@ -839,6 +853,7 @@ switch ($order['status']) {
     document.getElementById('cancel-modal').addEventListener('click', function (e) {
       if (e.target === this) closeCancelModal();
     });
+
     document.getElementById('receive-modal').addEventListener('click', function (e) {
       if (e.target === this) closeReceiveModal();
     });

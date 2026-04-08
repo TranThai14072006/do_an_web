@@ -87,7 +87,7 @@ if (isset($_POST['ajax_action'])) {
 // ADD TO CART (GET action=add&id=xxx&size=yyy)
 // ─────────────────────────────────────────────────────────
 if (isset($_GET['action']) && $_GET['action'] === 'add' && !empty($_GET['id'])) {
-  $pid  = trim($_GET['id']);
+  $pid = trim($_GET['id']);
   $size = trim($_GET['size'] ?? '');
 
   // Size is required
@@ -904,7 +904,8 @@ $added_flash = isset($_GET['added']);
                 </td>
                 <td class="price-cell">
                   <?php if (!empty($item['size'])): ?>
-                    <span style="display:inline-flex;align-items:center;gap:5px;background:#f8f4ec;border:1px solid #d4b896;color:#7a5c2e;font-size:12px;font-weight:600;padding:4px 10px;border-radius:4px;letter-spacing:.05em;">
+                    <span
+                      style="display:inline-flex;align-items:center;gap:5px;background:#f8f4ec;border:1px solid #d4b896;color:#7a5c2e;font-size:12px;font-weight:600;padding:4px 10px;border-radius:4px;letter-spacing:.05em;">
                       <i class="fas fa-ring" style="font-size:10px;color:#b8945f;"></i>
                       Size <?= htmlspecialchars($item['size']) ?>
                     </span>
@@ -998,7 +999,7 @@ $added_flash = isset($_GET['added']);
         const qty = parseInt(row.querySelector('.qty-input').value) || 1;
         const itemTotal = price * qty;
         row.querySelector('.item-total').textContent = '$' + itemTotal.toFixed(2);
-        
+
         if (checkbox && checkbox.checked) {
           total += itemTotal;
           count += qty;
@@ -1007,7 +1008,7 @@ $added_flash = isset($_GET['added']);
       });
       document.getElementById('subtotal').textContent = '$' + total.toFixed(2);
       document.getElementById('grand-total').textContent = '$' + total.toFixed(2);
-      
+
       const summaryItemsLabel = document.querySelector('.summary-row .label');
       if (summaryItemsLabel) {
         summaryItemsLabel.textContent = `Subtotal (${count} items)`;
@@ -1026,7 +1027,7 @@ $added_flash = isset($_GET['added']);
     }
 
     // ── Checkboxes ───────────────────────────────────────────
-    document.getElementById('select-all')?.addEventListener('change', function() {
+    document.getElementById('select-all')?.addEventListener('change', function () {
       const isChecked = this.checked;
       document.querySelectorAll('.item-checkbox').forEach(cb => {
         cb.checked = isChecked;
@@ -1035,7 +1036,7 @@ $added_flash = isset($_GET['added']);
     });
 
     document.querySelectorAll('.item-checkbox').forEach(cb => {
-      cb.addEventListener('change', function() {
+      cb.addEventListener('change', function () {
         const allChecked = document.querySelectorAll('.item-checkbox:not(:checked)').length === 0;
         const selectAll = document.getElementById('select-all');
         if (selectAll) selectAll.checked = allChecked;

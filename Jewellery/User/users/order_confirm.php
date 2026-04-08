@@ -33,6 +33,7 @@ $link_cart = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout = BASE_URL . 'User/users/logout.php';
 $link_search = BASE_URL . 'User/Search/search.html';
+$link_shop = BASE_URL . 'User/Products/products_sp.php';
 $logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
 
 // ── AJAX: Remove item from cart (must run before any output) ──
@@ -1229,7 +1230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
           <div style="text-align:center;padding:48px 0;">
             <i class="fas fa-shopping-bag" style="font-size:52px;color:#e0d5c0;display:block;margin-bottom:16px;"></i>
             <p style="color:var(--muted);margin-bottom:20px;font-size:16px;">Your cart is empty.</p>
-            <a href="<?= $link_home ?>"
+            <a href="<?= $link_shop ?>"
               style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-radius:10px;text-decoration:none;font-weight:600;">
               <i class="fas fa-gem"></i> Browse Products
             </a>
@@ -1333,30 +1334,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
             <!-- ── Bank Transfer Info Panel ── -->
             <div class="bank-panel" id="bank-panel">
               <div class="bank-panel-header">
-                <i class="fas fa-university"></i> Thông tin chuyển khoản ngân hàng
+                <i class="fas fa-university"></i> Bank Transfer Information
               </div>
               <div class="bank-panel-body">
 
                 <!-- Thông tin ngân hàng cố định của cửa hàng -->
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-landmark"
-                      style="width:14px;text-align:center;color:#d4af37;"></i> Ngân hàng:</span>
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Bank Name:</span>
                   <span class="b-value">Vietcombank (VCB)</span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-hashtag" style="width:14px;text-align:center;color:#d4af37;"></i>
-                    Số tài khoản:</span>
+                    Account No.:</span>
                   <span class="b-value">1234 5678 9012 3456</span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-user-tie"
-                      style="width:14px;text-align:center;color:#d4af37;"></i> Chủ tài khoản:</span>
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Account Name:</span>
                   <span class="b-value">CONG TY TNHH TRANG SUC 36</span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-map-pin" style="width:14px;text-align:center;color:#d4af37;"></i>
-                    Chi nhánh:</span>
-                  <span class="b-value">TP. Hồ Chí Minh</span>
+                    Branch:</span>
+                  <span class="b-value">Ho Chi Minh City</span>
                 </div>
 
                 <hr class="bank-divider">
@@ -1364,29 +1365,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
                 <!-- Thông tin người dùng (tự động điền) -->
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-user" style="width:14px;text-align:center;color:#d4af37;"></i>
-                    Người chuyển:</span>
+                    Sender Name:</span>
                   <span class="b-value" id="bp-sender"><?= htmlspecialchars($user['full_name'] ?? '') ?></span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-phone" style="width:14px;text-align:center;color:#d4af37;"></i>
-                    Số điện thoại:</span>
+                    Phone Number:</span>
                   <span class="b-value" id="bp-phone"><?= htmlspecialchars($user['phone'] ?? '') ?></span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-money-bill-wave"
-                      style="width:14px;text-align:center;color:#d4af37;"></i> Số tiền:</span>
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Amount:</span>
                   <span class="b-value highlight" id="bp-amount">$<?= number_format($total_amount, 2) ?></span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-comment-alt"
-                      style="width:14px;text-align:center;color:#d4af37;"></i> Nội dung CK:</span>
-                  <span class="b-value" id="bp-content">36JW <?= htmlspecialchars($user['full_name'] ?? 'KHACH HANG') ?>
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Transfer Note:</span>
+                  <span class="b-value" id="bp-content">36JW <?= htmlspecialchars($user['full_name'] ?? 'CUSTOMER') ?>
                     <?= htmlspecialchars($user['phone'] ?? '') ?></span>
                 </div>
 
                 <p class="bank-note">
                   <i class="fas fa-info-circle"></i>
-                  Vui lòng ghi đúng nội dung chuyển khoản để đơn hàng được xác nhận nhanh nhất.
+                  Please note exactly as above so we can verify your payment quickly.
                 </p>
               </div>
             </div>
@@ -1539,7 +1540,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       const phone = phoneInput ? phoneInput.value.trim() : '';
       if (bpSender) bpSender.textContent = name || '—';
       if (bpPhone) bpPhone.textContent = phone || '—';
-      if (bpContent) bpContent.textContent = '36JW ' + (name || 'KHACH HANG') + ' ' + phone;
+      if (bpContent) bpContent.textContent = '36JW ' + (name || 'CUSTOMER') + ' ' + phone;
     }
     if (fullnameInput) fullnameInput.addEventListener('input', syncBankInfo);
     if (phoneInput) phoneInput.addEventListener('input', syncBankInfo);
