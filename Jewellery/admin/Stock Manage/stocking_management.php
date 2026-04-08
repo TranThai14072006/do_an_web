@@ -169,6 +169,7 @@ if (isset($_GET['ajax_product_search'])) {
     $page   = max(1, intval($_GET['page'] ?? 1));
     $size   = 10;
     $offset = ($page - 1) * $size;
+    $date   = trim($_GET['date'] ?? '');
 
     $where = $q !== '' ? 'WHERE name LIKE ? OR id LIKE ?' : '';
     $stmt  = $conn->prepare(
@@ -183,6 +184,62 @@ if (isset($_GET['ajax_product_search'])) {
     $stmt->execute();
     $results = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
+
+    // Calculate stock if date is provided
+    if ($date !== '') {
+        $ids = array_column($results, 'id');
+        if (!empty($ids)) {
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $types_ids = str_repeat('s', count($ids));
+
+            // Import
+            $sql_in = "SELECT gri.product_id, COALESCE(SUM(gri.quantity),0) AS qty
+                       FROM goods_receipt_items gri
+                       JOIN goods_receipt gr ON gri.receipt_id = gr.id
+                       WHERE gri.product_id IN ($placeholders)
+                         AND gr.status = 'Completed' AND gr.entry_date <= ?
+                       GROUP BY gri.product_id";
+            $p_in = array_merge($ids, [$date]);
+            $stmt_in = $conn->prepare($sql_in);
+            $stmt_in->bind_param($types_ids . 's', ...$p_in);
+            $stmt_in->execute();
+            $in_map = array_column($stmt_in->get_result()->fetch_all(MYSQLI_ASSOC), 'qty', 'product_id');
+            $stmt_in->close();
+
+            // Export
+            $sql_out = "SELECT oi.product_id, COALESCE(SUM(oi.quantity),0) AS qty
+                        FROM order_items oi
+                        JOIN orders o ON oi.order_id = o.id
+                        WHERE oi.product_id IN ($placeholders) AND o.order_date <= ?
+                        GROUP BY oi.product_id";
+            $p_out = array_merge($ids, [$date]);
+            $stmt_out = $conn->prepare($sql_out);
+            $stmt_out->bind_param($types_ids . 's', ...$p_out);
+            $stmt_out->execute();
+            $out_map = array_column($stmt_out->get_result()->fetch_all(MYSQLI_ASSOC), 'qty', 'product_id');
+            $stmt_out->close();
+
+            foreach ($results as &$r) {
+                $in  = (int)($in_map[$r['id']] ?? 0);
+                $out = (int)($out_map[$r['id']] ?? 0);
+                $r['stock'] = max(0, $in - $out);
+            }
+        }
+    } else {
+        // Use current stock from DB
+        $ids = array_column($results, 'id');
+        if (!empty($ids)) {
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $stmt_stock = $conn->prepare("SELECT id, stock FROM products WHERE id IN ($placeholders)");
+            $stmt_stock->bind_param(str_repeat('s', count($ids)), ...$ids);
+            $stmt_stock->execute();
+            $stock_map = array_column($stmt_stock->get_result()->fetch_all(MYSQLI_ASSOC), 'stock', 'id');
+            $stmt_stock->close();
+            foreach ($results as &$r) {
+                $r['stock'] = max(0, (int)($stock_map[$r['id']] ?? 0));
+            }
+        }
+    }
 
     $count_stmt = $conn->prepare("SELECT COUNT(*) AS c FROM products $where");
     if ($q !== '') {
@@ -409,53 +466,51 @@ $report_product = trim($_GET['report_product'] ?? '');
 $report_from    = trim($_GET['report_from']    ?? '');
 $report_to      = trim($_GET['report_to']      ?? '');
 
-$imp_where  = ["gr.status = 'Completed'", "gr.entry_date <= CURDATE()"];
+$imp_where  = ["gr.status = 'Completed'"];
 $imp_params = []; $imp_types = '';
 if ($report_from    !== '') { $imp_where[] = 'gr.entry_date >= ?';       $imp_params[] = $report_from;                $imp_types .= 's'; }
 if ($report_to      !== '') { $imp_where[] = 'gr.entry_date <= ?';       $imp_params[] = $report_to;                  $imp_types .= 's'; }
-if ($report_product !== '') { $imp_where[] = 'gri.product_name LIKE ?';  $imp_params[] = '%' . $report_product . '%'; $imp_types .= 's'; }
+if ($report_product !== '') { $imp_where[] = 'gri.product_id = ?';       $imp_params[] = $report_product;             $imp_types .= 's'; }
 
 $stmt_imp = $conn->prepare(
-    "SELECT gr.entry_date AS report_date, SUM(gri.quantity) AS import_qty
+    "SELECT gr.entry_date AS date, 'Import' AS type, gri.product_id, gri.quantity, gri.unit_price, gri.total_price
      FROM goods_receipt gr
      JOIN goods_receipt_items gri ON gr.id = gri.receipt_id
      WHERE " . implode(' AND ', $imp_where) . "
-     GROUP BY gr.entry_date ORDER BY gr.entry_date DESC"
+     ORDER BY gr.entry_date DESC, gr.id ASC"
 );
 if ($imp_params) $stmt_imp->bind_param($imp_types, ...$imp_params);
 $stmt_imp->execute();
-$import_by_date = $stmt_imp->get_result()->fetch_all(MYSQLI_ASSOC);
+$import_rows = $stmt_imp->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_imp->close();
 
 $exp_where  = ['1=1'];
 $exp_params = []; $exp_types = '';
 if ($report_from    !== '') { $exp_where[] = 'o.order_date >= ?';       $exp_params[] = $report_from;                $exp_types .= 's'; }
 if ($report_to      !== '') { $exp_where[] = 'o.order_date <= ?';       $exp_params[] = $report_to;                  $exp_types .= 's'; }
-if ($report_product !== '') { $exp_where[] = 'oi.product_name LIKE ?';  $exp_params[] = '%' . $report_product . '%'; $exp_types .= 's'; }
+if ($report_product !== '') { $exp_where[] = 'oi.product_id = ?';       $exp_params[] = $report_product;             $exp_types .= 's'; }
 
 $stmt_exp = $conn->prepare(
-    "SELECT o.order_date AS report_date, SUM(oi.quantity) AS export_qty
+    "SELECT o.order_date AS date, 'Export' AS type, oi.product_id, oi.quantity, oi.unit_price, oi.total_price
      FROM orders o
      JOIN order_items oi ON o.id = oi.order_id
      WHERE " . implode(' AND ', $exp_where) . "
-     GROUP BY o.order_date ORDER BY o.order_date DESC"
+     ORDER BY o.order_date DESC, o.id ASC"
 );
 if ($exp_params) $stmt_exp->bind_param($exp_types, ...$exp_params);
 $stmt_exp->execute();
-$export_by_date = $stmt_exp->get_result()->fetch_all(MYSQLI_ASSOC);
+$export_rows = $stmt_exp->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_exp->close();
 
-$date_map = [];
-foreach ($import_by_date as $r) {
-    $date_map[$r['report_date']]['import'] = (int)$r['import_qty'];
-    $date_map[$r['report_date']]['export'] ??= 0;
-}
-foreach ($export_by_date as $r) {
-    $date_map[$r['report_date']]['export'] = (int)$r['export_qty'];
-    $date_map[$r['report_date']]['import'] ??= 0;
-}
-krsort($date_map);
+$detailed_rows = array_merge($import_rows, $export_rows);
+usort($detailed_rows, fn($a, $b) => strtotime($b['date']) <=> strtotime($a['date']));
 
+// Only show results if a product is specified
+if ($report_product === '') {
+    $detailed_rows = [];
+}
+
+// Keep current stock for display
 $stock_sql  = "SELECT COALESCE(SUM(stock),0) AS total_stock FROM products"
             . ($report_product !== '' ? " WHERE name LIKE ?" : "");
 $stmt_stock = $conn->prepare($stock_sql);
@@ -466,15 +521,6 @@ if ($report_product !== '') {
 $stmt_stock->execute();
 $current_stock = (int)$stmt_stock->get_result()->fetch_assoc()['total_stock'];
 $stmt_stock->close();
-
-$report_rows  = [];
-$total_import = 0;
-$total_export = 0;
-foreach ($date_map as $date => $vals) {
-    $report_rows[] = ['date' => $date, 'import' => $vals['import'], 'export' => $vals['export']];
-    $total_import += $vals['import'];
-    $total_export += $vals['export'];
-}
 
 // ============================================================
 // Stock summary (dùng cho modal + stat cards)
@@ -693,7 +739,6 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 
   <div class="tabs">
     <div class="tab <?= $active_tab==='stock-lookup' ?'active':'' ?>" data-tab="stock-lookup">Stock Lookup</div>
-    <div class="tab <?= $active_tab==='stock-alert'  ?'active':'' ?>" data-tab="stock-alert">Low Stock Alert</div>
     <div class="tab <?= $active_tab==='stock-report' ?'active':'' ?>" data-tab="stock-report">Import - Export</div>
   </div>
 
@@ -820,94 +865,21 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
   </div>
 </div>
 
-  <!-- ====== TAB 2: Low Stock Alert ====== -->
-  <div class="tab-content <?= $active_tab==='stock-alert'?'active':'' ?>" id="stock-alert">
-
-    <form method="POST" action="stocking_management.php?tab=stock-alert" class="threshold-box">
-      <input type="hidden" name="set_threshold" value="1">
-      <span class="label">Low stock alert threshold:</span>
-      <input type="number" name="threshold" value="<?= $min_stock ?>" min="0" max="9999">
-      <span style="font-size:14px;color:#666">items</span>
-      <button type="submit" class="btn" style="padding:8px 18px;">Apply</button>
-      <span class="threshold-badge">Current threshold: at most <?= $min_stock ?> items = Low Stock</span>
-    </form>
-
-    <div class="alert-section" style="margin-bottom:16px;">
-      <div class="alert-title">Low Stock Warning</div>
-      <?php if (empty($low_products)): ?>
-        All products are above the threshold of <?= $min_stock ?>.
-      <?php else: ?>
-        <strong><?= count($low_products) ?></strong> product(s) have stock at or below <?= $min_stock ?> and need restocking.
-      <?php endif; ?>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Product Code</th><th>Product Name</th><th>Image</th>
-          <th>Category</th><th>Current Stock</th><th>Threshold</th><th>Need to Restock</th><th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if (empty($low_products)): ?>
-          <tr><td colspan="8" class="no-data">All products are sufficiently stocked.</td></tr>
-        <?php else: foreach ($low_products as $p): $st = stockStatus($p['stock'], $min_stock); $need = max(0, $min_stock - $p['stock'] + 1); ?>
-          <tr>
-            <td><?= htmlspecialchars($p['id']) ?></td>
-            <td style="text-align:left"><?= htmlspecialchars($p['name']) ?></td>
-            <td><img src="../../images/<?= htmlspecialchars($p['image']) ?>" onerror="this.style.opacity='.2'"></td>
-            <td><?= htmlspecialchars($p['category']) ?></td>
-            <td><strong style="color:<?= $p['stock'] <= 0 ? '#c62828' : '#f57c00' ?>"><?= intval($p['stock']) ?></strong></td>
-            <td><?= $min_stock ?></td>
-            <td><span style="color:#c62828;font-weight:600">+<?= $need ?></span></td>
-            <td><span class="status-badge <?= $st['class'] ?>"><?= $st['label'] ?></span></td>
-          </tr>
-        <?php endforeach; endif; ?>
-      </tbody>
-    </table>
-  </div>
+  
 
   <!-- ====== TAB 3: Import - Export - Balance ====== -->
   <div class="tab-content <?= $active_tab==='stock-report'?'active':'' ?>" id="stock-report">
 
     <!-- Stat cards -->
-    <div class="stat-grid">
-      <div class="stat-card clickable" onclick="openStockModal()">
-        <div class="stat-icon si-gold">BOX</div>
-        <div class="stat-info">
-          <h3><?= number_format($total_stock) ?></h3>
-          <p>Current Stock</p>
-          <small>Click to view details</small>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon si-green">IN</div>
-        <div class="stat-info">
-          <h3><?= $count_in ?></h3>
-          <p>In Stock (5 or more)</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon si-orange">LOW</div>
-        <div class="stat-info">
-          <h3><?= $count_low ?></h3>
-          <p>Low Stock (1 to 4)</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon si-red">OUT</div>
-        <div class="stat-info">
-          <h3><?= $count_out ?></h3>
-          <p>Out of Stock</p>
-        </div>
-      </div>
-    </div>
+
 
     <form method="GET" action="stocking_management.php" class="search-form">
       <input type="hidden" name="tab" value="stock-report">
       <div class="form-group">
         <label>Product</label>
-        <input type="text" name="report_product" placeholder="Enter product name..." value="<?= htmlspecialchars($report_product) ?>">
+        <select id="report-product-search" name="report_product" style="width:100%">
+          <option value="">— Search / select product —</option>
+        </select>
       </div>
       <div class="form-group">
         <label>From</label>
@@ -922,96 +894,36 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
     </form>
 
     <p style="font-size:13px;color:#888;margin-bottom:12px;">
-      Click on the <span style="color:#8e4b00;font-weight:600">Import</span> or
-      <span style="color:#5a2d00;font-weight:600">Export</span> numbers to view order details for that day.
-      Click on <span style="color:#4a6741;font-weight:600">Current Stock</span> to view stock breakdown by product.
+      Detailed import and export transactions. Current total stock: <strong><?= $current_stock ?> units</strong>.
     </p>
 
     <table>
       <thead>
         <tr>
           <th>Date</th>
-          <th>Import Qty</th>
-          <th>Export Qty</th>
-          <th>Balance</th>
-          <th>Current Stock</th>
+          <th>Type</th>
+          <th>Product ID</th>
+          <th>Quantity</th>
+          <th>Unit Price</th>
+          <th>Total Price</th>
         </tr>
       </thead>
       <tbody>
-        <?php if (empty($report_rows)): ?>
-          <tr><td colspan="5" class="no-data">No report data found.</td></tr>
-        <?php else: foreach ($report_rows as $r):
-          $balance = $r['import'] - $r['export'];
-        ?>
+        <?php if (empty($detailed_rows)): ?>
+          <tr><td colspan="6" class="no-data">No transactions found.</td></tr>
+        <?php else: foreach ($detailed_rows as $r): ?>
           <tr>
             <td style="font-weight:600"><?= htmlspecialchars($r['date']) ?></td>
-            <td>
-              <?php if ($r['import'] > 0): ?>
-                <button class="drill-link import-link"
-                        onclick="openModal('import','<?= $r['date'] ?>','<?= $r['date'] ?>','<?= htmlspecialchars(addslashes($report_product)) ?>','<?= $r['date'] ?>')">
-                  <?= $r['import'] ?> <span class="drill-icon">▾</span>
-                </button>
-              <?php else: ?>
-                <span class="drill-link zero">0</span>
-              <?php endif; ?>
-            </td>
-            <td>
-              <?php if ($r['export'] > 0): ?>
-                <button class="drill-link export-link"
-                        onclick="openModal('export','<?= $r['date'] ?>','<?= $r['date'] ?>','<?= htmlspecialchars(addslashes($report_product)) ?>','<?= $r['date'] ?>')">
-                  <?= $r['export'] ?> <span class="drill-icon">▾</span>
-                </button>
-              <?php else: ?>
-                <span class="drill-link zero">0</span>
-              <?php endif; ?>
-            </td>
-            <td>
-              <span style="font-weight:700;color:<?= $balance >= 0 ? '#2e7d32' : '#c62828' ?>">
-                <?= $balance >= 0 ? '+' : '' ?><?= $balance ?>
-              </span>
-            </td>
-            <td>
-              <button class="drill-link" onclick="openStockModal()"
-                      style="color:#4a6741;background:#f0f7ee;border:1px solid #a5c8a0;font-size:15px;font-weight:700;">
-                <?= $current_stock ?> <span class="drill-icon">▾</span>
-              </button>
-              <span class="stock-note">actual stock</span>
-            </td>
+            <td><span class="status-badge <?= $r['type'] === 'Import' ? 'status-normal' : 'status-warning' ?>"><?= $r['type'] ?></span></td>
+            <td><code style="background:#f5f0e8;padding:2px 8px;border-radius:6px;color:#8e4b00;font-size:12px"><?= htmlspecialchars($r['product_id']) ?></code></td>
+            <td><strong><?= (int)$r['quantity'] ?></strong></td>
+            <td>$<?= number_format($r['unit_price'], 2) ?></td>
+            <td>$<?= number_format($r['total_price'], 2) ?></td>
           </tr>
         <?php endforeach; endif; ?>
       </tbody>
     </table>
 
-    <?php if (!empty($report_rows)): ?>
-    <div class="alert-section" style="margin-top:16px;">
-      <div class="alert-title">Summary (filtered period)</div>
-      <p>Total Imported: <strong><?= $total_import ?></strong> units
-        <?php if ($total_import > 0): ?>
-          &nbsp;
-          <button class="drill-link import-link" style="font-size:13px;"
-                  onclick="openModal('import','<?= htmlspecialchars($report_from) ?>','<?= htmlspecialchars($report_to) ?>','<?= htmlspecialchars(addslashes($report_product)) ?>','')">
-            View all import orders <span class="drill-icon">▾</span>
-          </button>
-        <?php endif; ?>
-      </p>
-      <p style="margin-top:8px;">Total Exported: <strong><?= $total_export ?></strong> units
-        <?php if ($total_export > 0): ?>
-          &nbsp;
-          <button class="drill-link export-link" style="font-size:13px;"
-                  onclick="openModal('export','<?= htmlspecialchars($report_from) ?>','<?= htmlspecialchars($report_to) ?>','<?= htmlspecialchars(addslashes($report_product)) ?>','')">
-            View all export orders <span class="drill-icon">▾</span>
-          </button>
-        <?php endif; ?>
-      </p>
-      <p style="margin-top:8px;">
-        Current Stock:
-        <button class="drill-link" onclick="openStockModal()"
-                style="color:#4a6741;background:#f0f7ee;border:1px solid #a5c8a0;font-size:14px;font-weight:700;">
-          <strong><?= $current_stock ?></strong> units <span class="drill-icon">▾</span>
-        </button>
-      </p>
-    </div>
-    <?php endif; ?>
   </div>
 
 </main>
@@ -1297,6 +1209,7 @@ document.addEventListener('keydown', e => {
 });
 </script>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
@@ -1319,12 +1232,12 @@ document.addEventListener('keydown', e => {
       dataType: 'json',
       delay: 250,
       data: function(params) {
-        return { ajax_product_search: 1, q: params.term || '', page: params.page || 1 };
+        return { ajax_product_search: 1, q: params.term || '', page: params.page || 1, date: smDate };
       },
       processResults: function(data, params) {
         return {
           results: (data.results || []).map(function(p) {
-            return { id: p.id, text: p.name + ' (' + p.id + ')' };
+            return { id: p.id, text: p.name + ' (' + p.id + ') - Stock: ' + (p.stock || 0) };
           }),
           pagination: { more: data.more }
         };
@@ -1336,9 +1249,11 @@ document.addEventListener('keydown', e => {
 
   $('#sm-product-search').on('select2:select', function(e){
     smSelectedId = e.params.data.id;
+    smLoad();
   });
   $('#sm-product-search').on('select2:clear', function(){
     smSelectedId = '';
+    smLoad();
   });
 
   // ── Flatpickr ─────────────────────────────────────────────
@@ -1462,6 +1377,41 @@ document.addEventListener('keydown', e => {
         smLoaded = true;
       }
     });
+  });
+})();
+
+// ============================================================
+// Tab 3: Product search Select2
+// ============================================================
+(function(){
+  $('#report-product-search').select2({
+    placeholder: '— Search / select product —',
+    allowClear: true,
+    ajax: {
+      url: 'stocking_management.php',
+      dataType: 'json',
+      delay: 250,
+      data: function(params) {
+        return { ajax_product_search: 1, q: params.term || '', page: params.page || 1 };
+      },
+      processResults: function(data, params) {
+        return {
+          results: (data.results || []).map(function(p) {
+            return { id: p.id, text: p.name + ' (' + p.id + ')' };
+          }),
+          pagination: { more: data.more }
+        };
+      },
+      cache: true
+    },
+    minimumInputLength: 0
+  });
+
+  $('#report-product-search').on('select2:select', function(){
+    this.form.submit();
+  });
+  $('#report-product-search').on('select2:clear', function(){
+    this.form.submit();
   });
 })();
 </script>
