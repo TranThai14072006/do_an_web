@@ -175,6 +175,38 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
 .alert-success{background:#d4edda;color:#155724;border:1px solid #c3e6cb;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-weight:600;}
 .cat-badge{display:inline-block;background:#f8f9fa;border:1px solid #ddd;border-radius:6px;padding:3px 10px;font-size:13px;}
 .no-data{text-align:center;padding:30px;color:#888;}
+
+/* Inline profit edit - Tab 1 */
+.inline-profit-wrap { display:flex; gap:6px; align-items:center; justify-content:center; }
+.inline-profit-input { width:68px; padding:5px 8px; border:1px solid #ccc; border-radius:5px;
+                       text-align:center; font-size:14px; }
+.inline-profit-input:focus { border-color:#8e4b00; outline:none; }
+.btn-save-inline { padding:5px 10px; background:#8e4b00; color:#f8ce86;
+                   border:none; border-radius:5px; font-size:12px; font-weight:600;
+                   cursor:pointer; white-space:nowrap; }
+.btn-save-inline:hover { background:#a3670b; }
+
+/* Lot modal */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
+                 z-index:9999; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal-box { background:#fff; border-radius:12px; width:90%; max-width:900px;
+             max-height:85vh; display:flex; flex-direction:column;
+             box-shadow:0 8px 32px rgba(0,0,0,0.18); }
+.modal-header { padding:18px 24px; border-bottom:1px solid #f0e2d0;
+                display:flex; justify-content:space-between; align-items:center; }
+.modal-header h3 { color:#8e4b00; margin:0; font-size:16px; }
+.modal-close { background:none; border:none; font-size:22px; cursor:pointer;
+               color:#888; line-height:1; }
+.modal-body { padding:20px 24px; overflow-y:auto; }
+.modal-table { width:100%; border-collapse:collapse; font-size:13px; }
+.modal-table th { background:#8e4b00; color:#f8ce86; padding:10px 12px; text-align:center; }
+.modal-table td { padding:9px 12px; text-align:center; border-bottom:1px solid #f0e2d0; }
+.modal-table tr:hover td { background:#f9f2e7; }
+.profit-tag { display:inline-block; background:#d4edda; color:#155724;
+              padding:2px 8px; border-radius:10px; font-size:12px; font-weight:600; }
+.no-lot { text-align:center; color:#888; padding:30px; }
+
 </style>
 </head>
 <body>
@@ -191,100 +223,100 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
   <!-- TABS -->
   <div class="tabs">
     <button class="tab-btn <?= $active_tab==='tab1'?'active':'' ?>" onclick="switchTab('tab1')">Selling Price Lookup</button>
-    <button class="tab-btn <?= $active_tab==='tab2'?'active':'' ?>" onclick="switchTab('tab2')">Profit by Product</button>
-    <button class="tab-btn <?= $active_tab==='tab3'?'active':'' ?>" onclick="switchTab('tab3')">Profit by Category</button>
-    <button class="tab-btn <?= $active_tab==='tab4'?'active':'' ?>" onclick="switchTab('tab4')">Cost Price by Lot</button>
   </div>
 
   <!-- ====== TAB 1: Selling Price Lookup ====== -->
-  <div id="tab1" class="tab-content <?= $active_tab==='tab1'?'active':'' ?>">
-    <form method="GET" action="pricing.php">
-      <input type="hidden" name="tab" value="tab1">
-      <div class="search-section">
-        <div class="search-group">
-          <label class="search-label">Product Name</label>
-          <input type="text" class="search-input" name="name" value="<?= htmlspecialchars($q_name) ?>" placeholder="Search...">
-        </div>
-        <div class="search-group">
-          <label class="search-label">Gender</label>
-          <select class="search-input" name="gender">
-            <option value="All">All</option>
-            <option value="Male"   <?= $q_gender === 'Male'   ? 'selected' : '' ?>>Male</option>
-            <option value="Female" <?= $q_gender === 'Female' ? 'selected' : '' ?>>Female</option>
-            <option value="Unisex" <?= $q_gender === 'Unisex' ? 'selected' : '' ?>>Unisex</option>
-          </select>
-        </div>
-        <button type="submit" class="btn-search">Search</button>
-        <a href="pricing.php?tab=tab1" class="btn-reset" style="display:flex;align-items:center;text-decoration:none;padding:0 18px;">Reset</a>
+<!-- ====== TAB 1: Selling Price Lookup ====== -->
+<div id="tab1" class="tab-content <?= $active_tab==='tab1'?'active':'' ?>">
+  <form method="GET" action="pricing.php">
+    <input type="hidden" name="tab" value="tab1">
+    <div class="search-section">
+      <div class="search-group">
+        <label class="search-label">Product Name</label>
+        <input type="text" class="search-input" name="name"
+               value="<?= htmlspecialchars($q_name) ?>" placeholder="Search...">
       </div>
-    </form>
+      <div class="search-group">
+        <label class="search-label">Gender</label>
+        <select class="search-input" name="gender">
+          <option value="All">All</option>
+          <option value="Male"   <?= $q_gender==='Male'?'selected':'' ?>>Male</option>
+          <option value="Female" <?= $q_gender==='Female'?'selected':'' ?>>Female</option>
+          <option value="Unisex" <?= $q_gender==='Unisex'?'selected':'' ?>>Unisex</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-search">Search</button>
+      <a href="pricing.php?tab=tab1" class="btn-reset"
+         style="display:flex;align-items:center;text-decoration:none;padding:0 18px;">Reset</a>
+    </div>
+  </form>
 
-    <table>
-      <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit %</th><th>Selling Price</th><th>Action</th></tr></thead>
-      <tbody>
-        <?php if (empty($products_tab1)): ?>
-          <tr><td colspan="8" class="no-data">No products found.</td></tr>
-        <?php else: ?>
-          <?php foreach ($products_tab1 as $i => $row):
-            $sell = $row['cost_price'] * (1 + $row['profit_percent'] / 100);
-          ?>
-          <tr>
-            <td><?= $i + 1 ?></td>
-            <td><img src="../../images/<?= htmlspecialchars($row['image']) ?>" class="product-img" onerror="this.style.opacity='.2'"></td>
-            <td style="text-align:left"><?= htmlspecialchars($row['name']) ?></td>
-            <td><?= htmlspecialchars($row['category']) ?></td>
-            <td>$<?= number_format($row['cost_price'], 2) ?></td>
-            <td><?= $row['profit_percent'] ?>%</td>
-            <td><strong>$<?= number_format($sell, 2) ?></strong></td>
-            <td><a href="edit_price.php?id=<?= urlencode($row['id']) ?>" class="btn small">Edit</a></td>
-          </tr>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- ====== TAB 2: Profit by Product ====== -->
-  <div id="tab2" class="tab-content <?= $active_tab==='tab2'?'active':'' ?>">
-    <p style="color:#666;font-size:14px;margin-bottom:16px;">Edit each product's profit percentage — the selling price will be recalculated automatically.</p>
-    <table>
-      <thead><tr><th>No.</th><th>Image</th><th>Product</th><th>Category</th><th>Cost Price</th><th>Profit %</th><th>Selling Price</th><th>Save</th></tr></thead>
-      <tbody>
-        <?php foreach ($products_tab2 as $i => $row):
+  <table>
+    <thead>
+      <tr>
+        <th>No.</th><th>Image</th><th>Product</th><th>Category</th>
+        <th>Cost Price</th><th>Profit %</th><th>Selling Price</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if (empty($products_tab1)): ?>
+        <tr><td colspan="8" class="no-data">No products found.</td></tr>
+      <?php else: ?>
+        <?php foreach ($products_tab1 as $i => $row):
           $sell = $row['cost_price'] * (1 + $row['profit_percent'] / 100);
         ?>
-        <tr id="row-<?= htmlspecialchars($row['id']) ?>">
+        <tr id="tab1-row-<?= htmlspecialchars($row['id']) ?>">
           <td><?= $i + 1 ?></td>
-          <td><img src="../../images/<?= htmlspecialchars($row['image']) ?>" class="product-img" onerror="this.style.opacity='.2'"></td>
+          <td><img src="../../images/<?= htmlspecialchars($row['image']) ?>"
+                   class="product-img" onerror="this.style.opacity='.2'"></td>
           <td style="text-align:left"><?= htmlspecialchars($row['name']) ?></td>
           <td><?= htmlspecialchars($row['category']) ?></td>
           <td>$<?= number_format($row['cost_price'], 2) ?></td>
           <td>
-            <!-- Inline input — calculates price preview on typing -->
-            <input type="number" class="profit-input"
-                   id="profit-<?= htmlspecialchars($row['id']) ?>"
-                   value="<?= $row['profit_percent'] ?>" min="0" max="999"
-                   data-cost="<?= $row['cost_price'] ?>"
-                   data-id="<?= htmlspecialchars($row['id']) ?>"
-                   oninput="previewPrice(this)">%
+            <!-- INLINE EDITABLE PROFIT -->
+            <div class="inline-profit-wrap">
+              <input type="number" class="inline-profit-input"
+                     id="t1-profit-<?= htmlspecialchars($row['id']) ?>"
+                     value="<?= $row['profit_percent'] ?>" min="0" max="999"
+                     data-cost="<?= $row['cost_price'] ?>"
+                     data-id="<?= htmlspecialchars($row['id']) ?>"
+                     oninput="tab1PreviewPrice(this)">%
+              <button class="btn-save-inline"
+                      onclick="tab1SaveProfit('<?= htmlspecialchars($row['id']) ?>')">Save</button>
+            </div>
           </td>
-          <td id="preview-<?= htmlspecialchars($row['id']) ?>">
+          <td id="t1-preview-<?= htmlspecialchars($row['id']) ?>">
             <strong>$<?= number_format($sell, 2) ?></strong>
           </td>
           <td>
-            <form method="POST" action="pricing.php?tab=tab2" style="display:inline">
-              <input type="hidden" name="action" value="update_profit">
-              <input type="hidden" name="id" value="<?= htmlspecialchars($row['id']) ?>">
-              <input type="hidden" name="profit" id="hidden-<?= htmlspecialchars($row['id']) ?>" value="<?= $row['profit_percent'] ?>">
-              <button type="submit" class="btn small"
-                      onclick="syncHidden('<?= htmlspecialchars($row['id']) ?>')">Save</button>
-            </form>
+            <!-- LOT HISTORY BUTTON -->
+            <button class="btn small"
+                    onclick="openLotModal('<?= htmlspecialchars($row['id']) ?>',
+                                         '<?= htmlspecialchars(addslashes($row['name'])) ?>')">
+              📦 Lots
+            </button>
           </td>
         </tr>
         <?php endforeach; ?>
-      </tbody>
-    </table>
+      <?php endif; ?>
+    </tbody>
+  </table>
+</div>
+
+<!-- ====== LOT HISTORY MODAL ====== -->
+<div class="modal-overlay" id="lotModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">Import Lot History</h3>
+      <button class="modal-close" onclick="closeLotModal()">×</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <p style="text-align:center;color:#888;">Loading...</p>
+    </div>
   </div>
+</div>
+
+ 
 
   <!-- ====== TAB 3: Profit by Category ====== -->
   <div id="tab3" class="tab-content <?= $active_tab==='tab3'?'active':'' ?>">
@@ -440,6 +472,95 @@ function syncHidden(id) {
   const val = document.getElementById('profit-' + id).value;
   document.getElementById('hidden-' + id).value = val;
 }
+
+// ── Tab 1 inline profit ───────────────────────────────────
+function tab1PreviewPrice(input) {
+  const id   = input.dataset.id;
+  const cost = parseFloat(input.dataset.cost) || 0;
+  const pct  = parseFloat(input.value) || 0;
+  const sell = cost * (1 + pct / 100);
+  const el   = document.getElementById('t1-preview-' + id);
+  if (el) el.innerHTML = '<strong>$' + sell.toFixed(2) + '</strong>';
+}
+
+function tab1SaveProfit(id) {
+  const input  = document.getElementById('t1-profit-' + id);
+  const profit = parseInt(input.value) || 0;
+  const fd = new FormData();
+  fd.append('action', 'update_profit');
+  fd.append('id', id);
+  fd.append('profit', profit);
+  fetch('pricing.php', { method:'POST', body: fd })
+    .then(r => {
+      if (r.ok || r.redirected) {
+        // flash row green
+        const row = document.getElementById('tab1-row-' + id);
+        if (row) { row.style.background='#d4edda'; setTimeout(()=>row.style.background='',1500); }
+      }
+    });
+}
+
+// ── Lot Modal ─────────────────────────────────────────────
+function openLotModal(productId, productName) {
+  document.getElementById('modal-title').textContent = '📦 Import Lots — ' + productName;
+  document.getElementById('modal-body').innerHTML = '<p style="text-align:center;color:#888;padding:30px;">Loading...</p>';
+  document.getElementById('lotModal').classList.add('open');
+
+  fetch('get_lot_history.php?id=' + encodeURIComponent(productId))
+    .then(r => r.json())
+    .then(data => renderLotModal(data))
+    .catch(() => {
+      document.getElementById('modal-body').innerHTML =
+        '<p style="text-align:center;color:#c00;padding:30px;">Failed to load data.</p>';
+    });
+}
+
+function closeLotModal() {
+  document.getElementById('lotModal').classList.remove('open');
+}
+document.getElementById('lotModal').addEventListener('click', function(e){
+  if (e.target === this) closeLotModal();
+});
+
+function renderLotModal(data) {
+  if (!data.lots || data.lots.length === 0) {
+    document.getElementById('modal-body').innerHTML =
+      '<p class="no-lot">No import batches found for this product.</p>';
+    return;
+  }
+  let html = `
+    <table class="modal-table">
+      <thead><tr>
+        <th>Receipt No.</th>
+        <th>Import Date</th>
+        <th>Product Name</th>
+        <th>Qty</th>
+        <th>Lot Unit Cost</th>
+        <th>New Avg Cost</th>
+        <th>New Sell Price</th>
+        <th>Profit</th>
+      </tr></thead>
+      <tbody>`;
+  data.lots.forEach(lot => {
+    html += `<tr>
+      <td><strong>${lot.receipt_no}</strong></td>
+      <td>${lot.entry_date}</td>
+      <td style="text-align:left">${lot.product_name}</td>
+      <td>${lot.quantity}</td>
+      <td>$<strong>${lot.lot_cost}</strong></td>
+      <td style="color:#666">$${lot.avg_cost}</td>
+      <td>$<strong>${lot.new_sell_price}</strong></td>
+      <td><span class="profit-tag">${lot.profit_percent}%</span></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  html += `<p style="font-size:12px;color:#888;margin-top:12px;">
+    New Sell Price = Lot Unit Cost × (1 + Profit%) &nbsp;|&nbsp;
+    New Avg Cost = current weighted average cost in system
+  </p>`;
+  document.getElementById('modal-body').innerHTML = html;
+}
+
 </script>
 </body>
 </html>

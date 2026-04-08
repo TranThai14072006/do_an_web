@@ -2,18 +2,216 @@
 session_start();
 require_once "../../config/config.php";
 
+// Thêm vào đầu file, sau session_start()
+if (isset($_GET['ajax_stock_list']) || isset($_GET['ajax']) || isset($_GET['ajax_product_search'])) {
+    // Tắt output errors để không làm hỏng JSON
+    ini_set('display_errors', 0);
+}
 // ============================================================
-// AJAX endpoint
+// HELPER: tắt lỗi output cho AJAX để không làm hỏng JSON
+// ============================================================
+function isAjaxRequest(): bool {
+    return isset($_GET['ajax'])
+        || isset($_GET['ajax_stock_list'])
+        || isset($_GET['ajax_product_search']);
+}
+if (isAjaxRequest()) {
+    ini_set('display_errors', 0);
+    error_reporting(0);
+}
+
+// ============================================================
+// AJAX: ajax_stock_list — ĐẶT LÊN ĐẦU, trước mọi output
+// ============================================================
+if (isset($_GET['ajax_stock_list'])) {
+    header('Content-Type: application/json; charset=utf-8');
+
+    // Sync stock trước khi trả dữ liệu
+    $conn->query("
+        UPDATE products p SET p.stock = (
+            COALESCE((
+                SELECT SUM(gri.quantity)
+                FROM goods_receipt_items gri
+                JOIN goods_receipt gr ON gri.receipt_id = gr.id
+                WHERE gri.product_id = p.id
+                  AND gr.status = 'Completed'
+                  AND gr.entry_date <= CURDATE()
+            ), 0)
+            - COALESCE((
+                SELECT SUM(oi.quantity)
+                FROM order_items oi
+                WHERE oi.product_id = p.id
+            ), 0)
+        )
+    ");
+
+    $page       = max(1, intval($_GET['page'] ?? 1));
+    $per        = 10;
+    $offset     = ($page - 1) * $per;
+    $status     = $_GET['status']     ?? 'all';
+    $category   = trim($_GET['category']   ?? '');
+    $product_id = trim($_GET['product_id'] ?? '');
+    $max_stock  = (isset($_GET['max_stock']) && $_GET['max_stock'] !== '')
+                    ? intval($_GET['max_stock'])
+                    : null;
+    $date       = trim($_GET['date'] ?? '');
+
+    $threshold = isset($_SESSION['low_stock_threshold'])
+                    ? (int)$_SESSION['low_stock_threshold']
+                    : 10;
+
+    // Build WHERE
+    $where = []; $params = []; $types = '';
+    if ($product_id !== '') {
+        $where[]  = 'id = ?';
+        $params[] = $product_id;
+        $types   .= 's';
+    }
+    if ($category !== '' && $category !== 'All') {
+        $where[]  = 'category = ?';
+        $params[] = $category;
+        $types   .= 's';
+    }
+    $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+    // Lấy tất cả sản phẩm phù hợp (kèm stock sẵn để tránh N+1 khi không dùng date)
+    $stmt = $conn->prepare(
+        "SELECT id, name, image, category, stock FROM products $where_sql ORDER BY name"
+    );
+    if ($params) $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $all = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    // Nếu dùng date: tính stock theo date (1 query gộp thay vì N+1)
+    $date_stock_map = [];
+    if ($date !== '' && !empty($all)) {
+        $ids = array_column($all, 'id');
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $types_ids = str_repeat('s', count($ids));
+
+        // Import tới date
+        $sql_in = "SELECT gri.product_id, COALESCE(SUM(gri.quantity),0) AS qty
+                   FROM goods_receipt_items gri
+                   JOIN goods_receipt gr ON gri.receipt_id = gr.id
+                   WHERE gri.product_id IN ($placeholders)
+                     AND gr.status = 'Completed'
+                     AND gr.entry_date <= ?
+                   GROUP BY gri.product_id";
+        $p_in = array_merge($ids, [$date]);
+        $stmt_in = $conn->prepare($sql_in);
+        $stmt_in->bind_param($types_ids . 's', ...$p_in);
+        $stmt_in->execute();
+        $rows_in = $stmt_in->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt_in->close();
+        foreach ($rows_in as $r) {
+            $date_stock_map[$r['product_id']]['in'] = (int)$r['qty'];
+        }
+
+        // Export tới date
+        $sql_out = "SELECT oi.product_id, COALESCE(SUM(oi.quantity),0) AS qty
+                    FROM order_items oi
+                    JOIN orders o ON oi.order_id = o.id
+                    WHERE oi.product_id IN ($placeholders)
+                      AND o.order_date <= ?
+                    GROUP BY oi.product_id";
+        $p_out = array_merge($ids, [$date]);
+        $stmt_out = $conn->prepare($sql_out);
+        $stmt_out->bind_param($types_ids . 's', ...$p_out);
+        $stmt_out->execute();
+        $rows_out = $stmt_out->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt_out->close();
+        foreach ($rows_out as $r) {
+            $date_stock_map[$r['product_id']]['out'] = (int)$r['qty'];
+        }
+    }
+
+    // Tính stock & filter
+    $filtered = [];
+    foreach ($all as $p) {
+        if ($date !== '') {
+            $in  = $date_stock_map[$p['id']]['in']  ?? 0;
+            $out = $date_stock_map[$p['id']]['out'] ?? 0;
+            $p['stock'] = max(0, $in - $out);
+        } else {
+            $p['stock'] = max(0, (int)$p['stock']);
+        }
+
+        $qty          = $p['stock'];
+        $stock_status = $qty <= 0 ? 'out' : ($qty <= $threshold ? 'low' : 'sufficient');
+
+        if ($status !== 'all' && $stock_status !== $status) continue;
+        if ($max_stock !== null && $qty > $max_stock)       continue;
+
+        $filtered[] = $p;
+    }
+
+    $total = count($filtered);
+    $rows  = array_slice($filtered, $offset, $per);
+
+    echo json_encode([
+        'success'     => true,
+        'rows'        => $rows,
+        'total'       => $total,
+        'total_pages' => max(1, (int)ceil($total / $per)),
+        'threshold'   => $threshold,
+    ]);
+    $conn->close();
+    exit;
+}
+
+// ============================================================
+// AJAX: Product search cho Select2 — ĐẶT TRƯỚC output HTML
+// ============================================================
+if (isset($_GET['ajax_product_search'])) {
+    header('Content-Type: application/json; charset=utf-8');
+    $q      = trim($_GET['q']    ?? '');
+    $page   = max(1, intval($_GET['page'] ?? 1));
+    $size   = 10;
+    $offset = ($page - 1) * $size;
+
+    $where = $q !== '' ? 'WHERE name LIKE ? OR id LIKE ?' : '';
+    $stmt  = $conn->prepare(
+        "SELECT id, name FROM products $where ORDER BY name LIMIT ? OFFSET ?"
+    );
+    if ($q !== '') {
+        $like = '%' . $q . '%';
+        $stmt->bind_param('ssii', $like, $like, $size, $offset);
+    } else {
+        $stmt->bind_param('ii', $size, $offset);
+    }
+    $stmt->execute();
+    $results = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    $count_stmt = $conn->prepare("SELECT COUNT(*) AS c FROM products $where");
+    if ($q !== '') {
+        $count_stmt->bind_param('ss', $like, $like);
+    }
+    $count_stmt->execute();
+    $total = (int)$count_stmt->get_result()->fetch_assoc()['c'];
+    $count_stmt->close();
+
+    echo json_encode([
+        'results' => $results,
+        'more'    => ($page * $size) < $total,
+    ]);
+    $conn->close();
+    exit;
+}
+
+// ============================================================
+// AJAX: Drill-down Import / Export
 // ============================================================
 if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     header('Content-Type: application/json; charset=utf-8');
 
     try {
-        $type        = $_GET['type']       ?? '';
-        $date_from   = $_GET['date_from']  ?? '';
-        $date_to     = $_GET['date_to']    ?? '';
-        $date_single = $_GET['date']       ?? '';
-        $product     = $_GET['product']    ?? '';
+        $type        = $_GET['type']      ?? '';
+        $date_from   = $_GET['date_from'] ?? '';
+        $date_to     = $_GET['date_to']   ?? '';
+        $date_single = $_GET['date']      ?? '';
+        $product     = $_GET['product']   ?? '';
 
         if ($date_single !== '') {
             $date_from = $date_to = $date_single;
@@ -26,7 +224,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
             $params = []; $types = '';
             if ($date_from !== '') { $where[] = 'gr.entry_date >= ?'; $params[] = $date_from; $types .= 's'; }
             if ($date_to   !== '') { $where[] = 'gr.entry_date <= ?'; $params[] = $date_to;   $types .= 's'; }
-            if ($product   !== '') { $where[] = 'gri.product_name LIKE ?'; $params[] = '%'.$product.'%'; $types .= 's'; }
+            if ($product   !== '') { $where[] = 'gri.product_name LIKE ?'; $params[] = '%' . $product . '%'; $types .= 's'; }
 
             $sql = "SELECT gr.order_number, gr.entry_date, gr.supplier, gr.status, gr.created_at,
                            gri.product_id, gri.product_name, gri.quantity, gri.unit_price, gri.total_price
@@ -46,11 +244,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
             $params = []; $types = '';
             if ($date_from !== '') { $where[] = 'o.order_date >= ?'; $params[] = $date_from; $types .= 's'; }
             if ($date_to   !== '') { $where[] = 'o.order_date <= ?'; $params[] = $date_to;   $types .= 's'; }
-            if ($product   !== '') { $where[] = 'oi.product_name LIKE ?'; $params[] = '%'.$product.'%'; $types .= 's'; }
+            if ($product   !== '') { $where[] = 'oi.product_name LIKE ?'; $params[] = '%' . $product . '%'; $types .= 's'; }
 
-            // FIX: orders table has no created_at column — use order_date AS created_at instead
-            $sql = "SELECT o.order_number, o.order_date AS entry_date, c.full_name AS supplier,
-                           o.status, o.order_date AS created_at,
+            $sql = "SELECT o.order_number, o.order_date AS entry_date,
+                           c.full_name AS supplier, o.status,
+                           o.order_date AS created_at,
                            oi.product_id, oi.product_name,
                            oi.quantity, oi.unit_price, oi.total_price
                     FROM orders o
@@ -67,105 +265,138 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
         }
 
         echo json_encode(['success' => true, 'type' => $type, 'rows' => $rows]);
+
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     }
+
     $conn->close();
     exit;
 }
 
 // ============================================================
-// Sync stock
-// FIX: added entry_date <= CURDATE() to exclude future-dated imports
+// Sync stock (chỉ chạy khi load trang HTML)
+// FIX: thêm entry_date <= CURDATE() để loại import tương lai
 // ============================================================
 $conn->query("
     UPDATE products p SET p.stock = (
-        COALESCE((SELECT SUM(gri.quantity) FROM goods_receipt_items gri
-                  JOIN goods_receipt gr ON gri.receipt_id = gr.id
-                  WHERE gri.product_id = p.id
-                    AND gr.status = 'Completed'
-                    AND gr.entry_date <= CURDATE()), 0)
-        - COALESCE((SELECT SUM(oi.quantity) FROM order_items oi WHERE oi.product_id = p.id), 0)
+        COALESCE((
+            SELECT SUM(gri.quantity)
+            FROM goods_receipt_items gri
+            JOIN goods_receipt gr ON gri.receipt_id = gr.id
+            WHERE gri.product_id = p.id
+              AND gr.status = 'Completed'
+              AND gr.entry_date <= CURDATE()
+        ), 0)
+        - COALESCE((
+            SELECT SUM(oi.quantity)
+            FROM order_items oi
+            WHERE oi.product_id = p.id
+        ), 0)
     )
 ");
 
 $active_tab = isset($_GET['tab']) ? trim($_GET['tab']) : 'stock-lookup';
 
 // ============================================================
-// TAB 1: Stock Lookup
+// TAB 1: Stock Lookup (server-side data cho lần đầu load)
 // ============================================================
 $search_name     = trim($_GET['search_name']     ?? '');
 $search_category = trim($_GET['search_category'] ?? 'All');
-$search_date     = trim($_GET['search_date']      ?? '');
+$search_date     = trim($_GET['search_date']     ?? '');
 $page            = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $per_page        = 5;
 
 $where1 = []; $params1 = []; $types1 = '';
-if ($search_name !== '')         { $where1[] = 'name LIKE ?';  $params1[] = '%'.$search_name.'%'; $types1 .= 's'; }
-if ($search_category !== 'All') { $where1[] = 'category = ?'; $params1[] = $search_category;      $types1 .= 's'; }
+if ($search_name !== '')        { $where1[] = 'name LIKE ?';  $params1[] = '%' . $search_name . '%'; $types1 .= 's'; }
+if ($search_category !== 'All') { $where1[] = 'category = ?'; $params1[] = $search_category;          $types1 .= 's'; }
 $where1_sql = $where1 ? 'WHERE ' . implode(' AND ', $where1) : '';
 
-// Get total count
-$count_sql = "SELECT COUNT(*) as total FROM products $where1_sql";
-$count_stmt = $conn->prepare($count_sql);
+$count_stmt = $conn->prepare("SELECT COUNT(*) AS total FROM products $where1_sql");
 if ($params1) $count_stmt->bind_param($types1, ...$params1);
 $count_stmt->execute();
-$total_products = $count_stmt->get_result()->fetch_assoc()['total'];
+$total_products = (int)$count_stmt->get_result()->fetch_assoc()['total'];
 $count_stmt->close();
 
-$total_pages = ceil($total_products / $per_page);
-$offset = ($page - 1) * $per_page;
+$total_pages = (int)ceil($total_products / $per_page);
+$offset      = ($page - 1) * $per_page;
 
-// Get paginated products
-$stmt1 = $conn->prepare("SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC LIMIT ? OFFSET ?");
-$params1[] = $per_page; $params1[] = $offset;
-$types1 .= 'ii';
-$stmt1->bind_param($types1, ...$params1);
+$stmt1 = $conn->prepare(
+    "SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC LIMIT ? OFFSET ?"
+);
+$p1 = $params1;
+$p1[] = $per_page; $p1[] = $offset;
+$t1 = $types1 . 'ii';
+$stmt1->bind_param($t1, ...$p1);
 $stmt1->execute();
 $base_products = $stmt1->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt1->close();
 
+// Tính stock theo date nếu có (dùng batch query, tránh N+1)
 $products = [];
-foreach ($base_products as $p) {
-    if ($search_date !== '') {
-        $s_in = $conn->prepare("SELECT COALESCE(SUM(gri.quantity),0) AS qty FROM goods_receipt_items gri
-                                 JOIN goods_receipt gr ON gri.receipt_id=gr.id
-                                 WHERE gri.product_id=? AND gr.status='Completed' AND gr.entry_date<=?");
-        $s_in->bind_param('ss', $p['id'], $search_date);
-        $s_in->execute();
-        $in_qty = (int)$s_in->get_result()->fetch_assoc()['qty'];
-        $s_in->close();
+if ($search_date !== '' && !empty($base_products)) {
+    $ids_tab1 = array_column($base_products, 'id');
+    $ph1      = implode(',', array_fill(0, count($ids_tab1), '?'));
+    $tt1      = str_repeat('s', count($ids_tab1));
 
-        $s_out = $conn->prepare("SELECT COALESCE(SUM(oi.quantity),0) AS qty FROM order_items oi
-                                  JOIN orders o ON oi.order_id=o.id
-                                  WHERE oi.product_id=? AND o.order_date<=?");
-        $s_out->bind_param('ss', $p['id'], $search_date);
-        $s_out->execute();
-        $out_qty = (int)$s_out->get_result()->fetch_assoc()['qty'];
-        $s_out->close();
+    $si = $conn->prepare(
+        "SELECT gri.product_id, COALESCE(SUM(gri.quantity),0) AS qty
+         FROM goods_receipt_items gri
+         JOIN goods_receipt gr ON gri.receipt_id = gr.id
+         WHERE gri.product_id IN ($ph1)
+           AND gr.status = 'Completed' AND gr.entry_date <= ?
+         GROUP BY gri.product_id"
+    );
+    $si->bind_param($tt1 . 's', ...array_merge($ids_tab1, [$search_date]));
+    $si->execute();
+    $in_map = array_column($si->get_result()->fetch_all(MYSQLI_ASSOC), 'qty', 'product_id');
+    $si->close();
 
-        $p['stock']      = max(0, $in_qty - $out_qty);
+    $so = $conn->prepare(
+        "SELECT oi.product_id, COALESCE(SUM(oi.quantity),0) AS qty
+         FROM order_items oi
+         JOIN orders o ON oi.order_id = o.id
+         WHERE oi.product_id IN ($ph1) AND o.order_date <= ?
+         GROUP BY oi.product_id"
+    );
+    $so->bind_param($tt1 . 's', ...array_merge($ids_tab1, [$search_date]));
+    $so->execute();
+    $out_map = array_column($so->get_result()->fetch_all(MYSQLI_ASSOC), 'qty', 'product_id');
+    $so->close();
+
+    foreach ($base_products as $p) {
+        $in  = (int)($in_map[$p['id']]  ?? 0);
+        $out = (int)($out_map[$p['id']] ?? 0);
+        $p['stock']      = max(0, $in - $out);
         $p['as_of_date'] = true;
-        $p['in_qty']     = $in_qty;
-        $p['out_qty']    = $out_qty;
-    } else {
-        $p['as_of_date'] = false;
+        $p['in_qty']     = $in;
+        $p['out_qty']    = $out;
+        $products[] = $p;
     }
-    $products[] = $p;
+} else {
+    foreach ($base_products as $p) {
+        $p['as_of_date'] = false;
+        $products[] = $p;
+    }
 }
 
 // ============================================================
-// TAB 2: Low Stock Alert
+// TAB 2: Low Stock Alert + set threshold
 // ============================================================
-if (isset($_POST['set_threshold']) && isset($_POST['threshold'])) {
+if (isset($_POST['set_threshold'], $_POST['threshold'])) {
     $t = intval($_POST['threshold']);
     if ($t >= 0) $_SESSION['low_stock_threshold'] = $t;
-    header("Location: stocking_management.php?tab=stock-alert");
+    $redirect_tab = $active_tab === 'stock-lookup' ? 'stock-lookup' : 'stock-alert';
+    header("Location: stocking_management.php?tab=$redirect_tab");
     exit;
 }
-$min_stock = isset($_SESSION['low_stock_threshold']) ? (int)$_SESSION['low_stock_threshold'] : 10;
+$min_stock = isset($_SESSION['low_stock_threshold'])
+                ? (int)$_SESSION['low_stock_threshold']
+                : 10;
 
-$stmt_low = $conn->prepare("SELECT id, name, image, category, stock FROM products WHERE stock <= ? ORDER BY stock ASC");
+$stmt_low = $conn->prepare(
+    "SELECT id, name, image, category, stock FROM products WHERE stock <= ? ORDER BY stock ASC"
+);
 $stmt_low->bind_param('i', $min_stock);
 $stmt_low->execute();
 $low_products = $stmt_low->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -178,43 +409,60 @@ $report_product = trim($_GET['report_product'] ?? '');
 $report_from    = trim($_GET['report_from']    ?? '');
 $report_to      = trim($_GET['report_to']      ?? '');
 
-$imp_where = ["gr.status = 'Completed'"]; $imp_params = []; $imp_types = '';
-if ($report_from    !== '') { $imp_where[] = 'gr.entry_date >= ?'; $imp_params[] = $report_from;           $imp_types .= 's'; }
-if ($report_to      !== '') { $imp_where[] = 'gr.entry_date <= ?'; $imp_params[] = $report_to;             $imp_types .= 's'; }
-if ($report_product !== '') { $imp_where[] = 'gri.product_name LIKE ?'; $imp_params[] = '%'.$report_product.'%'; $imp_types .= 's'; }
+$imp_where  = ["gr.status = 'Completed'", "gr.entry_date <= CURDATE()"];
+$imp_params = []; $imp_types = '';
+if ($report_from    !== '') { $imp_where[] = 'gr.entry_date >= ?';       $imp_params[] = $report_from;                $imp_types .= 's'; }
+if ($report_to      !== '') { $imp_where[] = 'gr.entry_date <= ?';       $imp_params[] = $report_to;                  $imp_types .= 's'; }
+if ($report_product !== '') { $imp_where[] = 'gri.product_name LIKE ?';  $imp_params[] = '%' . $report_product . '%'; $imp_types .= 's'; }
 
-// FIX: also exclude future-dated imports from report
-$imp_where[] = 'gr.entry_date <= CURDATE()';
-
-$stmt_imp = $conn->prepare("SELECT gr.entry_date AS report_date, SUM(gri.quantity) AS import_qty
-    FROM goods_receipt gr JOIN goods_receipt_items gri ON gr.id=gri.receipt_id
-    WHERE ".implode(' AND ',$imp_where)." GROUP BY gr.entry_date ORDER BY gr.entry_date DESC");
+$stmt_imp = $conn->prepare(
+    "SELECT gr.entry_date AS report_date, SUM(gri.quantity) AS import_qty
+     FROM goods_receipt gr
+     JOIN goods_receipt_items gri ON gr.id = gri.receipt_id
+     WHERE " . implode(' AND ', $imp_where) . "
+     GROUP BY gr.entry_date ORDER BY gr.entry_date DESC"
+);
 if ($imp_params) $stmt_imp->bind_param($imp_types, ...$imp_params);
 $stmt_imp->execute();
 $import_by_date = $stmt_imp->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_imp->close();
 
-$exp_where = ['1=1']; $exp_params = []; $exp_types = '';
-if ($report_from    !== '') { $exp_where[] = 'o.order_date >= ?'; $exp_params[] = $report_from;           $exp_types .= 's'; }
-if ($report_to      !== '') { $exp_where[] = 'o.order_date <= ?'; $exp_params[] = $report_to;             $exp_types .= 's'; }
-if ($report_product !== '') { $exp_where[] = 'oi.product_name LIKE ?'; $exp_params[] = '%'.$report_product.'%'; $exp_types .= 's'; }
+$exp_where  = ['1=1'];
+$exp_params = []; $exp_types = '';
+if ($report_from    !== '') { $exp_where[] = 'o.order_date >= ?';       $exp_params[] = $report_from;                $exp_types .= 's'; }
+if ($report_to      !== '') { $exp_where[] = 'o.order_date <= ?';       $exp_params[] = $report_to;                  $exp_types .= 's'; }
+if ($report_product !== '') { $exp_where[] = 'oi.product_name LIKE ?';  $exp_params[] = '%' . $report_product . '%'; $exp_types .= 's'; }
 
-$stmt_exp = $conn->prepare("SELECT o.order_date AS report_date, SUM(oi.quantity) AS export_qty
-    FROM orders o JOIN order_items oi ON o.id=oi.order_id
-    WHERE ".implode(' AND ',$exp_where)." GROUP BY o.order_date ORDER BY o.order_date DESC");
+$stmt_exp = $conn->prepare(
+    "SELECT o.order_date AS report_date, SUM(oi.quantity) AS export_qty
+     FROM orders o
+     JOIN order_items oi ON o.id = oi.order_id
+     WHERE " . implode(' AND ', $exp_where) . "
+     GROUP BY o.order_date ORDER BY o.order_date DESC"
+);
 if ($exp_params) $stmt_exp->bind_param($exp_types, ...$exp_params);
 $stmt_exp->execute();
 $export_by_date = $stmt_exp->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt_exp->close();
 
 $date_map = [];
-foreach ($import_by_date as $r) { $date_map[$r['report_date']]['import'] = (int)$r['import_qty']; $date_map[$r['report_date']]['export'] ??= 0; }
-foreach ($export_by_date as $r) { $date_map[$r['report_date']]['export'] = (int)$r['export_qty']; $date_map[$r['report_date']]['import'] ??= 0; }
+foreach ($import_by_date as $r) {
+    $date_map[$r['report_date']]['import'] = (int)$r['import_qty'];
+    $date_map[$r['report_date']]['export'] ??= 0;
+}
+foreach ($export_by_date as $r) {
+    $date_map[$r['report_date']]['export'] = (int)$r['export_qty'];
+    $date_map[$r['report_date']]['import'] ??= 0;
+}
 krsort($date_map);
 
-$stock_sql = "SELECT COALESCE(SUM(stock),0) AS total_stock FROM products" . ($report_product !== '' ? " WHERE name LIKE ?" : "");
+$stock_sql  = "SELECT COALESCE(SUM(stock),0) AS total_stock FROM products"
+            . ($report_product !== '' ? " WHERE name LIKE ?" : "");
 $stmt_stock = $conn->prepare($stock_sql);
-if ($report_product !== '') { $sl = '%'.$report_product.'%'; $stmt_stock->bind_param('s', $sl); }
+if ($report_product !== '') {
+    $sl = '%' . $report_product . '%';
+    $stmt_stock->bind_param('s', $sl);
+}
 $stmt_stock->execute();
 $current_stock = (int)$stmt_stock->get_result()->fetch_assoc()['total_stock'];
 $stmt_stock->close();
@@ -229,11 +477,13 @@ foreach ($date_map as $date => $vals) {
 }
 
 // ============================================================
-// Stock summary (shared — modal + stat cards)
+// Stock summary (dùng cho modal + stat cards)
 // ============================================================
 $total_stock   = 0;
 $stock_details = [];
-$stock_all = $conn->query("SELECT id, name, category, stock FROM products ORDER BY category, name");
+$stock_all = $conn->query(
+    "SELECT id, name, category, stock FROM products ORDER BY category, name"
+);
 while ($row = $stock_all->fetch_assoc()) {
     $total_stock   += max(0, (int)$row['stock']);
     $stock_details[] = $row;
@@ -242,13 +492,19 @@ $count_in  = count(array_filter($stock_details, fn($r) => (int)$r['stock'] >= 5)
 $count_low = count(array_filter($stock_details, fn($r) => (int)$r['stock'] > 0 && (int)$r['stock'] < 5));
 $count_out = count(array_filter($stock_details, fn($r) => (int)$r['stock'] <= 0));
 
-function stockStatus($qty, $threshold = 10) {
+// Category list cho dropdown
+$cat_list = $conn->query(
+    "SELECT DISTINCT category FROM products ORDER BY category"
+)->fetch_all(MYSQLI_ASSOC);
+
+// ============================================================
+// HELPER
+// ============================================================
+function stockStatus(int $qty, int $threshold = 10): array {
     if ($qty <= 0)          return ['label' => 'Out of Stock', 'class' => 'status-danger'];
     if ($qty <= $threshold) return ['label' => 'Low Stock',    'class' => 'status-warning'];
     return                         ['label' => 'In Stock',     'class' => 'status-normal'];
 }
-
-$cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY category")->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -257,6 +513,9 @@ $cat_list = $conn->query("SELECT DISTINCT category FROM products ORDER BY catego
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stocking Management</title>
   <link rel="stylesheet" href="/do_an_web/Jewellery/admin/admin_function.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     /* PAGE-SPECIFIC: main override for this layout */
     main { overflow-x: hidden; padding: 25px; }
@@ -393,6 +652,36 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
 .modal-loading .spinner { width:36px; height:36px; border:3px solid #f0e2d0; border-top-color:#8e4b00; border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 14px; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .modal-empty { text-align:center; padding:50px; color:#aaa; font-size:15px; }
+
+/* ── Inventory-style filter ── */
+.inv-filter-box{background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);padding:20px;margin-bottom:16px;}
+.inv-filter-box h4{color:#8e4b00;font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.inv-filter-row{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;}
+.inv-filter-group{display:flex;flex-direction:column;flex:1;min-width:160px;}
+.inv-filter-group label{font-size:13px;font-weight:600;color:#555;margin-bottom:6px;}
+.inv-filter-group input,.inv-filter-group select{padding:9px 11px;border:1px solid #ccc;border-radius:6px;font-size:14px;}
+.inv-filter-group input:focus,.inv-filter-group select:focus{border-color:#8e4b00;outline:none;}
+.inv-date-wrap{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #ccc;border-radius:6px;padding:0 12px;}
+.inv-date-wrap i{color:#8e4b00;}
+.inv-date-wrap input{border:none;padding:9px 0;font-size:14px;background:transparent;outline:none;min-width:140px;}
+.btn-filter{padding:9px 20px;background:#8e4b00;color:#f8ce86;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;transition:.2s;white-space:nowrap;}
+.btn-filter:hover{background:#a3670b;}
+.btn-reset-filter{padding:9px 16px;background:#ccc;color:#333;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;transition:.2s;white-space:nowrap;}
+.btn-reset-filter:hover{background:#b3b3b3;}
+
+/* ── Threshold inline ── */
+.threshold-inline{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;background:#fdf5ec;border-left:4px solid #8e4b00;border-radius:0 8px 8px 0;margin-bottom:16px;}
+.threshold-inline label{font-weight:700;color:#8e4b00;font-size:14px;}
+.threshold-inline input[type=number]{width:80px;padding:7px 10px;border:2px solid #8e4b00;border-radius:6px;font-size:15px;font-weight:700;text-align:center;color:#8e4b00;}
+.threshold-inline .thr-badge{background:#fdf0e0;color:#8e4b00;border:1px solid #e8c98a;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;}
+.threshold-inline .btn-thr{padding:7px 16px;background:#8e4b00;color:#f8ce86;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;}
+
+/* ── Stock date badge ── */
+.date-badge{display:inline-block;background:#8e4b00;color:#f8ce86;padding:4px 14px;border-radius:20px;font-size:13px;margin-left:12px;}
+
+/* select2 custom */
+.select2-container--bootstrap-5 .select2-results__option--highlighted{background:#8e4b00 !important;color:#f8ce86 !important;}
+
   </style>
 </head>
 <body>
@@ -408,109 +697,119 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
     <div class="tab <?= $active_tab==='stock-report' ?'active':'' ?>" data-tab="stock-report">Import - Export</div>
   </div>
 
-  <!-- ====== TAB 1: Stock Lookup ====== -->
-  <div class="tab-content <?= $active_tab==='stock-lookup'?'active':'' ?>" id="stock-lookup">
 
-    <form method="GET" action="stocking_management.php" class="search-form">
-      <input type="hidden" name="tab" value="stock-lookup">
-      <div class="form-group">
-        <label>Product Name</label>
-        <input type="text" name="search_name" placeholder="Enter product name..." value="<?= htmlspecialchars($search_name) ?>">
+  
+
+  <!-- ====== TAB 1: Stock Lookup ====== -->
+  <!-- ====== TAB 1: Stock Lookup + Low Stock Config ====== -->
+<div class="tab-content <?= $active_tab==='stock-lookup'?'active':'' ?>" id="stock-lookup">
+
+  <!-- Threshold Setting (gộp vào đây) -->
+  <form method="POST" action="stocking_management.php?tab=stock-lookup">
+    <input type="hidden" name="set_threshold" value="1">
+    <div class="threshold-inline">
+      <label>⚠️ Low stock alert threshold:</label>
+      <input type="number" name="threshold" value="<?= $min_stock ?>" min="0" max="9999">
+      <span style="font-size:14px;color:#666">items</span>
+      <button type="submit" class="btn-thr">Apply</button>
+      <span class="thr-badge">Current: ≤ <?= $min_stock ?> = Low Stock</span>
+      <span style="font-size:12px;color:#888;margin-left:auto">
+        <i>Products at or below this threshold will be flagged as Low Stock</i>
+      </span>
+    </div>
+  </form>
+
+  <!-- Inventory-style Filter -->
+  <div class="inv-filter-box">
+    <h4>🔍 Stock Filter</h4>
+    <div class="inv-filter-row">
+
+      <!-- Select2 product search -->
+      <div class="inv-filter-group" style="flex:2;min-width:220px;">
+        <label>Product</label>
+        <select id="sm-product-search" style="width:100%">
+          <option value="">— Search / select product —</option>
+        </select>
       </div>
-      <div class="form-group">
+
+      <!-- Category -->
+      <div class="inv-filter-group">
         <label>Category</label>
-        <select name="search_category">
+        <select id="sm-category">
           <option value="All">All</option>
           <?php foreach ($cat_list as $c): ?>
-            <option value="<?= htmlspecialchars($c['category']) ?>" <?= $search_category===$c['category']?'selected':'' ?>>
+            <option value="<?= htmlspecialchars($c['category']) ?>">
               <?= htmlspecialchars($c['category']) ?>
             </option>
           <?php endforeach; ?>
         </select>
       </div>
-      <div class="form-group">
-        <label>As of Date <span style="font-weight:normal;color:#888;font-size:12px">— leave blank for current</span></label>
-        <input type="date" name="search_date" value="<?= htmlspecialchars($search_date) ?>" max="<?= date('Y-m-d') ?>">
+
+      <!-- Stock status -->
+      <div class="inv-filter-group">
+        <label>Stock Status</label>
+        <select id="sm-status">
+          <option value="all">All</option>
+          <option value="sufficient">Sufficient (above threshold)</option>
+          <option value="low">Low Stock (at threshold)</option>
+          <option value="out">Out of Stock</option>
+        </select>
       </div>
-      <button type="submit" class="btn">Search</button>
-      <a href="stocking_management.php?tab=stock-lookup" class="btn secondary">Reset</a>
-    </form>
 
-    <?php if ($search_date !== ''): ?>
-      <div class="date-info-box">
-        Showing stock as of <strong><?= htmlspecialchars($search_date) ?></strong>
-        <a href="stocking_management.php?tab=stock-lookup" style="margin-left:auto;color:#185fa5;font-size:13px;">View current stock</a>
+      <!-- Max stock -->
+      <div class="inv-filter-group" style="max-width:160px;">
+        <label>Stock ≤</label>
+        <input type="number" id="sm-max-stock" placeholder="Max qty" min="0">
       </div>
-    <?php endif; ?>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Product Code</th>
-          <th>Product Name</th>
-          <th>Image</th>
-          <th>Category</th>
-          <th><?= $search_date !== '' ? 'Stock at '.htmlspecialchars($search_date) : 'Current Stock' ?></th>
-          <?php if ($search_date !== ''): ?>
-            <th>Total Imported</th>
-            <th>Total Sold</th>
-          <?php endif; ?>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if (empty($products)): ?>
-          <tr><td colspan="<?= $search_date !== '' ? 8 : 6 ?>" class="no-data">No products found.</td></tr>
-        <?php else: foreach ($products as $p): $st = stockStatus($p['stock'], $min_stock); ?>
-          <tr>
-            <td><?= htmlspecialchars($p['id']) ?></td>
-            <td style="text-align:left"><?= htmlspecialchars($p['name']) ?></td>
-            <td><img src="../../images/<?= htmlspecialchars($p['image']) ?>" onerror="this.style.opacity='.2'"></td>
-            <td><?= htmlspecialchars($p['category']) ?></td>
-            <td><span class="<?= $search_date !== '' ? 'stock-as-of' : '' ?>"><?= intval($p['stock']) ?></span></td>
-            <?php if ($search_date !== ''): ?>
-              <td style="color:#2e7d32"><?= $p['in_qty']  ?? 0 ?></td>
-              <td style="color:#c62828"><?= $p['out_qty'] ?? 0 ?></td>
-            <?php endif; ?>
-            <td><span class="status-badge <?= $st['class'] ?>"><?= $st['label'] ?></span></td>
-          </tr>
-        <?php endforeach; endif; ?>
-      </tbody>
-    </table>
-
-    <?php if ($total_pages > 1): ?>
-      <div style="text-align:center; margin:20px 0;">
-        <?php
-        $query_params = $_GET;
-        unset($query_params['page']);
-        $base_url = 'stocking_management.php?' . http_build_query($query_params) . '&page=';
-        ?>
-        <?php if ($page > 1): ?>
-          <a href="<?= $base_url . ($page - 1) ?>" class="btn secondary" style="margin-right:10px;">&laquo; Previous</a>
-        <?php endif; ?>
-        <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
-          <a href="<?= $base_url . $i ?>" class="btn <?= $i == $page ? '' : 'secondary' ?>" style="margin:0 2px;"><?= $i ?></a>
-        <?php endfor; ?>
-        <?php if ($page < $total_pages): ?>
-          <a href="<?= $base_url . ($page + 1) ?>" class="btn secondary" style="margin-left:10px;">Next &raquo;</a>
-        <?php endif; ?>
-        <div style="margin-top:10px; font-size:14px; color:#666;">
-          Page <?= $page ?> of <?= $total_pages ?> (<?= $total_products ?> total products)
+      <!-- Date picker -->
+      <div class="inv-filter-group" style="min-width:200px;">
+        <label>As of Date <span style="font-weight:normal;color:#999;font-size:11px">— blank = current</span></label>
+        <div class="inv-date-wrap">
+          <i>📅</i>
+          <input type="text" id="sm-date" placeholder="Pick a date" autocomplete="off">
         </div>
       </div>
-    <?php endif; ?>
 
-    <div class="alert-section" style="margin-top:16px;">
-      <div class="alert-title">Note</div>
-      <?php if ($search_date !== ''): ?>
-        Stock at <strong><?= htmlspecialchars($search_date) ?></strong>
-        = Total imported (Completed, entry date up to selected date) minus Total sold (order date up to selected date).
-      <?php else: ?>
-        Current stock = Total imported (Completed, up to today) minus Total sold.
-        Alert threshold: <strong><?= $min_stock ?></strong> — adjust in the Low Stock Alert tab.
-      <?php endif; ?>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button class="btn-filter" onclick="smLoad()">Search</button>
+      <button class="btn-reset-filter" onclick="smReset()">Reset</button>
     </div>
   </div>
+
+  <!-- Table -->
+  <div style="display:flex;align-items:center;margin-bottom:10px;">
+    <strong style="color:#8e4b00;font-size:15px;">Stock List</strong>
+    <span id="sm-date-badge" class="date-badge" style="display:none;"></span>
+    <span id="sm-count" style="margin-left:auto;font-size:13px;color:#888;"></span>
+  </div>
+
+  <table id="sm-table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Product Name</th>
+        <th>Image</th>
+        <th>Category</th>
+        <th id="sm-qty-header">Current Stock</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="sm-tbody">
+      <tr><td colspan="6" style="text-align:center;color:#aaa;padding:30px;">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Pagination -->
+  <div id="sm-pagination" style="text-align:center;margin-top:18px;"></div>
+
+  <div class="alert-section" style="margin-top:16px;">
+    <div class="alert-title">Note</div>
+    Stock = Total imported (Completed receipts, up to selected date) minus Total sold (orders up to selected date).
+    Low stock threshold is configurable above.
+  </div>
+</div>
 
   <!-- ====== TAB 2: Low Stock Alert ====== -->
   <div class="tab-content <?= $active_tab==='stock-alert'?'active':'' ?>" id="stock-alert">
@@ -988,6 +1287,176 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeModal(); closeStockModal(); }
 });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+// ============================================================
+// Tab 1 — Inventory-style stock filter
+// ============================================================
+(function(){
+  const LOW_THRESHOLD = <?= $min_stock ?>;
+  let smPage = 1;
+  let smSelectedId = '';
+  let smDate = '';
+  let smLoaded = false;
+
+  // ── Select2 ──────────────────────────────────────────────
+  $('#sm-product-search').select2({
+    placeholder: '— Search / select product —',
+    allowClear: true,
+    ajax: {
+      url: 'stocking_management.php',
+      dataType: 'json',
+      delay: 250,
+      data: function(params) {
+        return { ajax_product_search: 1, q: params.term || '', page: params.page || 1 };
+      },
+      processResults: function(data, params) {
+        return {
+          results: (data.results || []).map(function(p) {
+            return { id: p.id, text: p.name + ' (' + p.id + ')' };
+          }),
+          pagination: { more: data.more }
+        };
+      },
+      cache: true
+    },
+    minimumInputLength: 0
+  });
+
+  $('#sm-product-search').on('select2:select', function(e){
+    smSelectedId = e.params.data.id;
+  });
+  $('#sm-product-search').on('select2:clear', function(){
+    smSelectedId = '';
+  });
+
+  // ── Flatpickr ─────────────────────────────────────────────
+  flatpickr('#sm-date', {
+    dateFormat: 'Y-m-d',
+    maxDate: 'today',
+    onChange: function(dates, dateStr){
+      smDate = dateStr;
+    }
+  });
+
+  // ── Load table ────────────────────────────────────────────
+  window.smLoad = function(page) {
+    smPage = page || 1;
+    const status  = document.getElementById('sm-status').value;
+    const maxStock= document.getElementById('sm-max-stock').value;
+    const category= document.getElementById('sm-category').value;
+    const tbody   = document.getElementById('sm-tbody');
+    const header  = document.getElementById('sm-qty-header');
+    const badge   = document.getElementById('sm-date-badge');
+    const count   = document.getElementById('sm-count');
+
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:30px;">Loading...</td></tr>';
+
+    const params = new URLSearchParams({
+      ajax_stock_list: 1,
+      page: smPage,
+      status: status,
+      category: category,
+      product_id: smSelectedId,
+      max_stock: maxStock,
+      date: smDate
+    });
+
+    fetch('stocking_management.php?' + params)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#c00">Error: ' + data.error + '</td></tr>';
+          return;
+        }
+
+        // Header & badge
+        if (smDate) {
+          header.textContent = 'Stock at ' + smDate;
+          badge.textContent  = '📅 ' + smDate;
+          badge.style.display = 'inline-block';
+        } else {
+          header.textContent = 'Current Stock';
+          badge.style.display = 'none';
+        }
+        count.textContent = data.total + ' product(s) found';
+
+        if (!data.rows.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:30px;">No products found.</td></tr>';
+          renderPagination(data);
+          return;
+        }
+
+        let html = '';
+        data.rows.forEach(function(p) {
+          const qty = parseInt(p.stock);
+          let badgeClass, label;
+          if (qty <= 0)              { badgeClass='status-danger';  label='Out of Stock'; }
+          else if (qty <= data.threshold) { badgeClass='status-warning'; label='Low Stock'; }
+          else                       { badgeClass='status-normal';  label='In Stock'; }
+
+          html += '<tr>';
+          html += '<td>' + esc(p.id) + '</td>';
+          html += '<td style="text-align:left;font-weight:600">' + esc(p.name) + '</td>';
+          html += '<td><img src="../../images/' + esc(p.image) + '" style="width:52px;height:52px;object-fit:cover;border-radius:6px" onerror="this.style.opacity=\'.2\'"></td>';
+          html += '<td>' + esc(p.category) + '</td>';
+          html += '<td>';
+          if (smDate) html += '<span style="font-weight:700;color:#8e4b00">' + qty + '</span>';
+          else html += '<strong>' + qty + '</strong>';
+          html += '</td>';
+          html += '<td><span class="status-badge ' + badgeClass + '">' + label + '</span></td>';
+          html += '</tr>';
+        });
+        tbody.innerHTML = html;
+        renderPagination(data);
+      })
+      .catch(function(e){ tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#c00">Connection error</td></tr>'; });
+  };
+
+  function renderPagination(data) {
+    const el = document.getElementById('sm-pagination');
+    if (data.total_pages <= 1) { el.innerHTML = ''; return; }
+    let html = '';
+    if (smPage > 1) html += '<a onclick="smLoad(' + (smPage-1) + ')" class="btn secondary" style="margin:0 3px;cursor:pointer;">&laquo; Prev</a>';
+    for (let i = Math.max(1,smPage-2); i <= Math.min(data.total_pages,smPage+2); i++) {
+      html += '<a onclick="smLoad(' + i + ')" class="btn ' + (i===smPage?'':'secondary') + '" style="margin:0 2px;cursor:pointer;">' + i + '</a>';
+    }
+    if (smPage < data.total_pages) html += '<a onclick="smLoad(' + (smPage+1) + ')" class="btn secondary" style="margin:0 3px;cursor:pointer;">Next &raquo;</a>';
+    html += '<div style="margin-top:8px;font-size:13px;color:#888">Page ' + smPage + ' / ' + data.total_pages + ' (' + data.total + ' products)</div>';
+    el.innerHTML = html;
+  }
+
+  window.smReset = function() {
+    document.getElementById('sm-status').value = 'all';
+    document.getElementById('sm-category').value = 'All';
+    document.getElementById('sm-max-stock').value = '';
+    flatpickr('#sm-date').clear();
+    smDate = '';
+    smSelectedId = '';
+    $('#sm-product-search').val(null).trigger('change');
+    smLoad(1);
+  };
+
+  function esc(s){ return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+  // Auto-load on tab1 active
+  if (document.getElementById('stock-lookup').classList.contains('active')) {
+    smLoad();
+    smLoaded = true;
+  }
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      if (tab.dataset.tab === 'stock-lookup' && !smLoaded) {
+        setTimeout(smLoad, 100);
+        smLoaded = true;
+      }
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
 <?php $conn->close(); ?>
