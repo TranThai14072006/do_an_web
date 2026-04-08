@@ -11,7 +11,7 @@ $sort_by    = isset($_GET['sort_by'])    ? trim($_GET['sort_by'])    : '';
 $sort_dir   = isset($_GET['sort_dir'])   ? trim($_GET['sort_dir'])   : 'asc';
 $searched   = isset($_GET['searched']);
 $page       = max(1, (int)($_GET['page'] ?? 1));
-$per_page   = 10;
+$per_page   = 5;
 
 // ============================================================
 // Query orders + customer info — tất cả từ jewelry_db (1 DB duy nhất)
@@ -326,8 +326,9 @@ function pageUrl(array $overrides = []): string {
           $group_colors = ['#fffbf5', '#fff'];
           $color_idx    = 0;
           $group_key    = in_array($sort_by, ['city', 'district']) ? $sort_by : null;
+          $start_index  = ($page - 1) * $per_page;
           ?>
-          <?php foreach ($orders as $i => $o): ?>
+          <?php foreach ($orders_page as $i => $o): ?>
             <?php
             if ($group_key) {
                 $current_group = $o[$group_key];
@@ -341,7 +342,7 @@ function pageUrl(array $overrides = []): string {
             }
             ?>
             <tr <?= $row_bg ? "style='background:{$row_bg}'" : '' ?>>
-              <td><?= $i + 1 ?></td>
+              <td><?= $start_index + $i + 1 ?></td>
               <td><?= htmlspecialchars($o['order_number']) ?></td>
               <td><?= htmlspecialchars($o['full_name']) ?></td>
               <td style="text-align:left;font-size:13px;color:#555"><?= htmlspecialchars($o['address'] ?? '') ?></td>
@@ -366,15 +367,51 @@ function pageUrl(array $overrides = []): string {
       </tbody>
     </table>
 
-    <div class="pagination">
-      <button class="pagination-btn">&#10094;</button>
-      <button class="pagination-btn active">1</button>
-      <button class="pagination-btn">2</button>
-      <button class="pagination-btn">3</button>
-      <button class="pagination-btn">&#10095;</button>
-    </div>
+    <?php if ($total_pages > 1): ?>
+      <div class="pagination">
+        <?php if ($page > 1): ?>
+          <a class="pagination-btn" href="<?= pageUrl(['page' => $page - 1]) ?>">&#10094;</a>
+        <?php else: ?>
+          <button class="pagination-btn" disabled>&#10094;</button>
+        <?php endif; ?>
+
+        <?php
+          $start_page = max(1, $page - 2);
+          $end_page   = min($total_pages, $page + 2);
+          if ($start_page > 1):
+        ?>
+          <a class="pagination-btn" href="<?= pageUrl(['page' => 1]) ?>">1</a>
+          <?php if ($start_page > 2): ?>
+            <span style="padding:0 8px;color:#888;">…</span>
+          <?php endif; ?>
+        <?php endif; ?>
+
+        <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+          <?php if ($i === $page): ?>
+            <button class="pagination-btn active" type="button"><?= $i ?></button>
+          <?php else: ?>
+            <a class="pagination-btn" href="<?= pageUrl(['page' => $i]) ?>"><?= $i ?></a>
+          <?php endif; ?>
+        <?php endfor; ?>
+
+        <?php if ($end_page < $total_pages): ?>
+          <?php if ($end_page < $total_pages - 1): ?>
+            <span style="padding:0 8px;color:#888;">…</span>
+          <?php endif; ?>
+          <a class="pagination-btn" href="<?= pageUrl(['page' => $total_pages]) ?>"><?= $total_pages ?></a>
+        <?php endif; ?>
+
+        <?php if ($page < $total_pages): ?>
+          <a class="pagination-btn" href="<?= pageUrl(['page' => $page + 1]) ?>">&#10095;</a>
+        <?php else: ?>
+          <button class="pagination-btn" disabled>&#10095;</button>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+
     <div class="pagination-info">
-      Showing 1–<?= count($orders) ?> of <?= count($orders) ?> Orders
+      Showing <?= $total_orders === 0 ? 0 : (($page - 1) * $per_page + 1) ?>
+      – <?= min($total_orders, $page * $per_page) ?> of <?= $total_orders ?> Orders
     </div>
   </main>
 </body>
