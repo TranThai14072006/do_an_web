@@ -866,7 +866,7 @@ $added_flash = isset($_GET['added']);
         <div class="empty-cart">
           <i class="fas fa-shopping-bag"></i>
           <p>Your cart is empty. Start shopping!</p>
-          <a href="<?= $link_home ?>" class="btn-shop"><i class="fas fa-gem"></i> Browse Products</a>
+          <a href="<?= $link_shop ?>" class="btn-shop"><i class="fas fa-gem"></i> Browse Products</a>
         </div>
       <?php else: ?>
         <table class="cart-table" id="cart-table">
@@ -1114,7 +1114,7 @@ $added_flash = isset($_GET['added']);
                     `<div class="empty-cart">
                    <i class="fas fa-shopping-bag"></i>
                    <p>Your cart is empty.</p>
-                   <a href="<?= $link_home ?>" class="btn-shop"><i class="fas fa-gem"></i> Browse Products</a>
+                   <a href="<?= $link_shop ?>" class="btn-shop"><i class="fas fa-gem"></i> Browse Products</a>
                  </div>`);
                   document.getElementById('btn-checkout')?.setAttribute('disabled', 'disabled');
                 }
