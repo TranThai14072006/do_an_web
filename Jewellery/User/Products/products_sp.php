@@ -456,17 +456,32 @@ async function doAddToCart(productId, productName, size, btn) {
     btn.textContent = 'Adding...';
   }
   
-  // cart.php yêu cầu bắt buộc phải có size, nếu không sẽ bị lỗi
   if (!size || size.trim() === '') {
     size = 'Standard';
   }
 
   try {
-    // Dùng fetch để gọi GET ngầm vào cart.php, nó sẽ xử lý thêm vào DB mà không bắt người dùng chuyển trang
     const url = `../users/cart.php?action=add&id=${encodeURIComponent(productId)}&size=${encodeURIComponent(size)}`;
     await fetch(url);
     
-    // Hiện bảng thông báo nhỏ nhắn ở góc màn hình
+    // ----- CẬP NHẬT BADGE GIỎ HÀNG NGAY LẬP TỨC -----
+    const cartLink = document.querySelector('a[href="../users/cart.php"]');
+    if (cartLink) {
+      let badge = cartLink.querySelector('.cart-badge');
+      if (!badge) {
+        // Nếu chưa có badge, tạo mới
+        badge = document.createElement('span');
+        badge.className = 'cart-badge';
+        badge.textContent = '1';
+        cartLink.appendChild(badge);
+      } else {
+        // Nếu đã có badge, tăng số lượng
+        let currentCount = badge.textContent.includes('+') ? 10 : parseInt(badge.textContent);
+        let newCount = currentCount + 1;
+        badge.textContent = newCount > 9 ? '9+' : newCount;
+      }
+    }
+
     showNotification(productName, size);
   } catch (error) {
     alert('Network error, please try again.');

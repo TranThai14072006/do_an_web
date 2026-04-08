@@ -283,6 +283,22 @@ async function addToCart(id, name) {
     const url = `../users/cart.php?action=add&id=${encodeURIComponent(id)}&size=${encodeURIComponent(selectedSize)}`;
     await fetch(url);
     
+    // ----- CẬP NHẬT BADGE GIỎ HÀNG NGAY LẬP TỨC -----
+    const cartLink = document.querySelector('a[href="../users/cart.php"]');
+    if (cartLink) {
+      let badge = cartLink.querySelector('.cart-badge');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'cart-badge';
+        badge.textContent = '1';
+        cartLink.appendChild(badge);
+      } else {
+        let currentCount = badge.textContent.includes('+') ? 10 : parseInt(badge.textContent);
+        let newCount = currentCount + 1;
+        badge.textContent = newCount > 9 ? '9+' : newCount;
+      }
+    }
+
     showNotification(`${name} (Size ${selectedSize})`);
   } catch (err) {
     alert('Network error, please try again.');
