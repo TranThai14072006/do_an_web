@@ -24,7 +24,7 @@ try {
 
 // Lấy toàn bộ sản phẩm từ DB
 $stmt = $pdo->query("
-    SELECT id, name, cost_price, profit_percent, image, gender 
+    SELECT id, name, cost_price, profit_percent, image, gender, stock 
     FROM products
     ORDER BY id ASC
 ");
@@ -42,11 +42,25 @@ foreach ($rows as $p) {
         'gender'     => $p['gender'],
         'sale_price' => $sale_price,
         'image'      => $p['image'] ?: 'placeholder.png',
+        'in_stock'   => (int)$p['stock'] > 0,
     ];
 }
 
 // Convert sang JSON để truyền cho Javascript bên dưới
 $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
+
+// ===== TỔNG SỐ LƯỢNG GIỎ HÀNG =====
+$total_cart_count = 0;
+if (isset($_SESSION['user_id'])) {
+    $uid = (int)$_SESSION['user_id'];
+    // Dùng $pdo vì file này đang dùng PDO cho phần sản phẩm
+    $stmt_badge = $pdo->prepare("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = ?");
+    $stmt_badge->execute([$uid]);
+    $row_b = $stmt_badge->fetch();
+    if ($row_b) {
+        $total_cart_count = (int)$row_b['total_qty'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -112,6 +126,80 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
       font-size: 12px; color: #aaa; margin-bottom: 18px;
       cursor: pointer; text-decoration: underline;
     }
+    /* ===== OUT OF STOCK ===== */
+    .product-card.is-out-of-stock .image-holder {
+      position: relative;
+    }
+    .product-card.is-out-of-stock .image-holder::after {
+      content: 'Out of Stock';
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.42);
+      color: #fff;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-add.out-of-stock {
+      background: #d8d8d8 !important;
+      color: #666 !important;
+      cursor: not-allowed !important;
+      border: 1px solid #ccc !important;
+      font-weight: 600;
+    }
+    .out-of-stock-toast {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      z-index: 10000;
+      opacity: 0; visibility: hidden;
+      transform: translateY(100%);
+      transition: opacity .3s ease, transform .3s ease, visibility .3s;
+      max-width: 350px; width: 100%;
+      pointer-events: none;
+    }
+    .out-of-stock-toast.show {
+      opacity: 1; visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .out-of-stock-toast .oos-inner {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-left: 4px solid #b8860b;
+      border-radius: 10px;
+      padding: 15px 20px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .out-of-stock-toast .oos-icon i {
+      color: #b8860b; font-size: 1.8em;
+    }
+    .out-of-stock-toast .oos-text h3 {
+      margin: 0 0 3px; font-size: 1.05em; font-weight: 600;
+      color: #b8860b; font-family: 'Cormorant Garamond', serif;
+    }
+    .out-of-stock-toast .oos-text p {
+      margin: 0; font-size: 0.88em; color: #666;
+    }
+    
+    /* ===== CART BADGE ===== */
+    .icon-link { position: relative; }
+    .cart-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #b8860b;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
   </style>
 </head>
 <body class="homepage bg-accent-light">
@@ -140,6 +228,9 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
     <div class="right">
       <a href="../users/cart.php" class="icon-link" title="Cart">
         <i class="fas fa-shopping-cart"></i>
+        <?php if ($total_cart_count > 0): ?>
+          <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
+        <?php endif; ?>
       </a>
       <a href="../users/profile.php" class="icon-link" title="Profile">
         <i class="fas fa-user-circle user-icon"></i>
@@ -274,6 +365,17 @@ $all_products_json = json_encode($products, JSON_UNESCAPED_UNICODE);
   </div>
 </div>
 
+<!-- ===== OUT OF STOCK TOAST ===== -->
+<div class="out-of-stock-toast" id="oos-toast">
+  <div class="oos-inner">
+    <div class="oos-icon"><i class="fas fa-ban"></i></div>
+    <div class="oos-text">
+      <h3>Out of Stock</h3>
+      <p id="oos-toast-msg">This product is currently unavailable.</p>
+    </div>
+  </div>
+</div>
+
 <!-- ===== JAVASCRIPT GỘP ===== -->
 <script>
 // ----- NHẬN DỮ LIỆU TỪ PHP THÔNG QUA JSON ENCODE -----
@@ -354,17 +456,32 @@ async function doAddToCart(productId, productName, size, btn) {
     btn.textContent = 'Adding...';
   }
   
-  // cart.php yêu cầu bắt buộc phải có size, nếu không sẽ bị lỗi
   if (!size || size.trim() === '') {
     size = 'Standard';
   }
 
   try {
-    // Dùng fetch để gọi GET ngầm vào cart.php, nó sẽ xử lý thêm vào DB mà không bắt người dùng chuyển trang
     const url = `../users/cart.php?action=add&id=${encodeURIComponent(productId)}&size=${encodeURIComponent(size)}`;
     await fetch(url);
     
-    // Hiện bảng thông báo nhỏ nhắn ở góc màn hình
+    // ----- CẬP NHẬT BADGE GIỎ HÀNG NGAY LẬP TỨC -----
+    const cartLink = document.querySelector('a[href="../users/cart.php"]');
+    if (cartLink) {
+      let badge = cartLink.querySelector('.cart-badge');
+      if (!badge) {
+        // Nếu chưa có badge, tạo mới
+        badge = document.createElement('span');
+        badge.className = 'cart-badge';
+        badge.textContent = '1';
+        cartLink.appendChild(badge);
+      } else {
+        // Nếu đã có badge, tăng số lượng
+        let currentCount = badge.textContent.includes('+') ? 10 : parseInt(badge.textContent);
+        let newCount = currentCount + 1;
+        badge.textContent = newCount > 9 ? '9+' : newCount;
+      }
+    }
+
     showNotification(productName, size);
   } catch (error) {
     alert('Network error, please try again.');
@@ -391,6 +508,16 @@ function closeNotification() {
   const n = document.getElementById('cart-notification');
   n.classList.remove('show');
   clearTimeout(n._t);
+}
+
+// ===== OUT OF STOCK NOTIFICATION =====
+function showOutOfStockToast(productName) {
+  const t = document.getElementById('oos-toast');
+  const msg = document.getElementById('oos-toast-msg');
+  msg.textContent = `"${productName}" is currently unavailable. Please check back later.`;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
 // ===== XỬ LÝ KHỞI TẠO PAGE =====
@@ -484,7 +611,8 @@ function renderPage(page) {
 
   pageProducts.forEach(p => {
     const card = document.createElement('article');
-    card.className = 'product-card';
+    card.className = 'product-card' + (p.in_stock ? '' : ' is-out-of-stock');
+    
     card.innerHTML = `
       <a href="product-detail.php?id=${p.id}" class="product-card-link">
         <div class="image-holder">
@@ -493,13 +621,23 @@ function renderPage(page) {
         <h3 class="product-title">${p.name}</h3>
         <span class="product-price">$${Number(p.sale_price).toFixed(2)}</span>
       </a>
-      <button class="btn-add" data-id="${p.id}" data-name="${p.name}">Add to Cart</button>
+      <button class="btn-add ${p.in_stock ? '' : 'out-of-stock'}" 
+              data-id="${p.id}" 
+              data-name="${p.name}" 
+              data-instock="${p.in_stock}">
+        ${p.in_stock ? 'Add to Cart' : 'Out of Stock'}
+      </button>
     `;
     grid.appendChild(card);
   });
 
   document.querySelectorAll('.btn-add').forEach(btn => {
     btn.addEventListener('click', function () {
+      const isStock = this.dataset.instock === 'true';
+      if (!isStock) {
+        showOutOfStockToast(this.dataset.name);
+        return;
+      }
       addToCart(this.dataset.id, this.dataset.name, this);
     });
   });
