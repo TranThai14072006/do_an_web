@@ -305,7 +305,7 @@ $search_name     = trim($_GET['search_name']     ?? '');
 $search_category = trim($_GET['search_category'] ?? 'All');
 $search_date     = trim($_GET['search_date']     ?? '');
 $page            = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$per_page        = 5;
+$per_page        = 10;
 
 $where1 = []; $params1 = []; $types1 = '';
 if ($search_name !== '')        { $where1[] = 'name LIKE ?';  $params1[] = '%' . $search_name . '%'; $types1 .= 's'; }
@@ -322,7 +322,7 @@ $total_pages = (int)ceil($total_products / $per_page);
 $offset      = ($page - 1) * $per_page;
 
 $stmt1 = $conn->prepare(
-    "SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY id ASC LIMIT ? OFFSET ?"
+    "SELECT id, name, image, category, stock FROM products $where1_sql ORDER BY name ASC LIMIT ? OFFSET ?"
 );
 $p1 = $params1;
 $p1[] = $per_page; $p1[] = $offset;
@@ -782,7 +782,7 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
   <div style="display:flex;align-items:center;margin-bottom:10px;">
     <strong style="color:#8e4b00;font-size:15px;">Stock List</strong>
     <span id="sm-date-badge" class="date-badge" style="display:none;"></span>
-    <span id="sm-count" style="margin-left:auto;font-size:13px;color:#888;"></span>
+    <span id="sm-count" style="margin-left:auto;font-size:13px;color:#888;"><?= $total_products ?> product(s) found</span>
   </div>
 
   <table id="sm-table">
@@ -797,7 +797,16 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
       </tr>
     </thead>
     <tbody id="sm-tbody">
-      <tr><td colspan="6" style="text-align:center;color:#aaa;padding:30px;">Loading...</td></tr>
+      <?php foreach ($products as $p): ?>
+        <tr>
+          <td><?= htmlspecialchars($p['id']) ?></td>
+          <td style="text-align:left;font-weight:600"><?= htmlspecialchars($p['name']) ?></td>
+          <td><img src="../../images/<?= htmlspecialchars($p['image']) ?>" style="width:52px;height:52px;object-fit:cover;border-radius:6px" onerror="this.style.opacity='.2'"></td>
+          <td><?= htmlspecialchars($p['category']) ?></td>
+          <td><strong><?= max(0, (int)$p['stock']) ?></strong></td>
+          <td><span class="status-badge <?= stockStatus($p['stock'], $min_stock)['class'] ?>"><?= stockStatus($p['stock'], $min_stock)['label'] ?></span></td>
+        </tr>
+      <?php endforeach; ?>
     </tbody>
   </table>
 
