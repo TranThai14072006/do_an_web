@@ -883,11 +883,11 @@ table img { width:56px; height:56px; object-fit:cover; border-radius:6px; }
       </div>
       <div class="form-group">
         <label>From</label>
-        <input type="date" name="report_from" value="<?= htmlspecialchars($report_from) ?>">
+        <input type="text" id="report-from" name="report_from" placeholder="Pick start date" autocomplete="off" value="<?= htmlspecialchars($report_from) ?>">
       </div>
       <div class="form-group">
         <label>To</label>
-        <input type="date" name="report_to" value="<?= htmlspecialchars($report_to) ?>">
+        <input type="text" id="report-to" name="report_to" placeholder="Pick end date" autocomplete="off" value="<?= htmlspecialchars($report_to) ?>">
       </div>
       <button type="submit" class="btn">Search</button>
       <a href="stocking_management.php?tab=stock-report" class="btn secondary">Reset</a>
@@ -1412,6 +1412,24 @@ document.addEventListener('keydown', e => {
   });
   $('#report-product-search').on('select2:clear', function(){
     this.form.submit();
+  });
+
+  // Flatpickr for dates
+  flatpickr('#report-from', {
+    dateFormat: 'Y-m-d',
+    maxDate: 'today',
+    onChange: function(){
+      // Instant update
+      this.form.submit();
+    }
+  });
+  flatpickr('#report-to', {
+    dateFormat: 'Y-m-d',
+    maxDate: 'today',
+    onChange: function(){
+      // Instant update
+      this.form.submit();
+    }
   });
 })();
 </script>
