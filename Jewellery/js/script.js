@@ -128,48 +128,8 @@
         },
       });
 
-      var swiper = new Swiper(".product-swiper", {
-        slidesPerView: 4,
-        spaceBetween: 10,
-        navigation: {
-          nextEl: ".swiper-button-next",
-          prevEl: ".swiper-button-prev",
-        },
-        pagination: {
-          el: ".swiper-pagination",
-          clickable: true,
-        },
-        breakpoints: {
-          0: {
-            slidesPerView: 1,
-            spaceBetween: 20,
-          },
-          599: {
-            slidesPerView: 2,
-            spaceBetween: 10,
-          },
-          980: {
-            slidesPerView: 3,
-            spaceBetween: 5,
-          },
-          1599: {
-            slidesPerView: 4,
-            spaceBetween: 5,
-          },
-        },
-      });
-
-      var swiper = new Swiper(".testimonial-swiper", {
-        loop: true,
-        navigation: {
-          nextEl: ".icon-arrow.icon-arrow-right",
-          prevEl: ".icon-arrow.icon-arrow-left",
-        },
-        pagination: {
-          el: "#testimonials .swiper-pagination",
-          clickable: true,
-        },
-      });
+      // Removed conflicting Swiper configurations for .product-swiper and .testimonial-swiper
+      // as they are handled by inline scripts in index.php and indexprofile.php
 
       var swiper = new Swiper(".thumb-swiper", {
         slidesPerView: 1,

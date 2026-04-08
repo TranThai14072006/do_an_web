@@ -727,7 +727,7 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
   document.querySelectorAll('.product-swiper').forEach(function(swiperEl) {
     var parent = swiperEl.closest('.row');
     new Swiper(swiperEl, {
-      slidesPerView: 3,
+      slidesPerView: 1,
       spaceBetween: 30,
       loop: true,
       navigation: {
@@ -735,8 +735,8 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
         prevEl: parent ? parent.querySelector('.swiper-button-prev') : null,
       },
       breakpoints: {
-        768: { slidesPerView: 2 },
-        480: { slidesPerView: 1 }
+        576: { slidesPerView: 2 },
+        992: { slidesPerView: 3 }
       }
     });
   });
