@@ -301,7 +301,7 @@ function applyHeaderSearch() {
   }
 }
 
-async function buyNow(event, id) {
+function buyNow(event, id) {
   event.preventDefault();
   const sizeSelect = document.getElementById('ring-size');
   const selectedSize = sizeSelect.value;
@@ -311,20 +311,8 @@ async function buyNow(event, id) {
     return;
   }
 
-  const btn = document.querySelector('.buy-now');
-  btn.style.pointerEvents = 'none';
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-  try {
-    const url = `../users/cart.php?action=add&id=${encodeURIComponent(id)}&size=${encodeURIComponent(selectedSize)}`;
-    await fetch(url);
-    
-    window.location.href = '../users/order_confirm.php';
-  } catch (err) {
-    alert('Network error, please try again.');
-    btn.style.pointerEvents = 'auto';
-    btn.innerHTML = '<i class="fas fa-bolt"></i> Buy now';
-  }
+  // Chuyển hướng trực tiếp tới buy_now.php với id và size
+  window.location.href = `../users/buy_now.php?id=${encodeURIComponent(id)}&size=${encodeURIComponent(selectedSize)}`;
 }
 </script>
 
