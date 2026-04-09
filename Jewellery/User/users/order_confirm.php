@@ -50,42 +50,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_product_id']))
     }
   }
 
-  $remove_pid = trim($_POST['remove_product_id']); // keep as string
-  $del = $conn->prepare('DELETE FROM cart WHERE user_id = ? AND product_id = ?');
-  $del->bind_param('is', $user_id, $remove_pid);
-  $del->execute();
-  $affected = $del->affected_rows;
-  $del->close();
-
-  file_put_contents('debug_remove.txt', "AJAX FIRED. User: $user_id, PID: $remove_pid, Affected: $affected\n", FILE_APPEND);
-
-  // Re-calculate totals from remaining cart rows
-  $query2 = "
-    SELECT c.quantity, p.price, p.cost_price, p.profit_percent
-    FROM cart c JOIN products p ON c.product_id = p.id
-    WHERE c.user_id = ?
-  ";
+  // Không xóa cart — chỉ tính lại total từ selected_items còn lại
+  $new_total = 0.0;
+  $new_count = 0;
 
   if (isset($_POST['selected_items']) && is_array($_POST['selected_items'])) {
     $safe_items = array_map(function ($item) use ($conn) {
       return "'" . $conn->real_escape_string($item) . "'";
     }, $_POST['selected_items']);
     if (!empty($safe_items)) {
-      $query2 .= " AND c.product_id IN (" . implode(",", $safe_items) . ")";
+      $query2 = "
+        SELECT c.quantity, p.price, p.cost_price, p.profit_percent
+        FROM cart c JOIN products p ON c.product_id = p.id
+        WHERE c.user_id = ?
+        AND c.product_id IN (" . implode(",", $safe_items) . ")
+      ";
+      $cst2 = $conn->prepare($query2);
+      $cst2->bind_param('i', $user_id);
+      $cst2->execute();
+      $res2 = $cst2->get_result();
+      while ($r2 = $res2->fetch_assoc()) {
+        $new_total += calcPrice($r2) * (int) $r2['quantity'];
+        $new_count++;
+      }
+      $cst2->close();
     }
   }
-
-  $cst2 = $conn->prepare($query2);
-  $cst2->bind_param('i', $user_id);
-  $cst2->execute();
-  $res2 = $cst2->get_result();
-  $new_total = 0.0;
-  $new_count = 0;
-  while ($r2 = $res2->fetch_assoc()) {
-    $new_total += calcPrice($r2) * (int) $r2['quantity'];
-    $new_count++;
-  }
-  $cst2->close();
 
   header('Content-Type: application/json');
   echo json_encode(['success' => true, 'total' => round($new_total, 2), 'count' => $new_count]);
@@ -127,41 +117,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selected_items'])) {
 $cart_items = [];
 $total_amount = 0.0;
 
-$query = "
-    SELECT c.product_id, c.quantity,
-           p.name, p.price, p.image, p.cost_price, p.profit_percent, p.stock
-    FROM cart c
-    JOIN products p ON c.product_id = p.id
-    WHERE c.user_id = ?
-";
-
+// Chỉ load sản phẩm được chọn — bắt buộc phải có requested_items
 if (!empty($requested_items)) {
   $safe_items = array_map(function ($item) use ($conn) {
     return "'" . $conn->real_escape_string($item) . "'";
   }, $requested_items);
-  $query .= " AND c.product_id IN (" . implode(",", $safe_items) . ")";
+  $query = "
+      SELECT c.product_id, c.quantity,
+             p.name, p.price, p.image, p.cost_price, p.profit_percent, p.stock
+      FROM cart c
+      JOIN products p ON c.product_id = p.id
+      WHERE c.user_id = ?
+      AND c.product_id IN (" . implode(",", $safe_items) . ")
+      ORDER BY c.product_id ASC
+  ";
+  $cst = $conn->prepare($query);
+  $cst->bind_param('i', $user_id);
+  $cst->execute();
+  $cres = $cst->get_result();
+  while ($row = $cres->fetch_assoc()) {
+    $sp = calcPrice($row);
+    $qty = (int) $row['quantity'];
+    $cart_items[] = [
+      'id' => $row['product_id'],
+      'name' => $row['name'],
+      'image' => $row['image'],
+      'price' => $sp,
+      'quantity' => $qty,
+      'total' => $sp * $qty,
+      'stock' => (int) ($row['stock'] ?? 0),
+    ];
+    $total_amount += $sp * $qty;
+  }
+  $cst->close();
 }
-$query .= " ORDER BY c.product_id ASC";
-
-$cst = $conn->prepare($query);
-$cst->bind_param('i', $user_id);
-$cst->execute();
-$cres = $cst->get_result();
-while ($row = $cres->fetch_assoc()) {
-  $sp = calcPrice($row);
-  $qty = (int) $row['quantity'];
-  $cart_items[] = [
-    'id' => $row['product_id'],
-    'name' => $row['name'],
-    'image' => $row['image'],
-    'price' => $sp,
-    'quantity' => $qty,
-    'total' => $sp * $qty,
-    'stock' => (int) ($row['stock'] ?? 0),
-  ];
-  $total_amount += $sp * $qty;
-}
-$cst->close();
 
 // ── Handle Place Order (POST) ─────────────────────────────
 
@@ -263,17 +252,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       $ii->close();
       $us->close();
 
-      // ── 4. Xóa giỏ hàng ──────────────────────────
-      if (!empty($requested_items)) {
-        $safe_items = array_map(function ($item) use ($conn) {
-          return "'" . $conn->real_escape_string($item) . "'";
-        }, $requested_items);
-        $conn->query("DELETE FROM cart WHERE user_id = " . $user_id . " AND product_id IN (" . implode(",", $safe_items) . ")");
-      } else {
-        $del = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
-        $del->bind_param('i', $user_id);
-        $del->execute();
-        $del->close();
+      // ── 4. Xóa những món đã mua khỏi giỏ hàng ──
+      $del_st = $conn->prepare("DELETE FROM cart WHERE user_id = ? AND product_id = ?");
+      if ($del_st) {
+        foreach ($cart_items as $item) {
+          $del_st->bind_param('is', $user_id, $item['id']);
+          $del_st->execute();
+        }
+        $del_st->close();
       }
 
       $conn->commit();
@@ -1558,6 +1544,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
           if (data.success) {
             itemEl.remove();
 
+            // Xóa luôn cái input ẩn trong form để lần remove tiếp theo không bị tính lại
+            const targetInput = document.querySelector(`.selected-item-input[value="${productId}"]`);
+            if (targetInput) targetInput.remove();
+
             const fmt = n => '$' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
             const countEl = document.getElementById('sum-count');
@@ -1574,9 +1564,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
               btnOrder.innerHTML = '<i class="fas fa-check-circle"></i> Place Order — ' + fmt(data.total);
             }
 
-            // If no items left, reload to show empty state
+            // Nếu không còn item nào, ẩn list và hiện empty state — không reload
             if (data.count === 0) {
-              window.location.reload();
+              const itemsList = document.getElementById('sum-items-list');
+              if (itemsList) itemsList.innerHTML = '';
+              const checkoutForm = document.getElementById('checkout-form');
+              if (checkoutForm) {
+                checkoutForm.innerHTML = '<div style="text-align:center;padding:48px 0;">'
+                  + '<i class="fas fa-shopping-bag" style="font-size:52px;color:#e0d5c0;display:block;margin-bottom:16px;"></i>'
+                  + '<p style="color:var(--muted);font-size:16px;">No items selected for checkout.</p>'
+                  + '</div>';
+              }
+              if (btnOrder) btnOrder.disabled = true;
+              if (countEl) countEl.textContent = '0';
+              if (subtotalEl) subtotalEl.textContent = '$0.00';
+              if (totalEl) totalEl.textContent = '$0.00';
             }
           }
         })
