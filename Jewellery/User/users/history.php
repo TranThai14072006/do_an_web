@@ -42,7 +42,7 @@ $link_login = BASE_URL . 'User/users/login.php';
 $link_cart = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout = BASE_URL . 'User/users/logout.php';
-$link_search = BASE_URL . 'User/Search/search.html';
+$link_search = BASE_URL . 'User/Products/products_sp.php';
 $link_history = BASE_URL . 'User/users/history.php';
 $link_view = BASE_URL . 'User/users/view_details.php';
 ?>
@@ -141,7 +141,7 @@ $link_view = BASE_URL . 'User/users/view_details.php';
     }
 
     .home-btn:hover {
-      background: #f9f9f9;
+      background: #f6f6f6;
       color: #b8860b;
     }
 
@@ -152,7 +152,7 @@ $link_view = BASE_URL . 'User/users/view_details.php';
       z-index: 10;
     }
 
-    .search-bar .center .header-logo {
+    .header-logo {
       height: 55px;
       max-width: 180px;
       object-fit: contain;
@@ -165,13 +165,12 @@ $link_view = BASE_URL . 'User/users/view_details.php';
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #f9f9f9;
+      background: #f6f6f6;
       padding: 4px 8px;
       border-radius: 999px;
       border: 1px solid rgba(0, 0, 0, 0.06);
       box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
       height: 50px;
-      opacity: 1;
     }
 
     .search-box input {
@@ -208,12 +207,6 @@ $link_view = BASE_URL . 'User/users/view_details.php';
       background: #996600;
     }
 
-    .icons {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
     .icon-link {
       display: inline-flex;
       align-items: center;
@@ -225,11 +218,34 @@ $link_view = BASE_URL . 'User/users/view_details.php';
       color: #111111;
       transition: all 0.18s;
       font-size: 18px;
+      position: relative;
     }
 
     .icon-link:hover {
       background: rgba(186, 134, 11, 0.08);
       color: #b8860b;
+    }
+
+    .cart-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #b8860b;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      z-index: 10;
+    }
+
+    .user-icon {
+      font-size: 20px;
     }
 
     /* ===== BOX ===== */
@@ -405,33 +421,53 @@ $link_view = BASE_URL . 'User/users/view_details.php';
       }
     }
   </style>
-<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
-  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 
 <body>
 
-  <!-- HEADER -->
+  <!-- ══ HEADER ══════════════════════════════════════════════ -->
   <header class="header-container">
     <div class="search-bar">
       <div class="left">
         <a href="<?= $link_home ?>" class="home-btn"><i class="fas fa-home"></i> Home</a>
       </div>
+
       <div class="center">
         <a href="<?= $link_home ?>">
           <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
         </a>
         <div class="search-box">
-          <input type="text" id="search-input" placeholder="Search products...">
-          <button onclick="doSearch()">
+          <!-- Chuyển ID thành header-search để tương thích bộ lọc dưới -->
+          <input type="text" id="header-search" placeholder="Search products..."
+                 onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+          <button onclick="applyHeaderSearch()">
             <i class="fas fa-search"></i>
           </button>
         </div>
       </div>
+
       <div class="right">
-        <a href="<?= $link_cart ?>" class="icon-link" title="Cart"><i class="fas fa-shopping-cart"></i></a>
-        <a href="<?= $link_profile ?>" class="icon-link" title="Profile"><i class="fas fa-user"></i></a>
-        <a href="<?= $link_logout ?>" class="icon-link" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+        <a href="<?= $link_cart ?>" class="icon-link" title="Cart">
+          <i class="fas fa-shopping-cart"></i>
+          <?php
+          // Lấy số lượng giỏ hàng thực tế cho badge
+          $uid = (int)$_SESSION['user_id'];
+          $st_b = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = $uid");
+          $total_cart_count = 0;
+          if ($st_b && $row_b = $st_b->fetch_assoc()) {
+            $total_cart_count = (int)$row_b['total_qty'];
+          }
+          if ($total_cart_count > 0):
+          ?>
+            <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
+          <?php endif; ?>
+        </a>
+        <a href="<?= $link_profile ?>" class="icon-link" title="Profile">
+          <i class="fas fa-user-circle user-icon"></i>
+        </a>
+        <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Logout" style="color:#111;">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
       </div>
     </div>
   </header>
@@ -513,8 +549,8 @@ $link_view = BASE_URL . 'User/users/view_details.php';
   </footer>
 
   <script>
-    function doSearch() {
-      const keyword = document.getElementById('search-input').value.trim();
+    function applyHeaderSearch() {
+      const keyword = document.getElementById('header-search').value.trim();
       if (keyword !== '') {
         window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(keyword);
       }
