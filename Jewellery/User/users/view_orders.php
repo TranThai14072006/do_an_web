@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) 
         SELECT o.id, o.status
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
-        WHERE o.id = ? AND c.user_id = ? AND o.status IN ('Processed', 'Shipping', 'Shipped')
+        WHERE o.id = ? AND c.user_id = ? AND o.status IN ('Shipping', 'Shipped')
         LIMIT 1
     ");
   $chk->bind_param('ii', $receive_id, $user_id);
@@ -800,7 +800,7 @@ if ($user_info['customer_id']) {
 
         // Only allow cancellation when status is Pending
         $can_cancel = ($status === 'Pending');
-        $can_receive = in_array($status, ['Processed', 'Shipping', 'Shipped']);
+        $can_receive = in_array($status, ['Shipping', 'Shipped']);
         ?>
         <div class="order-card">
           <div class="order-header">
@@ -832,7 +832,7 @@ if ($user_info['customer_id']) {
               <?php elseif ($can_receive): ?>
                 <button class="btn-receive"
                   onclick="openReceiveModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
-                  <i class="fas fa-check"></i> Đã nhận hàng
+                  <i class="fas fa-check"></i> Order Received
                 </button>
               <?php endif; ?>
             </div>

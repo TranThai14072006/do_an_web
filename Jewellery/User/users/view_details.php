@@ -69,12 +69,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order_id'])) {
     $upd_order->execute();
     $upd_order->close();
     $cancel_msg = 'Your order has been cancelled successfully.';
+  } else {
     $cancel_error = 'Unable to cancel this order (only Pending orders can be cancelled).';
   }
 }
 
 // ── Handle Receive Order (POST) ─────────────────────────────
-$receive_msg   = '';
+$receive_msg = '';
 $receive_error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) {
@@ -83,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) 
   $chk = $conn->prepare("
         SELECT o.id FROM orders o
         JOIN customers c ON o.customer_id = c.id
-        WHERE o.id = ? AND c.user_id = ? AND o.status IN ('Processed', 'Shipping', 'Shipped')
+        WHERE o.id = ? AND c.user_id = ? AND o.status IN ('Shipping', 'Shipped')
         LIMIT 1
     ");
   $chk->bind_param('ii', $receive_id, $user_id);
@@ -135,7 +136,7 @@ $order_date = date('M d, Y', strtotime($order['order_date']));
 
 // Determine status class and label
 $can_cancel = ($order['status'] === 'Pending');
-$can_receive = in_array($order['status'], ['Processed', 'Shipping', 'Shipped']);
+$can_receive = in_array($order['status'], ['Shipping', 'Shipped']);
 switch ($order['status']) {
   case 'Pending':
     $status_class = 'pending';
@@ -730,7 +731,7 @@ switch ($order['status']) {
         <div class="search-box">
           <!-- Chuyển ID thành header-search để tương thích bộ lọc dưới -->
           <input type="text" id="header-search" placeholder="Search products..."
-                 onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+            onkeydown="if(event.key==='Enter') applyHeaderSearch()">
           <button onclick="applyHeaderSearch()">
             <i class="fas fa-search"></i>
           </button>
@@ -742,14 +743,14 @@ switch ($order['status']) {
           <i class="fas fa-shopping-cart"></i>
           <?php
           // Lấy số lượng giỏ hàng thực tế cho badge
-          $uid = (int)$_SESSION['user_id'];
+          $uid = (int) $_SESSION['user_id'];
           $st_b = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = $uid");
           $total_cart_count = 0;
           if ($st_b && $row_b = $st_b->fetch_assoc()) {
-            $total_cart_count = (int)$row_b['total_qty'];
+            $total_cart_count = (int) $row_b['total_qty'];
           }
           if ($total_cart_count > 0):
-          ?>
+            ?>
             <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
           <?php endif; ?>
         </a>
@@ -764,7 +765,7 @@ switch ($order['status']) {
   </header>
 
   <main class="main-content">
-    <button class="back-button" onclick="window.history.back();"><i class="fas fa-arrow-left"></i> Back</button>
+    <a href="<?= $link_history ?>" class="back-button" style="text-decoration:none;"><i class="fas fa-arrow-left"></i> Back</a>
 
     <h2>Order #<?= htmlspecialchars($order['order_number']) ?> Details</h2>
 
@@ -795,7 +796,7 @@ switch ($order['status']) {
           <?php elseif ($can_receive): ?>
             <button class="btn-receive"
               onclick="openReceiveModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
-              <i class="fas fa-check"></i> Đã nhận hàng
+              <i class="fas fa-check"></i> Order Received
             </button>
           <?php endif; ?>
         </span>

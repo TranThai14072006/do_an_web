@@ -36,6 +36,96 @@ if (!$customer) {
 }
 $stmt->close();
 
+// ── Handle Cancel Order (POST) ─────────────────────────────
+$cancel_msg = '';
+$cancel_error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order_id'])) {
+  $cancel_id = (int) $_POST['cancel_order_id'];
+
+  // Verify order belongs to this customer and is Pending
+  $chk = $conn->prepare("
+        SELECT o.id, o.status
+        FROM orders o
+        JOIN customers c ON o.customer_id = c.id
+        WHERE o.id = ? AND c.user_id = ? AND o.status = 'Pending'
+        LIMIT 1
+    ");
+  $chk->bind_param('ii', $cancel_id, $user_id);
+  $chk->execute();
+  $can = $chk->get_result()->fetch_assoc();
+  $chk->close();
+
+  if ($can) {
+    // Restore stock before cancelling
+    $items_q = $conn->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
+    $items_q->bind_param('i', $cancel_id);
+    $items_q->execute();
+    $items_res = $items_q->get_result();
+    while ($it = $items_res->fetch_assoc()) {
+      $upd = $conn->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+      $upd->bind_param('ii', $it['quantity'], $it['product_id']);
+      $upd->execute();
+      $upd->close();
+    }
+    $items_q->close();
+
+    // Update order status → Cancelled
+    $upd_order = $conn->prepare("UPDATE orders SET status = 'Cancelled' WHERE id = ?");
+    $upd_order->bind_param('i', $cancel_id);
+    $upd_order->execute();
+    $upd_order->close();
+    $cancel_msg = 'Your order has been cancelled successfully.';
+    
+    // Refresh orders list
+    $stmt = $conn->prepare("SELECT id, order_number, order_date, total_amount, status FROM orders WHERE customer_id = ? ORDER BY order_date DESC");
+    $stmt->bind_param("i", $customer_id);
+    $stmt->execute();
+    $orders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+  } else {
+    $cancel_error = 'Unable to cancel this order (only Pending orders can be cancelled).';
+  }
+}
+
+// ── Handle Receive Order (POST) ─────────────────────────────
+$receive_msg = '';
+$receive_error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) {
+  $receive_id = (int) $_POST['receive_order_id'];
+
+  // Verify order belongs to this customer and is Shipping or Shipped.
+  $chk = $conn->prepare("
+        SELECT o.id, o.status
+        FROM orders o
+        JOIN customers c ON o.customer_id = c.id
+        WHERE o.id = ? AND c.user_id = ? AND o.status IN ('Shipping', 'Shipped')
+        LIMIT 1
+    ");
+  $chk->bind_param('ii', $receive_id, $user_id);
+  $chk->execute();
+  $can_receive = $chk->get_result()->fetch_assoc();
+  $chk->close();
+
+  if ($can_receive) {
+    $upd_order = $conn->prepare("UPDATE orders SET status = 'Delivered' WHERE id = ?");
+    $upd_order->bind_param('i', $receive_id);
+    $upd_order->execute();
+    $upd_order->close();
+    $receive_msg = 'Thank you! Your order has been marked as received.';
+    
+    // Refresh orders list
+    $stmt = $conn->prepare("SELECT id, order_number, order_date, total_amount, status FROM orders WHERE customer_id = ? ORDER BY order_date DESC");
+    $stmt->bind_param("i", $customer_id);
+    $stmt->execute();
+    $orders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+  } else {
+    $receive_error = 'Unable to mark this order as received.';
+  }
+}
+
 // Link helpers
 $link_home = BASE_URL . 'User/indexprofile.php';
 $link_login = BASE_URL . 'User/users/login.php';
@@ -375,6 +465,118 @@ $link_view = BASE_URL . 'User/users/view_details.php';
       box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
     }
 
+    /* ===== ACTION BUTTONS ===== */
+    .action-group {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-cancel, .btn-receive {
+      padding: 6px 12px;
+      border-radius: 50px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    .btn-cancel {
+      background: rgba(244, 67, 54, 0.15);
+      color: #f44336;
+      border: 1px solid rgba(244, 67, 54, 0.4);
+    }
+    .btn-cancel:hover {
+      background: #f44336;
+      color: #fff;
+    }
+    .btn-receive {
+      background: rgba(76, 175, 80, 0.15);
+      color: #72bf76;
+      border: 1px solid rgba(76, 175, 80, 0.4);
+    }
+    .btn-receive:hover {
+      background: #4caf50;
+      color: #fff;
+    }
+
+    /* ===== ALERTS ===== */
+    .alert-success, .alert-error {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    .alert-success {
+      background: rgba(76, 175, 80, 0.2);
+      border: 1px solid #4caf50;
+      color: #a5d6a7;
+    }
+    .alert-error {
+      background: rgba(244, 67, 54, 0.2);
+      border: 1px solid #f44336;
+      color: #ef9a9a;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      padding: 25px 30px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 380px;
+      width: 90%;
+      color: #fff;
+    }
+    .modal-box h3 {
+      color: #f8ce86;
+      margin-bottom: 10px;
+    }
+    .modal-box p {
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-modal-back {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid #888;
+      color: #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-modal-back:hover { background: rgba(255,255,255,0.1); }
+    .btn-modal-confirm {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
     /* ===== FOOTER ===== */
     .footer {
       text-align: center;
@@ -475,10 +677,24 @@ $link_view = BASE_URL . 'User/users/view_details.php';
   <main class="main-content">
 
     <!-- BACK BUTTON -->
-    <button class="back-button" onclick="window.history.back();">&#8592;</button>
+    <a href="<?= $link_profile ?>" class="back-button" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;"><i class="fas fa-arrow-left"></i></a>
 
     <section class="orders-section">
       <h2>Orders History</h2>
+
+      <?php if ($cancel_msg): ?>
+        <div class="alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($cancel_msg) ?></div>
+      <?php endif; ?>
+      <?php if ($cancel_error): ?>
+        <div class="alert-error"><i class="fas fa-exclamation-triangle"></i><?= htmlspecialchars($cancel_error) ?></div>
+      <?php endif; ?>
+      <?php if ($receive_msg): ?>
+        <div class="alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($receive_msg) ?></div>
+      <?php endif; ?>
+      <?php if ($receive_error): ?>
+        <div class="alert-error"><i class="fas fa-exclamation-triangle"></i><?= htmlspecialchars($receive_error) ?></div>
+      <?php endif; ?>
+
       <?php if (empty($orders)): ?>
         <p style="color:white; text-align:center;">You have no orders yet.</p>
       <?php else: ?>
@@ -534,7 +750,21 @@ $link_view = BASE_URL . 'User/users/view_details.php';
                 <td><?= $order_date ?></td>
                 <td>$<?= number_format($order['total_amount'], 2) ?></td>
                 <td><span class="status <?= $sc ?>"><i class="fas <?= $si ?>"></i><?= $sl ?></span></td>
-                <td><button class="view-details-btn" data-order-id="<?= $order['id'] ?>">View Details</button></td>
+                <td>
+                  <div class="action-group">
+                    <a href="<?= $link_view ?>?order_id=<?= $order['id'] ?>" class="view-details-btn" style="text-decoration:none; display:inline-block;">Details</a>
+                    
+                    <?php if ($order['status'] === 'Pending'): ?>
+                      <button class="btn-cancel" onclick="openCancelModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
+                        <i class="fas fa-times"></i> Cancel
+                      </button>
+                    <?php elseif (in_array($order['status'], ['Shipping', 'Shipped'])): ?>
+                      <button class="btn-receive" onclick="openReceiveModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
+                        <i class="fas fa-check"></i> Order Received
+                      </button>
+                    <?php endif; ?>
+                  </div>
+                </td>
               </tr>
             <?php endforeach; ?>
           </tbody>
@@ -548,6 +778,47 @@ $link_view = BASE_URL . 'User/users/view_details.php';
     <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
   </footer>
 
+  <!-- CANCEL CONFIRMATION MODAL -->
+  <div class="modal-overlay" id="cancel-modal">
+    <div class="modal-box">
+      <div class="modal-icon"><i class="fas fa-exclamation-triangle" style="font-size:48px;color:#f44336;margin-bottom:14px;"></i></div>
+      <h3>Cancel Order?</h3>
+      <p>Are you sure you want to cancel order <strong id="modal-order-num" style="color:#b8860b;"></strong>?<br>
+        This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn-modal-back" onclick="closeCancelModal()">
+          <i class="fas fa-arrow-left"></i> Go Back
+        </button>
+        <form method="POST" style="display:inline;">
+          <input type="hidden" name="cancel_order_id" id="modal-order-id">
+          <button type="submit" class="btn-modal-confirm" style="background:#f44336;">
+            <i class="fas fa-times-circle"></i> Confirm Cancel
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIVE CONFIRMATION MODAL -->
+  <div class="modal-overlay" id="receive-modal">
+    <div class="modal-box">
+      <div class="modal-icon"><i class="fas fa-box-open" style="font-size:48px;color:#4caf50;margin-bottom:14px;"></i></div>
+      <h3>Confirm Received?</h3>
+      <p>Are you sure you have received order <strong id="modal-receive-num" style="color:#b8860b;"></strong>?</p>
+      <div class="modal-actions">
+        <button class="btn-modal-back" onclick="closeReceiveModal()">
+          <i class="fas fa-arrow-left"></i> Go Back
+        </button>
+        <form method="POST" style="display:inline;">
+          <input type="hidden" name="receive_order_id" id="modal-receive-id">
+          <button type="submit" class="btn-modal-confirm" style="background:#4caf50;">
+            <i class="fas fa-check-circle"></i> Confirm
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script>
     function applyHeaderSearch() {
       const keyword = document.getElementById('header-search').value.trim();
@@ -556,18 +827,33 @@ $link_view = BASE_URL . 'User/users/view_details.php';
       }
     }
 
-    // Handle View Details buttons
-    const buttons = document.querySelectorAll(".view-details-btn");
-    buttons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const orderId = btn.dataset.orderId;
-        if (orderId) {
-          window.location.href = "<?= $link_view ?>?order_id=" + encodeURIComponent(orderId);
-        } else {
-          // fallback
-          window.location.href = "view_details.html";
-        }
-      });
+    // Modals
+    function openCancelModal(orderId, orderNum) {
+      document.getElementById('modal-order-id').value = orderId;
+      document.getElementById('modal-order-num').textContent = orderNum;
+      document.getElementById('cancel-modal').classList.add('active');
+    }
+
+    function closeCancelModal() {
+      document.getElementById('cancel-modal').classList.remove('active');
+    }
+
+    function openReceiveModal(orderId, orderNum) {
+      document.getElementById('modal-receive-id').value = orderId;
+      document.getElementById('modal-receive-num').textContent = orderNum;
+      document.getElementById('receive-modal').classList.add('active');
+    }
+
+    function closeReceiveModal() {
+      document.getElementById('receive-modal').classList.remove('active');
+    }
+
+    document.getElementById('cancel-modal').addEventListener('click', function (e) {
+      if (e.target === this) closeCancelModal();
+    });
+
+    document.getElementById('receive-modal').addEventListener('click', function (e) {
+      if (e.target === this) closeReceiveModal();
     });
   </script>
 
