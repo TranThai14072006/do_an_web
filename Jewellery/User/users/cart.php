@@ -31,7 +31,7 @@ $link_home = BASE_URL . 'User/indexprofile.php';
 $link_cart = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout = BASE_URL . 'User/users/logout.php';
-$link_search = BASE_URL . 'User/Search/search.html';
+$link_search = BASE_URL . 'User/Products/products_sp.php';
 $link_detail = BASE_URL . 'User/Cart/view.php';
 $link_shop = BASE_URL . 'User/Products/products_sp.php';
 $link_checkout = BASE_URL . 'User/users/order_confirm.php';
@@ -178,11 +178,16 @@ $added_flash = isset($_GET['added']);
       box-sizing: border-box;
     }
 
+    html {
+      scrollbar-gutter: stable;
+    }
+
     body {
       font-family: 'DM Sans', sans-serif;
       background: #fafafa;
       min-height: 100vh;
       color: var(--dark);
+      margin: 0;
     }
 
     /* ═══════════════════════════════ HEADER ═══ */
@@ -191,18 +196,36 @@ $added_flash = isset($_GET['added']);
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+      background-color: var(--bg);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     .search-bar {
+      width: 100%;
       max-width: 1400px;
       margin: 0 auto;
+      background: var(--bg);
+      border-top: 1px solid rgba(0, 0, 0, 0.03);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 20px;
-      gap: 16px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    
+    .search-bar .left { 
+      width: auto; 
+      justify-content: flex-start;
+    }
+    
+    .search-bar .right { 
+      justify-content: flex-end; 
+      width: auto; 
+      gap: 4px;
     }
 
     .search-bar .left,
@@ -213,9 +236,9 @@ $added_flash = isset($_GET['added']);
     }
 
     .search-bar .center {
-      flex: 1;
+      flex: 1 1 auto;
       justify-content: center;
-      gap: 24px;
+      gap: 30px;
       position: relative;
     }
 
@@ -223,12 +246,12 @@ $added_flash = isset($_GET['added']);
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 9px 14px;
+      padding: 10px 15px;
       border-radius: 8px;
       text-decoration: none;
       color: var(--dark);
       font-weight: 600;
-      font-size: 15px;
+      font-size: 16px;
       transition: .2s;
     }
 
@@ -245,13 +268,14 @@ $added_flash = isset($_GET['added']);
     }
 
     .header-logo {
-      height: 52px;
-      max-width: 170px;
+      height: 55px;
+      max-width: 180px;
       object-fit: contain;
+      transition: all 0.25s ease;
     }
 
     .search-box {
-      flex: 0 1 420px;
+      flex: 0 1 450px;
       margin-left: auto;
       display: flex;
       align-items: center;
@@ -259,8 +283,9 @@ $added_flash = isset($_GET['added']);
       background: var(--accent);
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(0, 0, 0, .07);
-      height: 46px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+      height: 50px;
     }
 
     .search-box input {
@@ -269,7 +294,7 @@ $added_flash = isset($_GET['added']);
       outline: 0;
       background: transparent;
       padding: 4px 8px;
-      font-size: 14px;
+      font-size: 15px;
       color: var(--dark);
     }
 
@@ -309,6 +334,10 @@ $added_flash = isset($_GET['added']);
       background: rgba(184, 134, 11, .1);
       color: var(--gold);
     }
+    
+    .icon-link i {
+      color: inherit;
+    }
 
     .cart-badge {
       position: absolute;
@@ -344,6 +373,8 @@ $added_flash = isset($_GET['added']);
     .user-name:hover {
       color: var(--gold);
     }
+
+    .user-icon { font-size: 20px; }
 
     /* ═══════════════════════════════ FLASH ═══ */
     .flash {
@@ -845,9 +876,9 @@ $added_flash = isset($_GET['added']);
           <img src="<?= IMG_URL ?>36-logo.png" alt="36 Jewelry" class="header-logo">
         </a>
         <div class="search-box">
-          <input type="text" id="search-input" placeholder="Search products..."
-            onkeydown="if(event.key==='Enter') doSearch()">
-          <button onclick="doSearch()"><i class="fas fa-search"></i></button>
+          <input type="text" id="header-search" placeholder="Search products..."
+            onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+          <button onclick="applyHeaderSearch()"><i class="fas fa-search"></i></button>
         </div>
       </div>
       <div class="right">
@@ -857,8 +888,10 @@ $added_flash = isset($_GET['added']);
             <span class="cart-badge"><?= $item_count > 9 ? '9+' : $item_count ?></span>
           <?php endif; ?>
         </a>
-        <a href="<?= $link_profile ?>" class="icon-link" title="Profile"><i class="fas fa-user"></i></a>
-        <a href="<?= $link_logout ?>" class="icon-link" title="Logout">
+        <a href="<?= $link_profile ?>" class="icon-link" title="Profile">
+          <i class="fas fa-user-circle user-icon"></i>
+        </a>
+        <a href="<?= $link_logout ?>" class="icon-link" title="Logout" style="color:#111;">
           <i class="fas fa-sign-out-alt"></i>
         </a>
       </div>
@@ -1003,8 +1036,8 @@ $added_flash = isset($_GET['added']);
     }
 
     // ── Search ──────────────────────────────────────────────
-    function doSearch() {
-      const kw = document.getElementById('search-input').value.trim();
+    function applyHeaderSearch() {
+      const kw = document.getElementById('header-search').value.trim();
       if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
     }
 
