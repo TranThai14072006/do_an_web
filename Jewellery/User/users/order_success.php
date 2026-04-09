@@ -232,6 +232,8 @@ h1{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#
   h1{font-size:24px;}
 }
 </style>
+<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 <body>
 

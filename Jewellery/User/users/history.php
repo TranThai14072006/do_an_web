@@ -405,6 +405,8 @@ $link_view = BASE_URL . 'User/users/view_details.php';
       }
     }
   </style>
+<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 
 <body>

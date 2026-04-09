@@ -319,6 +319,8 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
 .size-modal-close:hover { color: #333; }
 
   </style>
+<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 
 <body class="hompage bg-accent-light">
