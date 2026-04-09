@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 setTimeout(() => {
                     window.location.href = this.href;
-                }, 400); // Align with CSS animation duration (0.5s slightly cut short for snappiness)
+                }, 200); // Align with CSS animation duration (0.25s slightly cut short for snappiness)
             }
         });
     });
