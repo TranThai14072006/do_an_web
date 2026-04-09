@@ -30,49 +30,7 @@ if ($order_id <= 0) {
   die("Invalid order ID.");
 }
 
-// ── Handle Cancel Order (POST) ─────────────────────────────
-$cancel_msg = '';
-$cancel_error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order_id'])) {
-  $cancel_id = (int) $_POST['cancel_order_id'];
-
-  // Verify order belongs to this customer and is still Pending
-  $chk = $conn->prepare("
-        SELECT o.id FROM orders o
-        JOIN customers c ON o.customer_id = c.id
-        WHERE o.id = ? AND c.user_id = ? AND o.status = 'Pending'
-        LIMIT 1
-    ");
-  $chk->bind_param('ii', $cancel_id, $user_id);
-  $chk->execute();
-  $can = $chk->get_result()->fetch_assoc();
-  $chk->close();
-
-  if ($can) {
-    // Restore stock before cancelling
-    $items_q = $conn->prepare("SELECT product_id, quantity FROM order_items WHERE order_id = ?");
-    $items_q->bind_param('i', $cancel_id);
-    $items_q->execute();
-    $items_res = $items_q->get_result();
-    while ($it = $items_res->fetch_assoc()) {
-      $upd = $conn->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
-      $upd->bind_param('ii', $it['quantity'], $it['product_id']);
-      $upd->execute();
-      $upd->close();
-    }
-    $items_q->close();
-
-    // Update order status → Cancelled
-    $upd_order = $conn->prepare("UPDATE orders SET status = 'Cancelled' WHERE id = ?");
-    $upd_order->bind_param('i', $cancel_id);
-    $upd_order->execute();
-    $upd_order->close();
-    $cancel_msg = 'Your order has been cancelled successfully.';
-  } else {
-    $cancel_error = 'Unable to cancel this order (only Pending orders can be cancelled).';
-  }
-}
 
 // ── Handle Receive Order (POST) ─────────────────────────────
 $receive_msg = '';
@@ -84,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) 
   $chk = $conn->prepare("
         SELECT o.id FROM orders o
         JOIN customers c ON o.customer_id = c.id
-        WHERE o.id = ? AND c.user_id = ? AND o.status IN ('Shipping', 'Shipped')
+        WHERE o.id = ? AND c.user_id = ? AND o.status = 'Delivered'
         LIMIT 1
     ");
   $chk->bind_param('ii', $receive_id, $user_id);
@@ -93,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) 
   $chk->close();
 
   if ($can_receive_check) {
-    $upd_order = $conn->prepare("UPDATE orders SET status = 'Delivered' WHERE id = ?");
+    $upd_order = $conn->prepare("UPDATE orders SET status = 'Received' WHERE id = ?");
     $upd_order->bind_param('i', $receive_id);
     $upd_order->execute();
     $upd_order->close();
@@ -135,8 +93,7 @@ $items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $order_date = date('M d, Y', strtotime($order['order_date']));
 
 // Determine status class and label
-$can_cancel = ($order['status'] === 'Pending');
-$can_receive = in_array($order['status'], ['Shipping', 'Shipped']);
+$can_receive = in_array($order['status'], ['Delivered']);
 switch ($order['status']) {
   case 'Pending':
     $status_class = 'pending';
@@ -159,6 +116,10 @@ switch ($order['status']) {
   case 'Cancelled':
     $status_class = 'cancelled';
     $status_text = 'Cancelled';
+    break;
+  case 'Received':
+    $status_class = 'received';
+    $status_text = 'Completed';
     break;
   default:
     $status_class = 'pending';
@@ -321,6 +282,13 @@ switch ($order['status']) {
       background-color: #f44336;
     }
 
+    .status.received {
+      background-color: #f8ce86;
+      color: #3b2f10;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(248, 206, 134, .25);
+    }
+
     /* Alert messages */
     .alert-success,
     .alert-error {
@@ -367,28 +335,7 @@ switch ($order['status']) {
       flex-wrap: wrap;
     }
 
-    /* Cancel button */
-    .btn-cancel {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 14px;
-      border-radius: 30px;
-      border: 1.5px solid #f44336;
-      background: rgba(244, 67, 54, .1);
-      color: #c62828;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all .2s;
-      font-family: inherit;
-    }
 
-    .btn-cancel:hover {
-      background: #f44336;
-      color: #fff;
-      transform: scale(1.04);
-    }
 
     /* Receive button */
     .btn-receive {
@@ -769,12 +716,7 @@ switch ($order['status']) {
 
     <h2>Order #<?= htmlspecialchars($order['order_number']) ?> Details</h2>
 
-    <?php if ($cancel_msg): ?>
-      <div class="alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($cancel_msg) ?></div>
-    <?php endif; ?>
-    <?php if ($cancel_error): ?>
-      <div class="alert-error"><i class="fas fa-exclamation-triangle"></i><?= htmlspecialchars($cancel_error) ?></div>
-    <?php endif; ?>
+
     <?php if ($receive_msg): ?>
       <div class="alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($receive_msg) ?></div>
     <?php endif; ?>
@@ -787,13 +729,7 @@ switch ($order['status']) {
       <p>Status:
         <span class="status-row">
           <span class="status <?= $status_class ?>"><?= $status_text ?></span>
-          <?php if ($can_cancel): ?>
-            <button class="btn-cancel"
-              onclick="openCancelModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')"
-              id="cancel-btn">
-              <i class="fas fa-times"></i> Cancel Order
-            </button>
-          <?php elseif ($can_receive): ?>
+          <?php if ($can_receive): ?>
             <button class="btn-receive"
               onclick="openReceiveModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
               <i class="fas fa-check"></i> Order Received
@@ -827,27 +763,6 @@ switch ($order['status']) {
     <p class="total">Order Total: <strong>$<?= number_format($order['total_amount'], 2) ?></strong></p>
   </main>
 
-  <!-- CANCEL CONFIRMATION MODAL -->
-  <div class="modal-overlay" id="cancel-modal">
-    <div class="modal-box">
-      <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
-      <h3>Cancel Order?</h3>
-      <p>Are you sure you want to cancel order <strong id="modal-order-num" style="color:#b8860b;"></strong>?<br>
-        This action cannot be undone.</p>
-      <div class="modal-actions">
-        <button class="btn-modal-back" onclick="closeCancelModal()">
-          <i class="fas fa-arrow-left"></i> Go Back
-        </button>
-        <form method="POST" style="display:inline;">
-          <input type="hidden" name="cancel_order_id" id="modal-order-id">
-          <button type="submit" class="btn-modal-confirm">
-            <i class="fas fa-times-circle"></i> Confirm Cancel
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-
   <!-- RECEIVE CONFIRMATION MODAL -->
   <div class="modal-overlay" id="receive-modal">
     <div class="modal-box">
@@ -880,15 +795,7 @@ switch ($order['status']) {
       }
     }
 
-    function openCancelModal(orderId, orderNum) {
-      document.getElementById('modal-order-id').value = orderId;
-      document.getElementById('modal-order-num').textContent = orderNum;
-      document.getElementById('cancel-modal').classList.add('active');
-    }
 
-    function closeCancelModal() {
-      document.getElementById('cancel-modal').classList.remove('active');
-    }
 
     function openReceiveModal(orderId, orderNum) {
       document.getElementById('modal-receive-id').value = orderId;

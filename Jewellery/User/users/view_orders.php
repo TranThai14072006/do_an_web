@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) 
         SELECT o.id, o.status
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
-        WHERE o.id = ? AND c.user_id = ? AND o.status IN ('Shipping', 'Shipped')
+        WHERE o.id = ? AND c.user_id = ? AND o.status = 'Delivered'
         LIMIT 1
     ");
   $chk->bind_param('ii', $receive_id, $user_id);
@@ -91,13 +91,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) 
   $chk->close();
 
   if ($can_receive) {
-    $upd_order = $conn->prepare("UPDATE orders SET status = 'Delivered' WHERE id = ?");
+    $upd_order = $conn->prepare("UPDATE orders SET status = 'Received' WHERE id = ?");
     $upd_order->bind_param('i', $receive_id);
     $upd_order->execute();
     $upd_order->close();
     $_SESSION['receive_msg'] = 'Thank you! Your order has been marked as received.';
   } else {
-    $_SESSION['receive_error'] = 'Unable to mark as received: order must be in Shipping status.';
+    $_SESSION['receive_error'] = 'Unable to mark as received: order must be in Delivered status.';
   }
   header('Location: ' . BASE_URL . 'User/users/view_orders.php');
   exit();
@@ -515,6 +515,13 @@ if ($user_info['customer_id']) {
       color: #ef9a9a;
     }
 
+    .status-received {
+      background: rgba(248, 206, 134, .25);
+      border: 1px solid #f8ce86;
+      color: #f8ce86;
+      box-shadow: 0 0 12px rgba(248, 206, 134, .3);
+    }
+
     /* Cancel button */
     .btn-cancel {
       display: inline-flex;
@@ -894,6 +901,11 @@ if ($user_info['customer_id']) {
             $badge_icon = 'fa-times-circle';
             $badge_label = 'Cancelled';
             break;
+          case 'Received':
+            $badge_class = 'status-received';
+            $badge_icon = 'fa-star';
+            $badge_label = 'Completed';
+            break;
           default:
             $badge_class = 'status-pending';
             $badge_icon = 'fa-question-circle';
@@ -902,7 +914,7 @@ if ($user_info['customer_id']) {
 
         // Only allow cancellation when status is Pending
         $can_cancel = ($status === 'Pending');
-        $can_receive = in_array($status, ['Shipping', 'Shipped']);
+        $can_receive = in_array($status, [ 'Delivered']);
         ?>
         <div class="order-card">
           <div class="order-header">
@@ -931,7 +943,8 @@ if ($user_info['customer_id']) {
                   onclick="openCancelModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
                   <i class="fas fa-times"></i> Cancel Order
                 </button>
-              <?php elseif ($can_receive): ?>
+              <?php endif; ?>
+              <?php if ($can_receive): ?>
                 <button class="btn-receive"
                   onclick="openReceiveModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
                   <i class="fas fa-check"></i> Order Received
