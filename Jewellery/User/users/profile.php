@@ -421,7 +421,10 @@ body{
     </div>
     <div class="right">
       <a href="<?= $link_cart ?>" class="icon-link" title="Cart"><i class="fas fa-shopping-cart"></i></a>
-      <a href="<?= $link_profile ?>" class="icon-link" title="Profile"><i class="fas fa-user" style="color:var(--gold)"></i></a>
+      <a href="<?= $link_profile ?>" class="icon-link" title="Profile" style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
+        <i class="fas fa-user-circle" style="color:var(--gold); font-size:22px;"></i>
+        <span style="font-size:13px; font-weight:600; white-space:nowrap; color:#333;"><?= $display_name ?></span>
+      </a>
       <a href="<?= $link_logout ?>" class="icon-link" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
     </div>
   </div>
