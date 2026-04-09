@@ -25,12 +25,12 @@ $user_id = (int) $_SESSION['user_id'];
 
 // ── Lấy thông số từ URL hoặc POST ──────────────────────────
 $product_id = $_GET['id'] ?? $_POST['buy_now_id'] ?? '';
-$size       = $_GET['size'] ?? $_POST['buy_now_size'] ?? '';
-$quantity   = 1; // Mặc định cho Mua ngay là 1
+$size = $_GET['size'] ?? $_POST['buy_now_size'] ?? '';
+$quantity = 1; // Mặc định cho Mua ngay là 1
 
 if (!$product_id || !$size) {
-    header('Location: ' . BASE_URL . 'User/Products/products_sp.php');
-    exit();
+  header('Location: ' . BASE_URL . 'User/Products/products_sp.php');
+  exit();
 }
 
 // ── Links ─────────────────────────────────────────────────
@@ -38,7 +38,7 @@ $link_home = BASE_URL . 'User/indexprofile.php';
 $link_cart = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout = BASE_URL . 'User/users/logout.php';
-$link_search = BASE_URL . 'User/Search/search.html';
+$link_search = BASE_URL . 'User/Products/products_sp.php';
 $logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
 
 // ── Hàm tính giá bán ─────────────────────────────────────
@@ -58,24 +58,26 @@ $product = $stmt_p->get_result()->fetch_assoc();
 $stmt_p->close();
 
 if (!$product) {
-    header('Location: ' . BASE_URL . 'User/Products/products_sp.php?error=product_not_found');
-    exit();
+  header('Location: ' . BASE_URL . 'User/Products/products_sp.php?error=product_not_found');
+  exit();
 }
 
 $sale_price = calcPrice($product);
 $total_amount = $sale_price * $quantity;
 
 // Giả lập danh sách item để dùng chung UI với order_confirm.php
-$cart_items = [[
+$cart_items = [
+  [
     'id' => $product['id'],
     'name' => $product['name'],
     'image' => $product['image'],
     'price' => $sale_price,
     'quantity' => $quantity,
     'total' => $total_amount,
-    'stock' => (int)($product['stock'] ?? 0),
+    'stock' => (int) ($product['stock'] ?? 0),
     'size' => $size
-]];
+  ]
+];
 
 // ── Lấy thông tin người dùng ─────────────────────────────
 $stmt = $conn->prepare("
@@ -95,11 +97,11 @@ $stmt->close();
 // ===== TỔNG SỐ LƯỢNG GIỎ HÀNG (cho header) =====
 $total_cart_count = 0;
 if (isset($_SESSION['user_id'])) {
-    $uid = (int)$_SESSION['user_id'];
-    $stmt_badge = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = $uid");
-    if ($stmt_badge && $row_b = $stmt_badge->fetch_assoc()) {
-        $total_cart_count = (int)$row_b['total_qty'];
-    }
+  $uid = (int) $_SESSION['user_id'];
+  $stmt_badge = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = $uid");
+  if ($stmt_badge && $row_b = $stmt_badge->fetch_assoc()) {
+    $total_cart_count = (int) $row_b['total_qty'];
+  }
 }
 
 // ── Xử lý Đặt hàng (POST) ───────────────────────────────
@@ -125,9 +127,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
 
   // Kiểm tra tồn kho
   if (!$error) {
-      if ($quantity > $product['stock']) {
-        $error = '"' . htmlspecialchars($product['name']) . '" only has ' . $product['stock'] . ' units left in stock.';
-      }
+    if ($quantity > $product['stock']) {
+      $error = '"' . htmlspecialchars($product['name']) . '" only has ' . $product['stock'] . ' units left in stock.';
+    }
   }
 
   // Thực hiện lưu đơn hàng
@@ -202,21 +204,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Buy Now Checkout | 36 Jewelry</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <style>
     /* CSS đồng bộ với order_confirm.php & product-detail.php */
     :root {
-      --gold: #b8860b; --gold-lt: #d4af37; --gold-pale: #f8ce86;
-      --dark: #111; --bg: #fff; --accent: #f6f6f6; --muted: #666;
-      --radius: 12px; --shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      --gold: #b8860b;
+      --gold-lt: #d4af37;
+      --gold-pale: #f8ce86;
+      --dark: #111;
+      --bg: #fff;
+      --accent: #f6f6f6;
+      --muted: #666;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, .08);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'DM Sans', sans-serif; background: #fafafa; color: var(--dark); min-height: 100vh; }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #fafafa;
+      color: var(--dark);
+      min-height: 100vh;
+    }
 
     /* ══ BREADCRUMB ══ */
     .breadcrumb {
@@ -229,14 +251,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       font-size: 13px;
       color: var(--muted);
     }
+
     .breadcrumb a {
       color: var(--muted);
       text-decoration: none;
       transition: .15s;
     }
-    .breadcrumb a:hover { color: var(--gold); }
-    .breadcrumb .sep { color: #ccc; }
-    .breadcrumb .current { color: var(--dark); font-weight: 600; }
+
+    .breadcrumb a:hover {
+      color: var(--gold);
+    }
+
+    .breadcrumb .sep {
+      color: #ccc;
+    }
+
+    .breadcrumb .current {
+      color: var(--dark);
+      font-weight: 600;
+    }
 
     /* ══ PROGRESS STEPS ══ */
     .steps {
@@ -246,6 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       display: flex;
       align-items: center;
     }
+
     .step {
       display: flex;
       align-items: center;
@@ -253,6 +287,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       font-size: 13px;
       font-weight: 600;
     }
+
     .step-num {
       width: 28px;
       height: 28px;
@@ -264,18 +299,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       font-weight: 700;
       flex-shrink: 0;
     }
-    .step.done .step-num { background: var(--gold); color: #fff; }
+
+    .step.done .step-num {
+      background: var(--gold);
+      color: #fff;
+    }
+
     .step.active .step-num {
       background: var(--gold);
       color: #fff;
       box-shadow: 0 0 0 4px rgba(212, 175, 55, .2);
     }
-    .step.inactive .step-num { background: #e0e0e0; color: #999; }
-    .step.active .step-label { color: var(--dark); }
-    .step.done .step-label { color: var(--muted); }
-    .step.inactive .step-label { color: #bbb; }
-    .step-line { flex: 1; height: 2px; background: #e0e0e0; margin: 0 10px; }
-    .step-line.done { background: var(--gold); }
+
+    .step.inactive .step-num {
+      background: #e0e0e0;
+      color: #999;
+    }
+
+    .step.active .step-label {
+      color: var(--dark);
+    }
+
+    .step.done .step-label {
+      color: var(--muted);
+    }
+
+    .step.inactive .step-label {
+      color: #bbb;
+    }
+
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: #e0e0e0;
+      margin: 0 10px;
+    }
+
+    .step-line.done {
+      background: var(--gold);
+    }
 
     /* HEADER (từ product-detail.php) */
     .header-container {
@@ -286,6 +348,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       background: #fff;
       box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
     }
+
     .search-bar {
       max-width: 1400px;
       margin: 0 auto;
@@ -296,13 +359,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       gap: 16px;
       background: #fff;
     }
-    .search-bar .left, .search-bar .right {
+
+    .search-bar .left,
+    .search-bar .right {
       display: flex;
       align-items: center;
     }
+
     .search-bar .right {
       gap: 10px;
     }
+
     .search-bar .center {
       flex: 1 1 auto;
       justify-content: center;
@@ -311,17 +378,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       display: flex;
       align-items: center;
     }
+
     .search-bar .center a {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
     }
+
     .header-logo {
       height: 55px;
       max-width: 180px;
       object-fit: contain;
       transition: all 0.25s ease;
     }
+
     .home-btn {
       display: inline-flex;
       align-items: center;
@@ -334,8 +404,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       font-size: 16px;
       transition: .2s;
     }
-    .home-btn:hover { background: var(--accent); color: var(--gold); }
-    
+
+    .home-btn:hover {
+      background: var(--accent);
+      color: var(--gold);
+    }
+
     .search-box {
       flex: 0 1 450px;
       margin-left: auto;
@@ -345,9 +419,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       background: var(--accent);
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.06);
+      border: 1px solid rgba(0, 0, 0, 0.06);
       height: 50px;
     }
+
     .search-box input {
       flex: 1;
       border: 0;
@@ -356,11 +431,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       padding: 4px 8px;
       font-size: 14px;
     }
+
     .search-box button {
       display: inline-flex;
-      align-items: center; justify-content: center;
-      border: 0; background: var(--gold); color: #fff;
-      padding: 8px 14px; border-radius: 999px; cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      background: var(--gold);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
     }
 
     .icon-link {
@@ -376,7 +457,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       border-radius: 8px;
       transition: .18s;
     }
-    .icon-link:hover { background: rgba(184,134,11,.1); color: var(--gold); }
+
+    .icon-link:hover {
+      background: rgba(184, 134, 11, .1);
+      color: var(--gold);
+    }
 
     .cart-badge {
       position: absolute;
@@ -396,33 +481,145 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
     }
 
     /* LAYOUT */
-    .page-wrapper { max-width: 1100px; margin: 24px auto 60px; padding: 0 20px; display: grid; grid-template-columns: 1fr 340px; gap: 28px; }
+    .page-wrapper {
+      max-width: 1100px;
+      margin: 24px auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 28px;
+    }
 
     /* BOXES */
-    .checkout-box, .summary-box { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-    .box-header { padding: 20px 24px; border-bottom: 1px solid #f0eee8; display: flex; align-items: center; gap: 10px; }
-    .box-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; }
-    .box-body { padding: 24px; }
+    .checkout-box,
+    .summary-box {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .box-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #f0eee8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .box-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .box-body {
+      padding: 24px;
+    }
 
     /* FORM */
-    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--gold-lt); margin: 24px 0 14px; display: flex; align-items: center; gap: 8px; }
-    .section-label::after { content: ''; flex: 1; height: 1px; background: #f0eee8; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
-    .form-group input, .form-group select { width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #e0ddd5; font-size: 14px; outline: none; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--gold-lt);
+      margin: 24px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #f0eee8;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #e0ddd5;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
 
     /* RADIO CARDS */
-    .radio-cards, .payment-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .radio-card, .p-card { position: relative; cursor: pointer; }
-    .radio-card input, .p-card input { position: absolute; opacity: 0; }
-    .radio-card-inner, .p-card-inner { border: 2px solid #e0ddd5; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; transition: .2s; }
-    .radio-card input:checked + .radio-card-inner, .p-card input:checked + .p-card-inner { border-color: var(--gold-lt); background: #fffdf5; }
+    .radio-cards,
+    .payment-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .radio-card,
+    .p-card {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .radio-card input,
+    .p-card input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .radio-card-inner,
+    .p-card-inner {
+      border: 2px solid #e0ddd5;
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: .2s;
+    }
+
+    .radio-card input:checked+.radio-card-inner,
+    .p-card input:checked+.p-card-inner {
+      border-color: var(--gold-lt);
+      background: #fffdf5;
+    }
 
     /* PAYMENT SPECIFIC */
-    .payment-cards { grid-template-columns: repeat(3, 1fr); }
-    .p-card-inner { flex-direction: column; text-align: center; font-size: 12px; padding: 14px 10px; }
-    .p-icon { font-size: 22px; margin-bottom: 4px; }
+    .payment-cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .p-card-inner {
+      flex-direction: column;
+      text-align: center;
+      font-size: 12px;
+      padding: 14px 10px;
+    }
+
+    .p-icon {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
 
     /* ── Bank Transfer Panel ── */
     .bank-panel {
@@ -433,7 +630,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       border: 1.5px solid #d4af37;
       animation: fadeSlide .25s ease;
     }
-    @keyframes fadeSlide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+    @keyframes fadeSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .bank-panel-header {
       background: linear-gradient(135deg, #d4af37, #b8860b);
       color: #fff;
@@ -445,38 +654,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
       align-items: center;
       gap: 8px;
     }
+
     .bank-panel-body {
       background: #fffdf5;
       padding: 14px 16px;
       display: grid;
       gap: 8px;
     }
+
     .bank-row {
       display: flex;
       align-items: flex-start;
       gap: 10px;
       font-size: 13.5px;
     }
+
     .bank-row .b-label {
       min-width: 130px;
       color: var(--muted);
       font-weight: 600;
       flex-shrink: 0;
     }
+
     .bank-row .b-value {
       color: var(--dark);
       font-weight: 700;
       word-break: break-all;
     }
+
     .bank-row .b-value.highlight {
       color: #d4af37;
       font-size: 15px;
     }
+
     .bank-divider {
       border: none;
       border-top: 1px dashed #e0d8c0;
       margin: 4px 0;
     }
+
     .bank-note {
       font-size: 12px;
       color: #b8860b;
@@ -487,30 +703,131 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
     }
 
     /* SUMMARY */
-    .sum-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
-    .sum-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f5f3ee; }
-    .sum-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
-    .sum-info { flex: 1; }
-    .sum-name { font-size: 13px; font-weight: 600; line-height: 1.4; }
-    .sum-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .sum-price { font-size: 14px; font-weight: 700; color: var(--gold); }
-    .sum-row { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; }
-    .sum-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; margin-top: 10px; border-top: 2px solid #ede9df; padding-top: 10px; }
-    .sum-total .amt { color: var(--gold); }
+    .sum-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sum-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f5f3ee;
+    }
+
+    .sum-thumb {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+
+    .sum-info {
+      flex: 1;
+    }
+
+    .sum-name {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .sum-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .sum-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .sum-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      padding: 6px 0;
+    }
+
+    .sum-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 10px;
+      border-top: 2px solid #ede9df;
+      padding-top: 10px;
+    }
+
+    .sum-total .amt {
+      color: var(--gold);
+    }
 
     /* BUTTONS */
-    .btn-order { width: 100%; padding: 15px; border: none; border-radius: 12px; background: linear-gradient(135deg, #d4af37, #b8860b); color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 15px; transition: .2s; }
-    .btn-order:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(184, 134, 11, .3); }
-    .btn-back { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: var(--muted); text-decoration: none; }
+    .btn-order {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #d4af37, #b8860b);
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: .2s;
+    }
 
-    .alert-error { background: #fff0f0; border: 1px solid #f5c2c2; padding: 12px; color: #c62828; border-radius: 8px; margin-bottom: 15px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .btn-order:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(184, 134, 11, .3);
+    }
+
+    .btn-back {
+      display: block;
+      text-align: center;
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .alert-error {
+      background: #fff0f0;
+      border: 1px solid #f5c2c2;
+      padding: 12px;
+      color: #c62828;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
     @media(max-width: 860px) {
-      .page-wrapper { grid-template-columns: 1fr; }
-      .summary-box { order: -1; }
+      .page-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-box {
+        order: -1;
+      }
     }
   </style>
+  <link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
+
 <body>
 
   <header class="header-container">
@@ -525,7 +842,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
         </a>
         <div class="search-box">
           <input type="text" id="header-search" placeholder="Search products..."
-                 onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+            onkeydown="if(event.key==='Enter') applyHeaderSearch()">
           <button onclick="applyHeaderSearch()">
             <i class="fas fa-search"></i>
           </button>
@@ -577,9 +894,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
   <div class="page-wrapper">
     <!-- Form -->
     <div class="checkout-box">
-      <div class="box-header"><i class="fas fa-truck"></i> <h1>Shipping Information</h1></div>
+      <div class="box-header"><i class="fas fa-truck"></i>
+        <h1>Shipping Information</h1>
+      </div>
       <div class="box-body">
-        <?php if ($error): ?><div class="alert-error"><i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error) ?></div><?php endif; ?>
+        <?php if ($error): ?>
+          <div class="alert-error"><i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
 
         <form method="POST" id="checkout-form">
           <input type="hidden" name="buy_now_id" value="<?= htmlspecialchars($product_id) ?>">
@@ -589,31 +910,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
           <div class="form-row">
             <div class="form-group">
               <label>Full Name *</label>
-              <input type="text" name="fullname" required placeholder="Your full name" value="<?= htmlspecialchars($_POST['fullname'] ?? $user['full_name'] ?? '') ?>">
+              <input type="text" name="fullname" required placeholder="Your full name"
+                value="<?= htmlspecialchars($_POST['fullname'] ?? $user['full_name'] ?? '') ?>">
             </div>
             <div class="form-group">
               <label>Phone Number *</label>
-              <input type="tel" name="phone" required placeholder="+84 xxx xxx xxx" value="<?= htmlspecialchars($_POST['phone'] ?? $user['phone'] ?? '') ?>">
+              <input type="tel" name="phone" required placeholder="+84 xxx xxx xxx"
+                value="<?= htmlspecialchars($_POST['phone'] ?? $user['phone'] ?? '') ?>">
             </div>
           </div>
           <div class="form-group">
             <label>Email</label>
-            <input type="email" value="<?= htmlspecialchars($user['email'] ?? '') ?>" disabled style="background:#f5f5f5;color:var(--muted);">
+            <input type="email" value="<?= htmlspecialchars($user['email'] ?? '') ?>" disabled
+              style="background:#f5f5f5;color:var(--muted);">
           </div>
 
           <div class="section-label"><i class="fas fa-map-marker-alt"></i> Delivery Address</div>
           <div class="form-group">
             <div class="radio-cards">
-              <label class="radio-card"><input type="radio" name="addressOption" value="saved" checked><span class="radio-card-inner">Saved Address</span></label>
-              <label class="radio-card"><input type="radio" name="addressOption" value="new"><span class="radio-card-inner">New Address</span></label>
+              <label class="radio-card"><input type="radio" name="addressOption" value="saved" checked><span
+                  class="radio-card-inner">Saved Address</span></label>
+              <label class="radio-card"><input type="radio" name="addressOption" value="new"><span
+                  class="radio-card-inner">New Address</span></label>
             </div>
           </div>
 
           <div id="saved-addr-section" class="form-group">
             <label>Saved Address</label>
             <select name="saved_address">
-              <?php if (!empty($user['address'])): ?><option value="<?= htmlspecialchars($user['address']) ?>"><?= htmlspecialchars($user['address']) ?></option>
-              <?php else: ?><option value="">— No saved address —</option><?php endif; ?>
+              <?php if (!empty($user['address'])): ?>
+                <option value="<?= htmlspecialchars($user['address']) ?>"><?= htmlspecialchars($user['address']) ?>
+                </option>
+              <?php else: ?>
+                <option value="">— No saved address —</option><?php endif; ?>
             </select>
           </div>
           <div id="new-addr-section" class="form-group" style="display:none;">
@@ -623,9 +952,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
 
           <div class="section-label"><i class="fas fa-credit-card"></i> Payment Method</div>
           <div class="payment-cards">
-            <label class="p-card"><input type="radio" name="payment_radio" value="cod" checked><span class="p-card-inner"><span class="p-icon">💴</span> COD</span></label>
-            <label class="p-card"><input type="radio" name="payment_radio" value="bank"><span class="p-card-inner"><span class="p-icon">🏦</span> Bank</span></label>
-            <label class="p-card"><input type="radio" name="payment_radio" value="online"><span class="p-card-inner"><span class="p-icon">💳</span> Online</span></label>
+            <label class="p-card"><input type="radio" name="payment_radio" value="cod" checked><span
+                class="p-card-inner"><span class="p-icon">💴</span> COD</span></label>
+            <label class="p-card"><input type="radio" name="payment_radio" value="bank"><span class="p-card-inner"><span
+                  class="p-icon">🏦</span> Bank</span></label>
+            <label class="p-card"><input type="radio" name="payment_radio" value="online"><span
+                class="p-card-inner"><span class="p-icon">💳</span> Online</span></label>
           </div>
           <input type="hidden" name="payment" id="payment-hidden" value="cod">
 
@@ -636,42 +968,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
             </div>
             <div class="bank-panel-body">
               <div class="bank-row">
-                <span class="b-label"><i class="fas fa-landmark" style="width:14px;text-align:center;color:#d4af37;"></i> Bank Name:</span>
+                <span class="b-label"><i class="fas fa-landmark"
+                    style="width:14px;text-align:center;color:#d4af37;"></i> Bank Name:</span>
                 <span class="b-value">Vietcombank (VCB)</span>
               </div>
               <div class="bank-row">
-                <span class="b-label"><i class="fas fa-hashtag" style="width:14px;text-align:center;color:#d4af37;"></i> Account Number:</span>
+                <span class="b-label"><i class="fas fa-hashtag" style="width:14px;text-align:center;color:#d4af37;"></i>
+                  Account Number:</span>
                 <span class="b-value">1234 5678 9012 3456</span>
               </div>
               <div class="bank-row">
-                <span class="b-label"><i class="fas fa-user-tie" style="width:14px;text-align:center;color:#d4af37;"></i> Account Owner:</span>
+                <span class="b-label"><i class="fas fa-user-tie"
+                    style="width:14px;text-align:center;color:#d4af37;"></i> Account Owner:</span>
                 <span class="b-value">CONG TY TNHH TRANG SUC 36</span>
               </div>
               <div class="bank-row">
-                <span class="b-label"><i class="fas fa-map-pin" style="width:14px;text-align:center;color:#d4af37;"></i> Branch:</span>
+                <span class="b-label"><i class="fas fa-map-pin" style="width:14px;text-align:center;color:#d4af37;"></i>
+                  Branch:</span>
                 <span class="b-value">Ho Chi Minh City</span>
               </div>
 
               <hr class="bank-divider">
 
               <div class="bank-row">
-                <span class="b-label"><i class="fas fa-user" style="width:14px;text-align:center;color:#d4af37;"></i> Sender:</span>
+                <span class="b-label"><i class="fas fa-user" style="width:14px;text-align:center;color:#d4af37;"></i>
+                  Sender:</span>
                 <span class="b-value" id="bp-sender"><?= htmlspecialchars($user['full_name'] ?? '') ?></span>
               </div>
               <div class="bank-row">
-                <span class="b-label"><i class="fas fa-phone" style="width:14px;text-align:center;color:#d4af37;"></i> Phone Number:</span>
+                <span class="b-label"><i class="fas fa-phone" style="width:14px;text-align:center;color:#d4af37;"></i>
+                  Phone Number:</span>
                 <span class="b-value" id="bp-phone"><?= htmlspecialchars($user['phone'] ?? '') ?></span>
               </div>
               <div class="bank-row">
-                <span class="b-label"><i class="fas fa-money-bill-wave" style="width:14px;text-align:center;color:#d4af37;"></i> Amount:</span>
+                <span class="b-label"><i class="fas fa-money-bill-wave"
+                    style="width:14px;text-align:center;color:#d4af37;"></i> Amount:</span>
                 <span class="b-value highlight" id="bp-amount">$<?= number_format($total_amount, 2) ?></span>
               </div>
               <div class="bank-row">
-                <span class="b-label"><i class="fas fa-comment-alt" style="width:14px;text-align:center;color:#d4af37;"></i> Transfer Note:</span>
+                <span class="b-label"><i class="fas fa-comment-alt"
+                    style="width:14px;text-align:center;color:#d4af37;"></i> Transfer Note:</span>
                 <span class="b-value" id="bp-content">36BN <?= htmlspecialchars($product_id) ?></span>
               </div>
 
-              <p class="bank-note"><i class="fas fa-info-circle"></i> Please enter the correct transfer note to ensure your order is confirmed quickly.</p>
+              <p class="bank-note"><i class="fas fa-info-circle"></i> Please enter the correct transfer note to ensure
+                your order is confirmed quickly.</p>
             </div>
           </div>
 
@@ -698,8 +1039,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
           <div class="sum-price">$<?= number_format($sale_price, 2) ?></div>
         </div>
 
-        <div class="sum-row" style="margin-top:15px;"><span class="label">Subtotal</span><span class="value">$<?= number_format($total_amount, 2) ?></span></div>
-        <div class="sum-row"><span class="label">Shipping</span><span class="value" style="color:#4caf50">Free</span></div>
+        <div class="sum-row" style="margin-top:15px;"><span class="label">Subtotal</span><span
+            class="value">$<?= number_format($total_amount, 2) ?></span></div>
+        <div class="sum-row"><span class="label">Shipping</span><span class="value" style="color:#4caf50">Free</span>
+        </div>
         <div class="sum-total"><span>Total</span><span class="amt">$<?= number_format($total_amount, 2) ?></span></div>
       </div>
     </div>
@@ -752,8 +1095,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now_submit'])) {
 
     if (fullnameInput) fullnameInput.addEventListener('input', syncBankInfo);
     if (phoneInput) phoneInput.addEventListener('input', syncBankInfo);
-    
+
     toggleBankPanel(); // Initial call
   </script>
 </body>
+
 </html>

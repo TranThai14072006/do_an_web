@@ -189,6 +189,8 @@ if (isset($_SESSION['user_id'])) {
       line-height: 1;
     }
   </style>
+<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 
 <body>
@@ -234,7 +236,7 @@ if (isset($_SESSION['user_id'])) {
 
 <div class="product-detail">
 
-  <button class="back-btn" onclick="window.history.back()">←</button>
+  <a href="../users/cart.php" class="back-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">←</a>
 
   <!-- IMAGE -->
   <div class="product-image">

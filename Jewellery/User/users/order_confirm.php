@@ -32,7 +32,8 @@ $link_home = BASE_URL . 'User/indexprofile.php';
 $link_cart = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout = BASE_URL . 'User/users/logout.php';
-$link_search = BASE_URL . 'User/Search/search.html';
+$link_search = BASE_URL . 'User/Products/products_sp.php';
+$link_shop = BASE_URL . 'User/Products/products_sp.php';
 $logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
 
 // ── AJAX: Remove item from cart (must run before any output) ──
@@ -40,50 +41,41 @@ $logged_in_name = htmlspecialchars($_SESSION['username'] ?? 'User');
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_product_id'])) {
   // Define calcPrice here so it is available for the total re-calc below
   if (!function_exists('calcPrice')) {
-    function calcPrice(array $r): float {
-      $cost   = (float)($r['cost_price']    ?? 0);
-      $profit = (int)  ($r['profit_percent'] ?? 0);
-      $price  = (float)($r['price']          ?? 0);
+    function calcPrice(array $r): float
+    {
+      $cost = (float) ($r['cost_price'] ?? 0);
+      $profit = (int) ($r['profit_percent'] ?? 0);
+      $price = (float) ($r['price'] ?? 0);
       return $cost > 0 ? $cost * (1 + $profit / 100) : $price;
     }
   }
 
-  $remove_pid = trim($_POST['remove_product_id']); // keep as string
-  $del = $conn->prepare('DELETE FROM cart WHERE user_id = ? AND product_id = ?');
-  $del->bind_param('is', $user_id, $remove_pid);
-  $del->execute();
-  $affected = $del->affected_rows;
-  $del->close();
-  
-  file_put_contents('debug_remove.txt', "AJAX FIRED. User: $user_id, PID: $remove_pid, Affected: $affected\n", FILE_APPEND);
-
-  // Re-calculate totals from remaining cart rows
-  $query2 = "
-    SELECT c.quantity, p.price, p.cost_price, p.profit_percent
-    FROM cart c JOIN products p ON c.product_id = p.id
-    WHERE c.user_id = ?
-  ";
-
-  if (isset($_POST['selected_items']) && is_array($_POST['selected_items'])) {
-      $safe_items = array_map(function($item) use ($conn) {
-          return "'" . $conn->real_escape_string($item) . "'";
-      }, $_POST['selected_items']);
-      if (!empty($safe_items)) {
-          $query2 .= " AND c.product_id IN (" . implode(",", $safe_items) . ")";
-      }
-  }
-
-  $cst2 = $conn->prepare($query2);
-  $cst2->bind_param('i', $user_id);
-  $cst2->execute();
-  $res2      = $cst2->get_result();
+  // Không xóa cart — chỉ tính lại total từ selected_items còn lại
   $new_total = 0.0;
   $new_count = 0;
-  while ($r2 = $res2->fetch_assoc()) {
-    $new_total += calcPrice($r2) * (int)$r2['quantity'];
-    $new_count++;
+
+  if (isset($_POST['selected_items']) && is_array($_POST['selected_items'])) {
+    $safe_items = array_map(function ($item) use ($conn) {
+      return "'" . $conn->real_escape_string($item) . "'";
+    }, $_POST['selected_items']);
+    if (!empty($safe_items)) {
+      $query2 = "
+        SELECT c.quantity, p.price, p.cost_price, p.profit_percent
+        FROM cart c JOIN products p ON c.product_id = p.id
+        WHERE c.user_id = ?
+        AND c.product_id IN (" . implode(",", $safe_items) . ")
+      ";
+      $cst2 = $conn->prepare($query2);
+      $cst2->bind_param('i', $user_id);
+      $cst2->execute();
+      $res2 = $cst2->get_result();
+      while ($r2 = $res2->fetch_assoc()) {
+        $new_total += calcPrice($r2) * (int) $r2['quantity'];
+        $new_count++;
+      }
+      $cst2->close();
+    }
   }
-  $cst2->close();
 
   header('Content-Type: application/json');
   echo json_encode(['success' => true, 'total' => round($new_total, 2), 'count' => $new_count]);
@@ -125,41 +117,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selected_items'])) {
 $cart_items = [];
 $total_amount = 0.0;
 
-$query = "
-    SELECT c.product_id, c.quantity,
-           p.name, p.price, p.image, p.cost_price, p.profit_percent, p.stock
-    FROM cart c
-    JOIN products p ON c.product_id = p.id
-    WHERE c.user_id = ?
-";
-
+// Chỉ load sản phẩm được chọn — bắt buộc phải có requested_items
 if (!empty($requested_items)) {
-  $safe_items = array_map(function($item) use ($conn) {
+  $safe_items = array_map(function ($item) use ($conn) {
     return "'" . $conn->real_escape_string($item) . "'";
   }, $requested_items);
-  $query .= " AND c.product_id IN (" . implode(",", $safe_items) . ")";
+  $query = "
+      SELECT c.product_id, c.quantity,
+             p.name, p.price, p.image, p.cost_price, p.profit_percent, p.stock
+      FROM cart c
+      JOIN products p ON c.product_id = p.id
+      WHERE c.user_id = ?
+      AND c.product_id IN (" . implode(",", $safe_items) . ")
+      ORDER BY c.product_id ASC
+  ";
+  $cst = $conn->prepare($query);
+  $cst->bind_param('i', $user_id);
+  $cst->execute();
+  $cres = $cst->get_result();
+  while ($row = $cres->fetch_assoc()) {
+    $sp = calcPrice($row);
+    $qty = (int) $row['quantity'];
+    $cart_items[] = [
+      'id' => $row['product_id'],
+      'name' => $row['name'],
+      'image' => $row['image'],
+      'price' => $sp,
+      'quantity' => $qty,
+      'total' => $sp * $qty,
+      'stock' => (int) ($row['stock'] ?? 0),
+    ];
+    $total_amount += $sp * $qty;
+  }
+  $cst->close();
 }
-$query .= " ORDER BY c.product_id ASC";
-
-$cst = $conn->prepare($query);
-$cst->bind_param('i', $user_id);
-$cst->execute();
-$cres = $cst->get_result();
-while ($row = $cres->fetch_assoc()) {
-  $sp = calcPrice($row);
-  $qty = (int) $row['quantity'];
-  $cart_items[] = [
-    'id' => $row['product_id'],
-    'name' => $row['name'],
-    'image' => $row['image'],
-    'price' => $sp,
-    'quantity' => $qty,
-    'total' => $sp * $qty,
-    'stock' => (int) ($row['stock'] ?? 0),
-  ];
-  $total_amount += $sp * $qty;
-}
-$cst->close();
 
 // ── Handle Place Order (POST) ─────────────────────────────
 
@@ -261,17 +252,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       $ii->close();
       $us->close();
 
-      // ── 4. Xóa giỏ hàng ──────────────────────────
-      if (!empty($requested_items)) {
-        $safe_items = array_map(function($item) use ($conn) {
-          return "'" . $conn->real_escape_string($item) . "'";
-        }, $requested_items);
-        $conn->query("DELETE FROM cart WHERE user_id = " . $user_id . " AND product_id IN (" . implode(",", $safe_items) . ")");
-      } else {
-        $del = $conn->prepare("DELETE FROM cart WHERE user_id = ?");
-        $del->bind_param('i', $user_id);
-        $del->execute();
-        $del->close();
+      // ── 4. Xóa những món đã mua khỏi giỏ hàng ──
+      $del_st = $conn->prepare("DELETE FROM cart WHERE user_id = ? AND product_id = ?");
+      if ($del_st) {
+        foreach ($cart_items as $item) {
+          $del_st->bind_param('is', $user_id, $item['id']);
+          $del_st->execute();
+        }
+        $del_st->close();
       }
 
       $conn->commit();
@@ -335,17 +323,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+      background-color: var(--bg);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     .search-bar {
+      width: 100%;
       max-width: 1400px;
       margin: 0 auto;
+      background: var(--bg);
+      border-top: 1px solid rgba(0, 0, 0, 0.03);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 20px;
+      padding: 12px 16px;
       gap: 16px;
     }
 
@@ -356,23 +348,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       align-items: center;
     }
 
+    .search-bar .left {
+      width: auto;
+      justify-content: flex-start;
+    }
+
+    .search-bar .right {
+      justify-content: flex-end;
+      width: auto;
+      gap: 4px;
+    }
+
     .search-bar .center {
-      flex: 1;
+      flex: 1 1 auto;
       justify-content: center;
+      gap: 30px;
       position: relative;
     }
 
     .home-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 9px 14px;
+      justify-content: center;
+      padding: 10px 15px;
       border-radius: 8px;
       text-decoration: none;
       color: var(--dark);
       font-weight: 600;
-      font-size: 15px;
-      transition: .2s;
+      font-size: 16px;
+      transition: background-color 0.2s;
+    }
+
+    .home-btn i {
+      margin-right: 5px;
+      font-size: 18px;
     }
 
     .home-btn:hover {
@@ -388,13 +397,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
     }
 
     .header-logo {
-      height: 52px;
-      max-width: 170px;
+      height: 55px;
+      max-width: 180px;
       object-fit: contain;
+      transition: all 0.25s ease;
     }
 
     .search-box {
-      flex: 0 1 420px;
+      flex: 0 1 450px;
       margin-left: auto;
       display: flex;
       align-items: center;
@@ -402,8 +412,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       background: var(--accent);
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(0, 0, 0, .07);
-      height: 46px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+      height: 50px;
     }
 
     .search-box input {
@@ -411,9 +422,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       border: 0;
       outline: 0;
       background: transparent;
-      padding: 4px 8px;
-      font-size: 14px;
+      padding: 2px 6px;
+      font-size: 15px;
       color: var(--dark);
+      min-width: 100px;
     }
 
     .search-box button {
@@ -445,11 +457,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       color: var(--dark);
       font-size: 18px;
       transition: .18s;
+      position: relative;
     }
 
     .icon-link:hover {
       background: rgba(184, 134, 11, .1);
       color: var(--gold);
+    }
+
+    .cart-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: var(--gold);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
     }
 
     .search-bar .right {
@@ -1152,6 +1182,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       }
     }
   </style>
+  <link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 
 <body>
@@ -1162,23 +1194,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       <div class="left">
         <a href="<?= $link_home ?>" class="home-btn"><i class="fas fa-home"></i> Home</a>
       </div>
+
       <div class="center">
         <a href="<?= $link_home ?>">
-          <img src="<?= IMG_URL ?>36-logo.png" alt="36 Jewelry" class="header-logo">
+          <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
         </a>
         <div class="search-box">
-          <input type="text" id="search-input" placeholder="Search products..."
-            onkeydown="if(event.key==='Enter') doSearch()">
-          <button onclick="doSearch()"><i class="fas fa-search"></i></button>
+          <!-- Chuyển ID thành header-search để tương thích bộ lọc dưới -->
+          <input type="text" id="header-search" placeholder="Search products..."
+            onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+          <button onclick="applyHeaderSearch()">
+            <i class="fas fa-search"></i>
+          </button>
         </div>
       </div>
+
       <div class="right">
-        <a href="<?= $link_cart ?>" class="icon-link" title="Cart"><i class="fas fa-shopping-cart"></i></a>
-        <a href="<?= $link_profile ?>" class="user-name" title="Profile">
-          <i class="fas fa-user-circle" style="font-size:20px;color:var(--gold)"></i>
-          <span><?= $logged_in_name ?></span>
+        <a href="<?= $link_cart ?>" class="icon-link" title="Cart">
+          <i class="fas fa-shopping-cart"></i>
+          <?php
+          // Fetch real cart count for the badge
+          $uid = (int) $_SESSION['user_id'];
+          $st_b = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = $uid");
+          $total_cart_count = 0;
+          if ($st_b && $row_b = $st_b->fetch_assoc()) {
+            $total_cart_count = (int) $row_b['total_qty'];
+          }
+          if ($total_cart_count > 0):
+            ?>
+            <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
+          <?php endif; ?>
         </a>
-        <a href="<?= $link_logout ?>" class="icon-link" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+        <a href="<?= $link_profile ?>" class="icon-link" title="Profile">
+          <i class="fas fa-user-circle user-icon"></i>
+        </a>
+        <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Logout" style="color:#111;">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
       </div>
     </div>
   </header>
@@ -1229,7 +1281,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
           <div style="text-align:center;padding:48px 0;">
             <i class="fas fa-shopping-bag" style="font-size:52px;color:#e0d5c0;display:block;margin-bottom:16px;"></i>
             <p style="color:var(--muted);margin-bottom:20px;font-size:16px;">Your cart is empty.</p>
-            <a href="<?= $link_home ?>"
+            <a href="<?= $link_shop ?>"
               style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,var(--gold-lt),var(--gold));color:#fff;border-radius:10px;text-decoration:none;font-weight:600;">
               <i class="fas fa-gem"></i> Browse Products
             </a>
@@ -1238,7 +1290,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
         <?php else: ?>
           <form method="POST" id="checkout-form" novalidate>
             <?php foreach ($cart_items as $item): ?>
-              <input type="hidden" name="selected_items[]" class="selected-item-input" value="<?= htmlspecialchars($item['id']) ?>">
+              <input type="hidden" name="selected_items[]" class="selected-item-input"
+                value="<?= htmlspecialchars($item['id']) ?>">
             <?php endforeach; ?>
 
             <!-- ── Contact Details ── -->
@@ -1333,30 +1386,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
             <!-- ── Bank Transfer Info Panel ── -->
             <div class="bank-panel" id="bank-panel">
               <div class="bank-panel-header">
-                <i class="fas fa-university"></i> Thông tin chuyển khoản ngân hàng
+                <i class="fas fa-university"></i> Bank Transfer Information
               </div>
               <div class="bank-panel-body">
 
                 <!-- Thông tin ngân hàng cố định của cửa hàng -->
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-landmark"
-                      style="width:14px;text-align:center;color:#d4af37;"></i> Ngân hàng:</span>
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Bank Name:</span>
                   <span class="b-value">Vietcombank (VCB)</span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-hashtag" style="width:14px;text-align:center;color:#d4af37;"></i>
-                    Số tài khoản:</span>
+                    Account No.:</span>
                   <span class="b-value">1234 5678 9012 3456</span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-user-tie"
-                      style="width:14px;text-align:center;color:#d4af37;"></i> Chủ tài khoản:</span>
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Account Name:</span>
                   <span class="b-value">CONG TY TNHH TRANG SUC 36</span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-map-pin" style="width:14px;text-align:center;color:#d4af37;"></i>
-                    Chi nhánh:</span>
-                  <span class="b-value">TP. Hồ Chí Minh</span>
+                    Branch:</span>
+                  <span class="b-value">Ho Chi Minh City</span>
                 </div>
 
                 <hr class="bank-divider">
@@ -1364,29 +1417,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
                 <!-- Thông tin người dùng (tự động điền) -->
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-user" style="width:14px;text-align:center;color:#d4af37;"></i>
-                    Người chuyển:</span>
+                    Sender Name:</span>
                   <span class="b-value" id="bp-sender"><?= htmlspecialchars($user['full_name'] ?? '') ?></span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-phone" style="width:14px;text-align:center;color:#d4af37;"></i>
-                    Số điện thoại:</span>
+                    Phone Number:</span>
                   <span class="b-value" id="bp-phone"><?= htmlspecialchars($user['phone'] ?? '') ?></span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-money-bill-wave"
-                      style="width:14px;text-align:center;color:#d4af37;"></i> Số tiền:</span>
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Amount:</span>
                   <span class="b-value highlight" id="bp-amount">$<?= number_format($total_amount, 2) ?></span>
                 </div>
                 <div class="bank-row">
                   <span class="b-label"><i class="fas fa-comment-alt"
-                      style="width:14px;text-align:center;color:#d4af37;"></i> Nội dung CK:</span>
-                  <span class="b-value" id="bp-content">36JW <?= htmlspecialchars($user['full_name'] ?? 'KHACH HANG') ?>
+                      style="width:14px;text-align:center;color:#d4af37;"></i> Transfer Note:</span>
+                  <span class="b-value" id="bp-content">36JW <?= htmlspecialchars($user['full_name'] ?? 'CUSTOMER') ?>
                     <?= htmlspecialchars($user['phone'] ?? '') ?></span>
                 </div>
 
                 <p class="bank-note">
                   <i class="fas fa-info-circle"></i>
-                  Vui lòng ghi đúng nội dung chuyển khoản để đơn hàng được xác nhận nhanh nhất.
+                  Please note exactly as above so we can verify your payment quickly.
                 </p>
               </div>
             </div>
@@ -1425,7 +1478,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
               </div>
               <div class="sum-item-right">
                 <span class="sum-price">$<?= number_format($item['total'], 2) ?></span>
-                <button type="button" class="btn-remove-item" onclick="removeItem('<?= htmlspecialchars($item['id']) ?>', this)">
+                <button type="button" class="btn-remove-item"
+                  onclick="removeItem('<?= htmlspecialchars($item['id']) ?>', this)">
                   <i class="fas fa-times"></i> Remove
                 </button>
               </div>
@@ -1477,11 +1531,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
 
       const formData = new FormData();
       formData.append('remove_product_id', productId);
-      
+
       document.querySelectorAll('input.selected-item-input').forEach(input => {
-          if (input.value !== productId) {
-              formData.append('selected_items[]', input.value);
-          }
+        if (input.value !== productId) {
+          formData.append('selected_items[]', input.value);
+        }
       });
 
       fetch(window.location.href, { method: 'POST', body: formData })
@@ -1489,6 +1543,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
         .then(data => {
           if (data.success) {
             itemEl.remove();
+
+            // Xóa luôn cái input ẩn trong form để lần remove tiếp theo không bị tính lại
+            const targetInput = document.querySelector(`.selected-item-input[value="${productId}"]`);
+            if (targetInput) targetInput.remove();
 
             const fmt = n => '$' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
@@ -1506,9 +1564,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
               btnOrder.innerHTML = '<i class="fas fa-check-circle"></i> Place Order — ' + fmt(data.total);
             }
 
-            // If no items left, reload to show empty state
+            // Nếu không còn item nào, ẩn list và hiện empty state — không reload
             if (data.count === 0) {
-              window.location.reload();
+              const itemsList = document.getElementById('sum-items-list');
+              if (itemsList) itemsList.innerHTML = '';
+              const checkoutForm = document.getElementById('checkout-form');
+              if (checkoutForm) {
+                checkoutForm.innerHTML = '<div style="text-align:center;padding:48px 0;">'
+                  + '<i class="fas fa-shopping-bag" style="font-size:52px;color:#e0d5c0;display:block;margin-bottom:16px;"></i>'
+                  + '<p style="color:var(--muted);font-size:16px;">No items selected for checkout.</p>'
+                  + '</div>';
+              }
+              if (btnOrder) btnOrder.disabled = true;
+              if (countEl) countEl.textContent = '0';
+              if (subtotalEl) subtotalEl.textContent = '$0.00';
+              if (totalEl) totalEl.textContent = '$0.00';
             }
           }
         })
@@ -1539,7 +1609,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
       const phone = phoneInput ? phoneInput.value.trim() : '';
       if (bpSender) bpSender.textContent = name || '—';
       if (bpPhone) bpPhone.textContent = phone || '—';
-      if (bpContent) bpContent.textContent = '36JW ' + (name || 'KHACH HANG') + ' ' + phone;
+      if (bpContent) bpContent.textContent = '36JW ' + (name || 'CUSTOMER') + ' ' + phone;
     }
     if (fullnameInput) fullnameInput.addEventListener('input', syncBankInfo);
     if (phoneInput) phoneInput.addEventListener('input', syncBankInfo);
@@ -1607,6 +1677,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
           }, 0);
         }
       });
+    }
+    // Search
+    function applyHeaderSearch() {
+      const kw = document.getElementById('header-search').value.trim();
+      if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
     }
   </script>
 

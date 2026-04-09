@@ -148,6 +148,8 @@ body{
 .links a{color:rgba(255,255,255,.5);font-size:13px;text-decoration:none;transition:.2s;}
 .links a:hover{color:var(--gold-pale);}
 </style>
+<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 <body>
 

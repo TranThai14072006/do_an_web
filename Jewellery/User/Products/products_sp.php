@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$logged_in_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
+$logged_in_name = $_SESSION['username'] ?? ($_SESSION['user_name'] ?? '');
 $link_logout = '../users/logout.php'; // Thay đổi theo đúng ngữ cảnh thực tế
 
 $host = 'localhost';
@@ -78,19 +78,29 @@ if (isset($_SESSION['user_id'])) {
 
   <style>
     /* ===== SIZE MODAL CSS (từ bản cũ) ===== */
+    /* Ghi đè để các phần tử fixed (modal/thông báo) bám đúng màn hình thay vì bám theo nội dung trang */
+    body { transform: none !important; -webkit-transform: none !important; }
+
     .size-modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-      z-index: 9999; align-items: center; justify-content: center;
+      display: none; 
+      position: fixed; 
+      top: 0; left: 0; 
+      width: 100%; height: 100vh;
+      background: rgba(0,0,0,0.5);
+      z-index: 999; 
+      align-items: center;
+      justify-content: center;
     }
     .size-modal-overlay.open { display: flex; }
     .size-modal {
-      background: #fff; border-radius: 10px; padding: 32px 28px 24px;
-      width: 340px; max-width: 92vw; box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-      position: relative; animation: modalIn .18s ease;
+      background: #fff; border-radius: 12px; padding: 32px 28px 24px;
+      width: 340px; max-width: 90vw; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      position: relative;
+      animation: modalFadeIn .2s ease-out;
     }
-    @keyframes modalIn {
-      from { transform: translateY(30px); opacity: 0; }
-      to   { transform: translateY(0);   opacity: 1; }
+    @keyframes modalFadeIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
     }
     .size-modal h3 { margin: 0 0 6px; font-size: 17px; font-weight: 700; color: #2d1a0e; }
     .size-modal .modal-product-name { font-size: 13px; color: #888; margin-bottom: 20px; }
@@ -217,6 +227,8 @@ if (isset($_SESSION['user_id'])) {
       margin-left: 5px;
     }
   </style>
+<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 <body class="homepage bg-accent-light">
 
@@ -250,7 +262,6 @@ if (isset($_SESSION['user_id'])) {
       </a>
       <a href="../users/profile.php" class="icon-link" title="Profile">
         <i class="fas fa-user-circle user-icon"></i>
-        <?php if ($logged_in_name): ?><span><?= htmlspecialchars($logged_in_name) ?></span><?php endif; ?>
       </a>
       <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Logout" style="color:#111;">
         <i class="fas fa-sign-out-alt"></i>

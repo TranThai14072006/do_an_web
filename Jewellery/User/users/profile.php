@@ -30,9 +30,10 @@ $link_home        = BASE_URL . 'User/indexprofile.php';
 $link_cart        = BASE_URL . 'User/users/cart.php';
 $link_profile     = BASE_URL . 'User/users/profile.php';
 $link_logout      = BASE_URL . 'User/users/logout.php';
-$link_search      = BASE_URL . 'User/Search/search.html';
+$link_search      = BASE_URL . 'User/Products/products_sp.php';
 $link_edit        = BASE_URL . 'User/users/edit_profile.php';
 $link_history     = BASE_URL . 'User/users/history.php';
+$link_view_orders = BASE_URL . 'User/users/view_orders.php';
 
 // ─────────────────────────────────────────────────────────
 // AVATAR UPLOAD HANDLING
@@ -188,45 +189,166 @@ body{
 /* ═══════════════════════════════════════════
    HEADER
 ═══════════════════════════════════════════ */
-.header-container{
-  width:100%;position:sticky;top:0;z-index:1000;
-  background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.1);
+.header-container {
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-.search-bar{
-  max-width:1400px;margin:0 auto;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:12px 20px;gap:16px;
+
+.search-bar {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #fff;
+    border-top: 1px solid rgba(0,0,0,0.03);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
-.search-bar .left,.search-bar .center,.search-bar .right{display:flex;align-items:center;}
-.search-bar .center{flex:1;justify-content:center;gap:24px;position:relative;}
-.home-btn{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:9px 14px;border-radius:8px;text-decoration:none;
-  color:var(--dark);font-weight:600;font-size:15px;transition:.2s;
+
+.search-bar .left,
+.search-bar .center,
+.search-bar .right {
+    display: flex;
+    align-items: center;
 }
-.home-btn:hover{background:var(--accent);color:var(--gold);}
-.search-bar .center a{position:absolute;left:50%;transform:translateX(-50%);z-index:10;}
-.header-logo{height:52px;max-width:170px;object-fit:contain;}
-.search-box{
-  flex:0 1 420px;margin-left:auto;display:flex;align-items:center;gap:8px;
-  background:var(--accent);padding:4px 8px;border-radius:999px;
-  border:1px solid rgba(0,0,0,.07);height:46px;
+
+.search-bar .left { 
+    width: auto; 
+    justify-content: flex-start;
 }
-.search-box input{flex:1;border:0;outline:0;background:transparent;padding:4px 8px;font-size:14px;color:var(--dark);}
-.search-box button{
-  display:inline-flex;align-items:center;justify-content:center;
-  border:0;background:var(--gold);color:#fff;
-  padding:8px 14px;border-radius:999px;cursor:pointer;font-size:13px;
-  transition:.2s;
+
+.search-bar .right { justify-content: flex-end; width: auto; }
+
+.search-bar .center { 
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: 30px;
+    position: relative;
 }
-.search-box button:hover{background:var(--gold-lt);}
-.icon-link{
-  display:inline-flex;align-items:center;gap:6px;
-  width:44px;height:44px;border-radius:8px;text-decoration:none;
-  color:var(--dark);transition:.18s;font-size:18px;justify-content:center;
+
+.home-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--dark);
+    font-weight: 600;
+    font-size: 16px;
+    transition: background-color 0.2s;
 }
-.icon-link:hover{background:rgba(184,134,11,.1);color:var(--gold);}
-.search-bar .right{gap:4px;}
+
+.home-btn i {
+    margin-right: 5px;
+    font-size: 18px;
+}
+
+.home-btn:hover {
+    background: var(--accent);
+    color: var(--gold);
+}
+
+.search-bar .center a {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.header-logo {
+    height: 55px;
+    max-width: 180px;
+    object-fit: contain;
+    transition: all 0.25s ease;
+}
+
+.search-box {
+    flex: 0 1 450px;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+    height: 50px;
+}
+
+.search-box input {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    padding: 2px 6px;
+    font-size: 15px;
+    color: var(--dark);
+    min-width: 100px;
+}
+
+.search-box button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: var(--gold);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--dark);
+    transition: all 0.18s;
+    font-size: 18px;
+    position: relative;
+}
+
+.icon-link:hover {
+    background: rgba(184, 134, 11, 0.08);
+    color: var(--gold);
+}
+
+.cart-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--gold);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 10;
+}
+
+.user-icon {
+    font-size: 20px;
+}
 
 /* ═══════════════════════════════════════════
    PAGE WRAPPER
@@ -400,32 +522,57 @@ body{
   .stat-num{font-size:18px;}
 }
 </style>
+<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 <body>
 
-<!-- ══ HEADER ══════════════════════════════════════════════ -->
-<header class="header-container">
-  <div class="search-bar">
-    <div class="left">
-      <a href="<?= $link_home ?>" class="home-btn"><i class="fas fa-home"></i> Home</a>
-    </div>
-    <div class="center">
-      <a href="<?= $link_home ?>">
-        <img src="<?= IMG_URL ?>36-logo.png" alt="36 Jewelry" class="header-logo">
-      </a>
-      <div class="search-box">
-        <input type="text" id="search-input" placeholder="Search products..."
-               onkeydown="if(event.key==='Enter') doSearch()">
-        <button onclick="doSearch()"><i class="fas fa-search"></i></button>
+  <!-- ══ HEADER ══════════════════════════════════════════════ -->
+  <header class="header-container">
+    <div class="search-bar">
+      <div class="left">
+        <a href="<?= $link_home ?>" class="home-btn"><i class="fas fa-home"></i> Home</a>
+      </div>
+
+      <div class="center">
+        <a href="<?= $link_home ?>">
+          <img src="<?= IMG_URL ?>36-logo.png" alt="Jewelry Store Logo" class="header-logo">
+        </a>
+        <div class="search-box">
+          <!-- Chuyển ID thành header-search để tương thích bộ lọc dưới -->
+          <input type="text" id="header-search" placeholder="Search products..."
+                 onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+          <button onclick="applyHeaderSearch()">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="right">
+        <a href="<?= $link_cart ?>" class="icon-link" title="Cart">
+          <i class="fas fa-shopping-cart"></i>
+          <?php
+          // Fetch cart count for the badge
+          $uid = (int)$_SESSION['user_id'];
+          $st_b = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = $uid");
+          $total_cart_count = 0;
+          if ($st_b && $row_b = $st_b->fetch_assoc()) {
+            $total_cart_count = (int)$row_b['total_qty'];
+          }
+          if ($total_cart_count > 0):
+          ?>
+            <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
+          <?php endif; ?>
+        </a>
+        <a href="<?= $link_profile ?>" class="icon-link" title="Profile">
+          <i class="fas fa-user-circle user-icon"></i>
+        </a>
+        <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Logout" style="color:#111;">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
       </div>
     </div>
-    <div class="right">
-      <a href="<?= $link_cart ?>" class="icon-link" title="Cart"><i class="fas fa-shopping-cart"></i></a>
-      <a href="<?= $link_profile ?>" class="icon-link" title="Profile"><i class="fas fa-user" style="color:var(--gold)"></i></a>
-      <a href="<?= $link_logout ?>" class="icon-link" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
-    </div>
-  </div>
-</header>
+  </header>
 
 <!-- ══ PAGE WRAPPER ════════════════════════════════════════ -->
 <div class="page-wrapper">
@@ -526,7 +673,7 @@ body{
           <i class="fas fa-sign-out-alt"></i> Log Out
         </a>
       </div>
-      <a href="<?= $link_history ?>" class="btn-history" id="btn-history">
+      <a href="<?= $link_view_orders ?>" class="btn-history" id="btn-history">
         <i class="fas fa-history"></i> View All Orders
       </a>
     </div>
@@ -560,7 +707,7 @@ body{
             <span class="badge-status <?= $status_cls ?>"><?= htmlspecialchars($o['status']) ?></span>
           </div>
         <?php endforeach; ?>
-        <a href="<?= $link_history ?>" class="see-all-link">See all orders &rarr;</a>
+        <a href="<?= $link_view_orders ?>" class="see-all-link">See all orders &rarr;</a>
       <?php endif; ?>
     </div>
 
@@ -589,8 +736,8 @@ body{
 
 <script>
 // Search
-function doSearch() {
-  const kw = document.getElementById('search-input').value.trim();
+function applyHeaderSearch() {
+  const kw = document.getElementById('header-search').value.trim();
   if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
 }
 

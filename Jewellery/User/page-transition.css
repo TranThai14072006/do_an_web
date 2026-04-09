@@ -1,0 +1,31 @@
+/* Sang trong (Luxurious) Page Transition CSS */
+body {
+    animation: luxuryFadeIn 0.15s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    opacity: 0;
+}
+
+body.fade-out {
+    animation: luxuryFadeOut 0.1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes luxuryFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes luxuryFadeOut {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}

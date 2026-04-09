@@ -1,6 +1,6 @@
 <?php
 session_start();
-$logged_in_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
+$logged_in_name = $_SESSION['username'] ?? ($_SESSION['user_name'] ?? '');
 $link_logout = '../users/logout.php';
 
 $conn = new mysqli("localhost", "root", "", "jewelry_db");
@@ -105,6 +105,8 @@ if (isset($_SESSION['user_id'])) {
       line-height: 1;
     }
   </style>
+<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 
 <body>

@@ -31,7 +31,7 @@ $link_home = BASE_URL . 'User/indexprofile.php';
 $link_cart = BASE_URL . 'User/users/cart.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_logout = BASE_URL . 'User/users/logout.php';
-$link_search = BASE_URL . 'User/Search/search.html';
+$link_search = BASE_URL . 'User/Products/products_sp.php';
 $link_detail = BASE_URL . 'User/Cart/view.php';
 $link_shop = BASE_URL . 'User/Products/products_sp.php';
 $link_checkout = BASE_URL . 'User/users/order_confirm.php';
@@ -87,7 +87,7 @@ if (isset($_POST['ajax_action'])) {
 // ADD TO CART (GET action=add&id=xxx&size=yyy)
 // ─────────────────────────────────────────────────────────
 if (isset($_GET['action']) && $_GET['action'] === 'add' && !empty($_GET['id'])) {
-  $pid  = trim($_GET['id']);
+  $pid = trim($_GET['id']);
   $size = trim($_GET['size'] ?? '');
 
   // Size is required
@@ -178,11 +178,16 @@ $added_flash = isset($_GET['added']);
       box-sizing: border-box;
     }
 
+    html {
+      scrollbar-gutter: stable;
+    }
+
     body {
       font-family: 'DM Sans', sans-serif;
       background: #fafafa;
       min-height: 100vh;
       color: var(--dark);
+      margin: 0;
     }
 
     /* ═══════════════════════════════ HEADER ═══ */
@@ -191,18 +196,36 @@ $added_flash = isset($_GET['added']);
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+      background-color: var(--bg);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     .search-bar {
+      width: 100%;
       max-width: 1400px;
       margin: 0 auto;
+      background: var(--bg);
+      border-top: 1px solid rgba(0, 0, 0, 0.03);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 20px;
-      gap: 16px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    
+    .search-bar .left { 
+      width: auto; 
+      justify-content: flex-start;
+    }
+    
+    .search-bar .right { 
+      justify-content: flex-end; 
+      width: auto; 
+      gap: 4px;
     }
 
     .search-bar .left,
@@ -213,9 +236,9 @@ $added_flash = isset($_GET['added']);
     }
 
     .search-bar .center {
-      flex: 1;
+      flex: 1 1 auto;
       justify-content: center;
-      gap: 24px;
+      gap: 30px;
       position: relative;
     }
 
@@ -223,12 +246,12 @@ $added_flash = isset($_GET['added']);
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 9px 14px;
+      padding: 10px 15px;
       border-radius: 8px;
       text-decoration: none;
       color: var(--dark);
       font-weight: 600;
-      font-size: 15px;
+      font-size: 16px;
       transition: .2s;
     }
 
@@ -245,13 +268,14 @@ $added_flash = isset($_GET['added']);
     }
 
     .header-logo {
-      height: 52px;
-      max-width: 170px;
+      height: 55px;
+      max-width: 180px;
       object-fit: contain;
+      transition: all 0.25s ease;
     }
 
     .search-box {
-      flex: 0 1 420px;
+      flex: 0 1 450px;
       margin-left: auto;
       display: flex;
       align-items: center;
@@ -259,8 +283,9 @@ $added_flash = isset($_GET['added']);
       background: var(--accent);
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(0, 0, 0, .07);
-      height: 46px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+      height: 50px;
     }
 
     .search-box input {
@@ -269,7 +294,7 @@ $added_flash = isset($_GET['added']);
       outline: 0;
       background: transparent;
       padding: 4px 8px;
-      font-size: 14px;
+      font-size: 15px;
       color: var(--dark);
     }
 
@@ -309,6 +334,10 @@ $added_flash = isset($_GET['added']);
       background: rgba(184, 134, 11, .1);
       color: var(--gold);
     }
+    
+    .icon-link i {
+      color: inherit;
+    }
 
     .cart-badge {
       position: absolute;
@@ -345,6 +374,8 @@ $added_flash = isset($_GET['added']);
       color: var(--gold);
     }
 
+    .user-icon { font-size: 20px; }
+
     /* ═══════════════════════════════ FLASH ═══ */
     .flash {
       background: linear-gradient(135deg, #d4af37, #b8860b);
@@ -375,7 +406,8 @@ $added_flash = isset($_GET['added']);
       background: #fff;
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      overflow: hidden;
+      overflow-x: auto; /* Allow horizontal scroll if needed */
+      position: relative;
     }
 
     .cart-box-header {
@@ -469,7 +501,13 @@ $added_flash = isset($_GET['added']);
     }
 
     .cart-table th:last-child {
-      text-align: right;
+      text-align: center;
+      position: sticky;
+      right: 0;
+      background: #faf8f3; /* Match header bg */
+      z-index: 10;
+      min-width: 60px;
+      box-shadow: -4px 0 8px rgba(0,0,0,0.02);
     }
 
     .cart-table tbody tr {
@@ -487,6 +525,21 @@ $added_flash = isset($_GET['added']);
 
     .cart-table td {
       padding: 16px;
+    }
+
+    /* Fixed/Sticky last column for trash icon */
+    .cart-table td:last-child {
+      position: sticky;
+      right: 0;
+      background: inherit;
+      z-index: 5;
+      min-width: 60px;
+      text-align: center;
+      box-shadow: -4px 0 8px rgba(0,0,0,0.02);
+    }
+
+    .cart-table tbody tr {
+      background: #fff;
     }
 
     /* Product cell */
@@ -808,6 +861,8 @@ $added_flash = isset($_GET['added']);
       }
     }
   </style>
+<link rel="stylesheet" href="/do_an_web/Jewellery/User/page-transition.css">
+  <script src="/do_an_web/Jewellery/User/page-transition.js"></script>
 </head>
 
 <body>
@@ -823,9 +878,9 @@ $added_flash = isset($_GET['added']);
           <img src="<?= IMG_URL ?>36-logo.png" alt="36 Jewelry" class="header-logo">
         </a>
         <div class="search-box">
-          <input type="text" id="search-input" placeholder="Search products..."
-            onkeydown="if(event.key==='Enter') doSearch()">
-          <button onclick="doSearch()"><i class="fas fa-search"></i></button>
+          <input type="text" id="header-search" placeholder="Search products..."
+            onkeydown="if(event.key==='Enter') applyHeaderSearch()">
+          <button onclick="applyHeaderSearch()"><i class="fas fa-search"></i></button>
         </div>
       </div>
       <div class="right">
@@ -835,11 +890,10 @@ $added_flash = isset($_GET['added']);
             <span class="cart-badge"><?= $item_count > 9 ? '9+' : $item_count ?></span>
           <?php endif; ?>
         </a>
-        <a href="<?= $link_profile ?>" class="user-name" title="Profile">
-          <i class="fas fa-user-circle" style="font-size:20px;color:var(--gold)"></i>
-          <span><?= $logged_in_name ?></span>
+        <a href="<?= $link_profile ?>" class="icon-link" title="Profile">
+          <i class="fas fa-user-circle user-icon"></i>
         </a>
-        <a href="<?= $link_logout ?>" class="icon-link" title="Logout">
+        <a href="<?= $link_logout ?>" class="icon-link" title="Logout" style="color:#111;">
           <i class="fas fa-sign-out-alt"></i>
         </a>
       </div>
@@ -878,7 +932,7 @@ $added_flash = isset($_GET['added']);
               <th>Unit Price</th>
               <th>Quantity</th>
               <th style="text-align:right">Total</th>
-              <th style="width:48px"></th>
+              <th></th>
             </tr>
           </thead>
 
@@ -904,7 +958,8 @@ $added_flash = isset($_GET['added']);
                 </td>
                 <td class="price-cell">
                   <?php if (!empty($item['size'])): ?>
-                    <span style="display:inline-flex;align-items:center;gap:5px;background:#f8f4ec;border:1px solid #d4b896;color:#7a5c2e;font-size:12px;font-weight:600;padding:4px 10px;border-radius:4px;letter-spacing:.05em;">
+                    <span
+                      style="display:inline-flex;align-items:center;gap:5px;background:#f8f4ec;border:1px solid #d4b896;color:#7a5c2e;font-size:12px;font-weight:600;padding:4px 10px;border-radius:4px;letter-spacing:.05em;">
                       <i class="fas fa-ring" style="font-size:10px;color:#b8945f;"></i>
                       Size <?= htmlspecialchars($item['size']) ?>
                     </span>
@@ -983,14 +1038,14 @@ $added_flash = isset($_GET['added']);
     }
 
     // ── Search ──────────────────────────────────────────────
-    function doSearch() {
-      const kw = document.getElementById('search-input').value.trim();
+    function applyHeaderSearch() {
+      const kw = document.getElementById('header-search').value.trim();
       if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
     }
 
     // ── Recalculate totals ──────────────────────────────────
     function recalcTotals() {
-      let total = 0, count = 0;
+      let total = 0, count = 0, allCount = 0;
       let selectedIds = [];
       document.querySelectorAll('#cart-body tr[data-pid]').forEach(row => {
         const checkbox = row.querySelector('.item-checkbox');
@@ -998,16 +1053,39 @@ $added_flash = isset($_GET['added']);
         const qty = parseInt(row.querySelector('.qty-input').value) || 1;
         const itemTotal = price * qty;
         row.querySelector('.item-total').textContent = '$' + itemTotal.toFixed(2);
-        
+
+        allCount += qty; // Total items for header badge
+
         if (checkbox && checkbox.checked) {
           total += itemTotal;
           count += qty;
           selectedIds.push(row.dataset.pid);
         }
       });
+
+      // Update header cart badge
+      const badge = document.querySelector('.cart-badge');
+      if (badge) {
+        if (allCount > 0) {
+          badge.textContent = allCount > 9 ? '9+' : allCount;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      } else if (allCount > 0) {
+        // If badge didn't exist, create it inside the cart icon link
+        const cartLink = document.querySelector('a[href="<?= $link_cart ?>"].icon-link');
+        if (cartLink) {
+          const newBadge = document.createElement('span');
+          newBadge.className = 'cart-badge';
+          newBadge.textContent = allCount > 9 ? '9+' : allCount;
+          cartLink.appendChild(newBadge);
+        }
+      }
+
       document.getElementById('subtotal').textContent = '$' + total.toFixed(2);
       document.getElementById('grand-total').textContent = '$' + total.toFixed(2);
-      
+
       const summaryItemsLabel = document.querySelector('.summary-row .label');
       if (summaryItemsLabel) {
         summaryItemsLabel.textContent = `Subtotal (${count} items)`;
@@ -1026,7 +1104,7 @@ $added_flash = isset($_GET['added']);
     }
 
     // ── Checkboxes ───────────────────────────────────────────
-    document.getElementById('select-all')?.addEventListener('change', function() {
+    document.getElementById('select-all')?.addEventListener('change', function () {
       const isChecked = this.checked;
       document.querySelectorAll('.item-checkbox').forEach(cb => {
         cb.checked = isChecked;
@@ -1035,7 +1113,7 @@ $added_flash = isset($_GET['added']);
     });
 
     document.querySelectorAll('.item-checkbox').forEach(cb => {
-      cb.addEventListener('change', function() {
+      cb.addEventListener('change', function () {
         const allChecked = document.querySelectorAll('.item-checkbox:not(:checked)').length === 0;
         const selectAll = document.getElementById('select-all');
         if (selectAll) selectAll.checked = allChecked;

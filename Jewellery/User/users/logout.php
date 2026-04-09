@@ -1,10 +1,12 @@
 <?php
 // ═══════════════════════════════════════════════════════════
 // File: Jewellery/User/users/logout.php
-// Chức năng: Hủy session và chuyển về trang login
+// Chức năng: Hủy session và chuyển về trang index
 // ═══════════════════════════════════════════════════════════
 
 session_start();
+require_once __DIR__ . '/../../config/config.php';
+if (!defined('BASE_URL')) define('BASE_URL', '/do_an_web/Jewellery/');
 
 // Xóa toàn bộ dữ liệu session
 $_SESSION = [];
@@ -25,6 +27,6 @@ if (ini_get('session.use_cookies')) {
 
 session_destroy();
 
-// Chuyển về trang login
-header('Location: /Jewellery/User/users/login.php');
+// Chuyển về trang index thay vì login báo lỗi 404
+header('Location: ' . BASE_URL . 'User/index.php');
 exit();
