@@ -751,19 +751,7 @@ $link_view = BASE_URL . 'User/users/view_details.php';
                 <td>$<?= number_format($order['total_amount'], 2) ?></td>
                 <td><span class="status <?= $sc ?>"><i class="fas <?= $si ?>"></i><?= $sl ?></span></td>
                 <td>
-                  <div class="action-group">
-                    <a href="<?= $link_view ?>?order_id=<?= $order['id'] ?>" class="view-details-btn" style="text-decoration:none; display:inline-block;">Details</a>
-                    
-                    <?php if ($order['status'] === 'Pending'): ?>
-                      <button class="btn-cancel" onclick="openCancelModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
-                        <i class="fas fa-times"></i> Cancel
-                      </button>
-                    <?php elseif (in_array($order['status'], ['Shipping', 'Shipped'])): ?>
-                      <button class="btn-receive" onclick="openReceiveModal(<?= $order['id'] ?>, '<?= htmlspecialchars($order['order_number'], ENT_QUOTES) ?>')">
-                        <i class="fas fa-check"></i> Order Received
-                      </button>
-                    <?php endif; ?>
-                  </div>
+                  <a href="<?= $link_view ?>?order_id=<?= $order['id'] ?>" class="view-details-btn" style="text-decoration:none; display:inline-block;">Details</a>
                 </td>
               </tr>
             <?php endforeach; ?>

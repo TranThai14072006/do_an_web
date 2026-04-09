@@ -22,10 +22,15 @@ $link_logout = BASE_URL . 'User/users/logout.php';
 $link_search = BASE_URL . 'User/Search/search.html';
 $link_shop = BASE_URL . 'User/Products/products_sp.php';
 
-// ── Handle Cancel Order (POST) ─────────────────────────────
-$cancel_msg = '';
-$cancel_error = '';
+// ── Session flash messages ──────────────────────────────────
+$cancel_msg   = $_SESSION['cancel_msg']   ?? '';
+$cancel_error = $_SESSION['cancel_error'] ?? '';
+$receive_msg  = $_SESSION['receive_msg']  ?? '';
+$receive_error= $_SESSION['receive_error']?? '';
+unset($_SESSION['cancel_msg'], $_SESSION['cancel_error'],
+      $_SESSION['receive_msg'], $_SESSION['receive_error']);
 
+// ── Handle Cancel Order (POST) ─────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order_id'])) {
   $cancel_id = (int) $_POST['cancel_order_id'];
 
@@ -61,20 +66,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_order_id'])) {
     $upd_order->bind_param('i', $cancel_id);
     $upd_order->execute();
     $upd_order->close();
-    $cancel_msg = 'Your order has been cancelled successfully.';
+    $_SESSION['cancel_msg'] = 'Order #' . $cancel_id . ' has been cancelled successfully.';
   } else {
-    $cancel_error = 'Unable to cancel this order (only Pending orders can be cancelled).';
+    $_SESSION['cancel_error'] = 'Unable to cancel: order not found or already processed.';
   }
+  header('Location: ' . BASE_URL . 'User/users/view_orders.php');
+  exit();
 }
 
 // ── Handle Receive Order (POST) ─────────────────────────────
-$receive_msg = '';
-$receive_error = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) {
   $receive_id = (int) $_POST['receive_order_id'];
 
-  // Verify order belongs to this customer and is Processed, Shipping, or Shipped.
   $chk = $conn->prepare("
         SELECT o.id, o.status
         FROM orders o
@@ -92,10 +95,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['receive_order_id'])) 
     $upd_order->bind_param('i', $receive_id);
     $upd_order->execute();
     $upd_order->close();
-    $receive_msg = 'Thank you! Your order has been marked as received.';
+    $_SESSION['receive_msg'] = 'Thank you! Your order has been marked as received.';
   } else {
-    $receive_error = 'Unable to mark this order as received.';
+    $_SESSION['receive_error'] = 'Unable to mark as received: order must be in Shipping status.';
   }
+  header('Location: ' . BASE_URL . 'User/users/view_orders.php');
+  exit();
 }
 
 // ── Fetch customer info ────────────────────────────────────
@@ -662,13 +667,13 @@ if ($user_info['customer_id']) {
       transform: scale(1.03);
     }
 
-    /* ── MODAL ── */
+    /* ── MODAL (Synced with view_details.php) ── */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, .65);
-      z-index: 9999;
+      background: rgba(0, 0, 0, .55);
+      z-index: 10000;
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(4px);
@@ -679,43 +684,37 @@ if ($user_info['customer_id']) {
     }
 
     .modal-box {
-      background: #1e1a12;
-      border: 1px solid rgba(248, 206, 134, .35);
+      background: #fff;
       border-radius: 16px;
       padding: 32px 28px;
-      max-width: 420px;
+      max-width: 400px;
       width: 90%;
       text-align: center;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
       animation: popIn .25s ease;
+      position: relative;
     }
 
     @keyframes popIn {
-      from {
-        opacity: 0;
-        transform: scale(.9);
-      }
-
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+      from { opacity: 0; transform: scale(.9); }
+      to { opacity: 1; transform: scale(1); }
     }
 
-    .modal-box i {
-      font-size: 48px;
+    .modal-box .modal-icon {
+      font-size: 44px;
       color: #f44336;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .modal-box h3 {
-      font-size: 22px;
-      color: #f8ce86;
+      font-size: 20px;
+      color: #333;
       margin-bottom: 8px;
     }
 
     .modal-box p {
       font-size: 14px;
-      color: rgba(255, 255, 255, .6);
+      color: #666;
       margin-bottom: 24px;
       line-height: 1.6;
     }
@@ -729,9 +728,9 @@ if ($user_info['customer_id']) {
     .btn-modal-back {
       padding: 10px 22px;
       border-radius: 8px;
-      border: 1.5px solid rgba(255, 255, 255, .2);
-      background: transparent;
-      color: #fff;
+      border: 1.5px solid #ccc;
+      background: #f5f5f5;
+      color: #333;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -740,8 +739,8 @@ if ($user_info['customer_id']) {
     }
 
     .btn-modal-back:hover {
-      border-color: rgba(255, 255, 255, .5);
-      background: rgba(255, 255, 255, .07);
+      border-color: #999;
+      background: #ebebeb;
     }
 
     .btn-modal-confirm {
@@ -976,9 +975,9 @@ if ($user_info['customer_id']) {
   <!-- CANCEL CONFIRMATION MODAL -->
   <div class="modal-overlay" id="cancel-modal">
     <div class="modal-box">
-      <i class="fas fa-exclamation-triangle"></i>
+      <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
       <h3>Cancel Order?</h3>
-      <p>Are you sure you want to cancel order <strong id="modal-order-num" style="color:#f8ce86;"></strong>?<br>
+      <p>Are you sure you want to cancel order <strong id="modal-order-num" style="color:#b8860b;"></strong>?<br>
         This action cannot be undone.</p>
       <div class="modal-actions">
         <button class="btn-modal-back" onclick="closeCancelModal()">
@@ -997,9 +996,9 @@ if ($user_info['customer_id']) {
   <!-- RECEIVE CONFIRMATION MODAL -->
   <div class="modal-overlay" id="receive-modal">
     <div class="modal-box">
-      <i class="fas fa-box-open" style="color: #4caf50;"></i>
+      <div class="modal-icon"><i class="fas fa-box-open" style="color:#4caf50;"></i></div>
       <h3>Confirm Received?</h3>
-      <p>Are you sure you have received order <strong id="modal-receive-num" style="color:#f8ce86;"></strong>?</p>
+      <p>Are you sure you have received order <strong id="modal-receive-num" style="color:#b8860b;"></strong>?<br></p>
       <div class="modal-actions">
         <button class="btn-modal-back" onclick="closeReceiveModal()">
           <i class="fas fa-arrow-left"></i> Go Back
@@ -1014,13 +1013,18 @@ if ($user_info['customer_id']) {
     </div>
   </div>
 
+  <!-- Toast notification -->
+  <div id="toast" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+    padding:14px 28px; border-radius:12px; font-size:15px; font-weight:600; color:#fff;
+    box-shadow:0 8px 30px rgba(0,0,0,.35); z-index:999999; transition:opacity .3s;"></div>
+
   <footer>
     <p>&copy; 2025 36 Jewelry. All rights reserved.</p>
   </footer>
 
   <script>
     function doSearch() {
-      const kw = document.getElementById('search-input').value.trim();
+      const kw = document.getElementById('header-search').value.trim();
       if (kw) window.location.href = '<?= $link_search ?>?q=' + encodeURIComponent(kw);
     }
 
@@ -1054,5 +1058,4 @@ if ($user_info['customer_id']) {
     });
   </script>
 </body>
-
 </html>

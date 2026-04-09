@@ -28,6 +28,7 @@ $user_id = (int) $_SESSION['user_id'];
 
 $link_home = BASE_URL . 'User/indexprofile.php';
 $link_history = BASE_URL . 'User/users/history.php';
+$link_view_orders = BASE_URL . 'User/users/view_orders.php';
 $link_profile = BASE_URL . 'User/users/profile.php';
 $link_cart = BASE_URL . 'User/users/cart.php';
 $link_logout = BASE_URL . 'User/users/logout.php';
@@ -718,8 +719,8 @@ $order_status = $order['status'] ?? 'Pending';
           <a href="<?= $link_home ?>" class="btn-action btn-home">
             <i class="fas fa-home"></i> Back to Home
           </a>
-          <a href="<?= $link_history ?>" class="btn-action btn-orders">
-            <i class="fas fa-history"></i> View My Orders
+          <a href="<?= $link_view_orders ?>" class="btn-action btn-orders">
+            <i class="fas fa-box-open"></i> View My Orders
           </a>
         </div>
 
