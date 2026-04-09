@@ -708,7 +708,7 @@ switch ($order['status']) {
       </div>
       <div class="right">
         <a href="<?= $link_cart ?>" class="icon-link"><i class="fas fa-shopping-cart"></i></a>
-        <a href="<?= $link_profile ?>" class="icon-link"><i class="fas fa-user"></i></a>
+        <a href="<?= $link_profile ?>" class="icon-link" title="Profile"><i class="fas fa-user"></i></a>
       </div>
     </div>
   </header>

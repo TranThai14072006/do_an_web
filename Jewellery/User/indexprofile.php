@@ -355,13 +355,9 @@ $link_shop    = BASE_URL . 'User/Products/products_sp.php';
     <i class="fas fa-shopping-cart" style="font-size:18px;"></i>
   </a>
 
-  <!-- Profile + name -->
-  <a href="<?= $link_profile ?>" class="icon-link" title="My Profile"
-     style="display:flex; align-items:center; gap:6px; text-decoration:none; color:inherit;">
-      <i class="fas fa-user-circle user-icon"></i>
-    <span style="font-size:13px; font-weight:600; white-space:nowrap; color:#333;">
-      <?= $logged_in_name ?>
-    </span>
+  <!-- Profile -->
+  <a href="<?= $link_profile ?>" class="icon-link" title="My Profile">
+    <i class="fas fa-user-circle user-icon"></i>
   </a>
 
   <!-- Logout -->

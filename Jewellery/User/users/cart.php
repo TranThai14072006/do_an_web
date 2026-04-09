@@ -835,10 +835,7 @@ $added_flash = isset($_GET['added']);
             <span class="cart-badge"><?= $item_count > 9 ? '9+' : $item_count ?></span>
           <?php endif; ?>
         </a>
-        <a href="<?= $link_profile ?>" class="user-name" title="Profile">
-          <i class="fas fa-user-circle" style="font-size:20px;color:var(--gold)"></i>
-          <span><?= $logged_in_name ?></span>
-        </a>
+        <a href="<?= $link_profile ?>" class="icon-link" title="Profile"><i class="fas fa-user"></i></a>
         <a href="<?= $link_logout ?>" class="icon-link" title="Logout">
           <i class="fas fa-sign-out-alt"></i>
         </a>

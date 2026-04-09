@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$logged_in_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
+$logged_in_name = $_SESSION['username'] ?? ($_SESSION['user_name'] ?? '');
 $link_logout = '../users/logout.php'; // Thay đổi theo đúng ngữ cảnh thực tế
 
 $host = 'localhost';
@@ -250,7 +250,6 @@ if (isset($_SESSION['user_id'])) {
       </a>
       <a href="../users/profile.php" class="icon-link" title="Profile">
         <i class="fas fa-user-circle user-icon"></i>
-        <?php if ($logged_in_name): ?><span><?= htmlspecialchars($logged_in_name) ?></span><?php endif; ?>
       </a>
       <a href="<?= htmlspecialchars($link_logout) ?>" class="icon-link" title="Logout" style="color:#111;">
         <i class="fas fa-sign-out-alt"></i>

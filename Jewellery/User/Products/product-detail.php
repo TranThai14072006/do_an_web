@@ -1,6 +1,6 @@
 <?php
 session_start();
-$logged_in_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
+$logged_in_name = $_SESSION['username'] ?? ($_SESSION['user_name'] ?? '');
 $link_logout = '../users/logout.php';
 
 $conn = new mysqli("localhost", "root", "", "jewelry_db");

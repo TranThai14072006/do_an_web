@@ -253,10 +253,7 @@ h1{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#
     </div>
     <div class="right">
       <a href="<?= $link_cart ?>" class="icon-link" title="Cart"><i class="fas fa-shopping-cart"></i></a>
-      <a href="<?= $link_profile ?>" class="user-name" title="Profile">
-        <i class="fas fa-user-circle" style="font-size:20px;color:var(--gold)"></i>
-        <span><?= $logged_in_name ?></span>
-      </a>
+      <a href="<?= $link_profile ?>" class="icon-link" title="Profile"><i class="fas fa-user"></i></a>
       <a href="<?= $link_logout ?>" class="icon-link" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
     </div>
   </div>
