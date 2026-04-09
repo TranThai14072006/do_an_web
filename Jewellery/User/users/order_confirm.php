@@ -59,32 +59,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_product_id']))
   file_put_contents('debug_remove.txt', "AJAX FIRED. User: $user_id, PID: $remove_pid, Affected: $affected\n", FILE_APPEND);
 
   // Re-calculate totals from remaining cart rows
-  $query2 = "
-    SELECT c.quantity, p.price, p.cost_price, p.profit_percent
-    FROM cart c JOIN products p ON c.product_id = p.id
-    WHERE c.user_id = ?
-  ";
+  $new_total = 0.0;
+  $new_count = 0;
 
-  if (isset($_POST['selected_items']) && is_array($_POST['selected_items'])) {
+  if (isset($_POST['selected_items']) && is_array($_POST['selected_items']) && !empty($_POST['selected_items'])) {
       $safe_items = array_map(function($item) use ($conn) {
           return "'" . $conn->real_escape_string($item) . "'";
       }, $_POST['selected_items']);
-      if (!empty($safe_items)) {
-          $query2 .= " AND c.product_id IN (" . implode(",", $safe_items) . ")";
+      
+      $query2 = "
+        SELECT c.quantity, p.price, p.cost_price, p.profit_percent
+        FROM cart c JOIN products p ON c.product_id = p.id
+        WHERE c.user_id = ? AND c.product_id IN (" . implode(",", $safe_items) . ")
+      ";
+      
+      $cst2 = $conn->prepare($query2);
+      $cst2->bind_param('i', $user_id);
+      $cst2->execute();
+      $res2 = $cst2->get_result();
+      while ($r2 = $res2->fetch_assoc()) {
+        $new_total += calcPrice($r2) * (int)$r2['quantity'];
+        $new_count++;
       }
+      $cst2->close();
   }
-
-  $cst2 = $conn->prepare($query2);
-  $cst2->bind_param('i', $user_id);
-  $cst2->execute();
-  $res2      = $cst2->get_result();
-  $new_total = 0.0;
-  $new_count = 0;
-  while ($r2 = $res2->fetch_assoc()) {
-    $new_total += calcPrice($r2) * (int)$r2['quantity'];
-    $new_count++;
-  }
-  $cst2->close();
 
   header('Content-Type: application/json');
   echo json_encode(['success' => true, 'total' => round($new_total, 2), 'count' => $new_count]);
@@ -1489,6 +1487,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($cart_items)) {
         .then(data => {
           if (data.success) {
             itemEl.remove();
+            
+            // Remove the hidden input field so it won't be submitted later
+            const hiddenInp = document.querySelector('input.selected-item-input[value="' + productId + '"]');
+            if (hiddenInp) hiddenInp.remove();
 
             const fmt = n => '$' + parseFloat(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 

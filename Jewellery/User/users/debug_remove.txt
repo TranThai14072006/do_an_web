@@ -6,3 +6,5 @@ AJAX FIRED. User: 16, PID: R001, Affected: 1
 AJAX FIRED. User: 12, PID: R001, Affected: 1
 AJAX FIRED. User: 12, PID: R001, Affected: 1
 AJAX FIRED. User: 12, PID: R001, Affected: 1
+AJAX FIRED. User: 12, PID: R001, Affected: 1
+AJAX FIRED. User: 12, PID: R001, Affected: 1
