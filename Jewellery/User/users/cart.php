@@ -375,7 +375,8 @@ $added_flash = isset($_GET['added']);
       background: #fff;
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      overflow: hidden;
+      overflow-x: auto; /* Allow horizontal scroll if needed */
+      position: relative;
     }
 
     .cart-box-header {
@@ -469,7 +470,13 @@ $added_flash = isset($_GET['added']);
     }
 
     .cart-table th:last-child {
-      text-align: right;
+      text-align: center;
+      position: sticky;
+      right: 0;
+      background: #faf8f3; /* Match header bg */
+      z-index: 10;
+      min-width: 60px;
+      box-shadow: -4px 0 8px rgba(0,0,0,0.02);
     }
 
     .cart-table tbody tr {
@@ -487,6 +494,21 @@ $added_flash = isset($_GET['added']);
 
     .cart-table td {
       padding: 16px;
+    }
+
+    /* Fixed/Sticky last column for trash icon */
+    .cart-table td:last-child {
+      position: sticky;
+      right: 0;
+      background: inherit;
+      z-index: 5;
+      min-width: 60px;
+      text-align: center;
+      box-shadow: -4px 0 8px rgba(0,0,0,0.02);
+    }
+
+    .cart-table tbody tr {
+      background: #fff;
     }
 
     /* Product cell */
@@ -875,7 +897,7 @@ $added_flash = isset($_GET['added']);
               <th>Unit Price</th>
               <th>Quantity</th>
               <th style="text-align:right">Total</th>
-              <th style="width:48px"></th>
+              <th></th>
             </tr>
           </thead>
 
@@ -988,7 +1010,7 @@ $added_flash = isset($_GET['added']);
 
     // ── Recalculate totals ──────────────────────────────────
     function recalcTotals() {
-      let total = 0, count = 0;
+      let total = 0, count = 0, allCount = 0;
       let selectedIds = [];
       document.querySelectorAll('#cart-body tr[data-pid]').forEach(row => {
         const checkbox = row.querySelector('.item-checkbox');
@@ -997,12 +1019,35 @@ $added_flash = isset($_GET['added']);
         const itemTotal = price * qty;
         row.querySelector('.item-total').textContent = '$' + itemTotal.toFixed(2);
 
+        allCount += qty; // Total items for header badge
+
         if (checkbox && checkbox.checked) {
           total += itemTotal;
           count += qty;
           selectedIds.push(row.dataset.pid);
         }
       });
+
+      // Update header cart badge
+      const badge = document.querySelector('.cart-badge');
+      if (badge) {
+        if (allCount > 0) {
+          badge.textContent = allCount > 9 ? '9+' : allCount;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      } else if (allCount > 0) {
+        // If badge didn't exist, create it inside the cart icon link
+        const cartLink = document.querySelector('a[href="<?= $link_cart ?>"].icon-link');
+        if (cartLink) {
+          const newBadge = document.createElement('span');
+          newBadge.className = 'cart-badge';
+          newBadge.textContent = allCount > 9 ? '9+' : allCount;
+          cartLink.appendChild(newBadge);
+        }
+      }
+
       document.getElementById('subtotal').textContent = '$' + total.toFixed(2);
       document.getElementById('grand-total').textContent = '$' + total.toFixed(2);
 
