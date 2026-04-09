@@ -236,7 +236,7 @@ if (isset($_SESSION['user_id'])) {
 
 <div class="product-detail">
 
-  <button class="back-btn" onclick="window.history.back()">←</button>
+  <a href="../users/cart.php" class="back-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">←</a>
 
   <!-- IMAGE -->
   <div class="product-image">
