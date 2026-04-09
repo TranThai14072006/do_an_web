@@ -139,9 +139,9 @@ if ($user_info['customer_id']) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Orders | 36 Jewelry</title>
-  <meta name="description"
-    content="View and manage all your orders at 36 Jewelry. Track status, cancel pending orders, and review your purchase history.">
+  <meta name="description" content="View and manage all your orders at 36 Jewelry. Track status, cancel pending orders, and review your purchase history.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *,
     *::before,
@@ -152,83 +152,135 @@ if ($user_info['customer_id']) {
     }
 
     body {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'DM Sans', sans-serif;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       background: linear-gradient(rgba(0, 0, 0, .45), rgba(0, 0, 0, .65)),
         url("<?= IMG_URL ?>chocolat/pfb10.jpg") no-repeat center/cover fixed;
       color: #fff;
+      overflow-x: hidden;
     }
 
     /* ── HEADER ── */
     .header-container {
+      width: 100%;
       position: sticky;
       top: 0;
       z-index: 1000;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+      background-color: #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     .search-bar {
+      width: 100%;
       max-width: 1400px;
       margin: 0 auto;
+      background: #fff;
+      border-top: 1px solid rgba(0,0,0,0.03);
+      border-bottom: 1px solid rgba(0,0,0,0.04);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 20px;
-      gap: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
     .search-bar .left,
+    .search-bar .center,
     .search-bar .right {
       display: flex;
       align-items: center;
-      gap: 8px;
+    }
+
+    .search-bar .left {
+      width: auto;
+      justify-content: flex-start;
+    }
+
+    .search-bar .right {
+      justify-content: flex-end;
+      width: auto;
     }
 
     .search-bar .center {
-      flex: 1;
-      display: flex;
-      align-items: center;
+      flex: 1 1 auto;
       justify-content: center;
+      gap: 30px;
       position: relative;
-      gap: 20px;
     }
 
     .home-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
+      justify-content: center;
+      padding: 10px 15px;
       border-radius: 8px;
       text-decoration: none;
       color: #111;
       font-weight: 600;
-      font-size: 15px;
-      transition: .2s;
+      font-size: 16px;
+      transition: background-color 0.2s;
     }
 
+    .home-btn i { margin-right: 5px; font-size: 18px; }
+
     .home-btn:hover {
-      background: #f9f6ee;
+      background: #f6f6f6;
       color: #b8860b;
     }
 
+    .search-bar .center a {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+
     .header-logo {
-      height: 52px;
+      height: 55px;
+      max-width: 180px;
       object-fit: contain;
+      transition: all 0.25s ease;
+    }
+
+    /* ── BACK BUTTON ── */
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border-radius: 999px;
+      background: rgba(248, 206, 134, 0.12);
+      border: 1px solid rgba(248, 206, 134, 0.35);
+      color: #f8ce86;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      align-self: flex-start;
+    }
+
+    .back-button:hover {
+      background: rgba(248, 206, 134, 0.25);
+      border-color: #f8ce86;
+      transform: translateX(-3px);
+      box-shadow: 0 4px 12px rgba(248, 206, 134, 0.2);
     }
 
     .search-box {
+      flex: 0 1 450px;
+      margin-left: auto;
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: #f5f5f5;
+      gap: 8px;
+      background: #f6f6f6;
+      padding: 4px 8px;
       border-radius: 999px;
-      padding: 6px 10px;
-      border: 1px solid #e0e0e0;
-      min-width: 260px;
-      flex: 0 1 420px;
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+      height: 50px;
     }
 
     .search-box input {
@@ -236,41 +288,69 @@ if ($user_info['customer_id']) {
       border: 0;
       outline: 0;
       background: transparent;
-      font-size: 14px;
+      padding: 2px 6px;
+      font-size: 15px;
+      color: #111;
+      min-width: 100px;
     }
+
+    .search-box input::placeholder { color: #666; }
 
     .search-box button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
       background: #b8860b;
       color: #fff;
-      border: 0;
+      padding: 8px 12px;
       border-radius: 999px;
-      padding: 7px 13px;
       cursor: pointer;
-      font-size: 13px;
-      transition: .2s;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
     }
 
-    .search-box button:hover {
-      background: #8b6408;
-    }
+    .search-box button:hover { background: #996600; }
 
     .icon-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 8px;
       text-decoration: none;
       color: #111;
+      transition: all 0.18s;
       font-size: 18px;
-      transition: .18s;
+      position: relative;
     }
 
     .icon-link:hover {
-      background: rgba(184, 134, 11, .1);
+      background: rgba(184, 134, 11, 0.08);
       color: #b8860b;
     }
+
+    .cart-badge {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #b8860b;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      z-index: 10;
+    }
+
+    .user-icon { font-size: 20px; }
 
     /* ── WRAPPER ── */
     .page-wrapper {
@@ -718,25 +798,48 @@ if ($user_info['customer_id']) {
       <div class="left">
         <a href="<?= $link_home ?>" class="home-btn"><i class="fas fa-home"></i> Home</a>
       </div>
+
       <div class="center">
         <a href="<?= $link_home ?>">
-          <img src="<?= IMG_URL ?>36-logo.png" alt="36 Jewelry" class="header-logo">
+          <img src="<?= IMG_URL ?>36-logo.png" alt="36 Jewelry Logo" class="header-logo">
         </a>
         <div class="search-box">
-          <input type="text" id="search-input" placeholder="Search products..."
-            onkeydown="if(event.key==='Enter') doSearch()">
+          <input type="text" id="header-search" placeholder="Search products..."
+                 onkeydown="if(event.key==='Enter') doSearch()">
           <button onclick="doSearch()"><i class="fas fa-search"></i></button>
         </div>
       </div>
+
       <div class="right">
-        <a href="<?= $link_cart ?>" class="icon-link" title="Cart"><i class="fas fa-shopping-cart"></i></a>
-        <a href="<?= $link_profile ?>" class="icon-link" title="Profile"><i class="fas fa-user"></i></a>
-        <a href="<?= $link_logout ?>" class="icon-link" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+        <a href="<?= $link_cart ?>" class="icon-link" title="Cart">
+          <i class="fas fa-shopping-cart"></i>
+          <?php
+            $uid = (int)$_SESSION['user_id'];
+            $st_b = $conn->query("SELECT SUM(quantity) as total_qty FROM cart WHERE user_id = $uid");
+            $total_cart_count = 0;
+            if ($st_b && $row_b = $st_b->fetch_assoc()) {
+              $total_cart_count = (int)$row_b['total_qty'];
+            }
+            if ($total_cart_count > 0):
+          ?>
+            <span class="cart-badge"><?= $total_cart_count > 9 ? '9+' : $total_cart_count ?></span>
+          <?php endif; ?>
+        </a>
+        <a href="<?= $link_profile ?>" class="icon-link" title="Profile">
+          <i class="fas fa-user-circle user-icon"></i>
+        </a>
+        <a href="<?= $link_logout ?>" class="icon-link" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
       </div>
     </div>
   </header>
 
   <div class="page-wrapper">
+    <a href="<?= $link_profile ?>" class="back-button">
+      <i class="fas fa-arrow-left"></i> Back to Profile
+    </a>
+
     <h1 class="page-title"><i class="fas fa-box-open" style="margin-right:10px;"></i>Your Orders</h1>
     <p class="page-sub">View and manage all your orders</p>
 

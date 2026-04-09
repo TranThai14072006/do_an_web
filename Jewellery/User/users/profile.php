@@ -33,6 +33,7 @@ $link_logout      = BASE_URL . 'User/users/logout.php';
 $link_search      = BASE_URL . 'User/Products/products_sp.php';
 $link_edit        = BASE_URL . 'User/users/edit_profile.php';
 $link_history     = BASE_URL . 'User/users/history.php';
+$link_view_orders = BASE_URL . 'User/users/view_orders.php';
 
 // ─────────────────────────────────────────────────────────
 // AVATAR UPLOAD HANDLING
@@ -672,7 +673,7 @@ body{
           <i class="fas fa-sign-out-alt"></i> Log Out
         </a>
       </div>
-      <a href="<?= $link_history ?>" class="btn-history" id="btn-history">
+      <a href="<?= $link_view_orders ?>" class="btn-history" id="btn-history">
         <i class="fas fa-history"></i> View All Orders
       </a>
     </div>
@@ -706,7 +707,7 @@ body{
             <span class="badge-status <?= $status_cls ?>"><?= htmlspecialchars($o['status']) ?></span>
           </div>
         <?php endforeach; ?>
-        <a href="<?= $link_history ?>" class="see-all-link">See all orders &rarr;</a>
+        <a href="<?= $link_view_orders ?>" class="see-all-link">See all orders &rarr;</a>
       <?php endif; ?>
     </div>
 
