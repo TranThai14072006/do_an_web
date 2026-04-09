@@ -129,7 +129,7 @@ if ($customer_id) {
     // General stats
     $stmt_stat = $conn->prepare("
         SELECT COUNT(*) AS total_orders,
-               COALESCE(SUM(total_amount),0) AS total_spent,
+               COALESCE(SUM(CASE WHEN status = 'Received' THEN total_amount ELSE 0 END),0) AS total_spent,
                SUM(status = 'Pending')   AS pending,
                SUM(status = 'Delivered') AS delivered
         FROM orders WHERE customer_id = ?

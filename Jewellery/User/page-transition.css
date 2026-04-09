@@ -1,10 +1,11 @@
 /* Sang trong (Luxurious) Page Transition CSS */
 body {
+    opacity: 1;
     animation: luxuryFadeIn 0.15s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    opacity: 0;
 }
 
 body.fade-out {
+    opacity: 1;
     animation: luxuryFadeOut 0.1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 

@@ -117,12 +117,13 @@ function sortIcon($col, $current_sort, $current_dir) {
         : '<span style="font-size:11px;margin-left:4px;">▼</span>';
 }
 
-$status_options = ['All', 'Pending', 'Processed', 'Delivered', 'Cancelled'];
+$status_options = ['All', 'Pending', 'Processed', 'Delivered', 'Cancelled', 'Received'];
 $status_class   = [
     'Pending'   => 'status-pending',
     'Processed' => 'status-processed',
     'Delivered' => 'status-delivered',
     'Cancelled' => 'status-cancelled',
+    'Received'  => 'status-received',
 ];
 
 // Pagination — after sorting
@@ -185,6 +186,7 @@ function pageUrl(array $overrides = []): string {
     .status-processed { background-color: #d1ecf1; color: #0c5460; }
     .status-delivered { background-color: #d4edda; color: #155724; }
     .status-cancelled { background-color: #f8d7da; color: #721c24; }
+    .status-received  { background: rgba(248,206,134,.25); border: 1px solid #f8ce86; color: #f8ce86; box-shadow: 0 0 12px rgba(248,206,134,.3); }
 
     .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; }
     .pagination-btn { border: 1px solid #ddd; background: white; color: #8e4b00; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: bold; }
@@ -232,7 +234,9 @@ function pageUrl(array $overrides = []): string {
           <label class="search-label">Status</label>
           <select name="status" class="search-input">
             <?php foreach ($status_options as $opt): ?>
-              <option value="<?= $opt ?>" <?= $status === $opt ? 'selected' : '' ?>><?= $opt ?></option>
+              <option value="<?= $opt ?>" <?= $status === $opt ? 'selected' : '' ?>>
+                <?= $opt === 'Received' ? 'Completed' : $opt ?>
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -278,7 +282,7 @@ function pageUrl(array $overrides = []): string {
         🔍 Found <strong><?= count($orders) ?></strong> order(s)
         <?= $from_date ? " from <strong>" . htmlspecialchars($from_date) . "</strong>" : '' ?>
         <?= $to_date   ? " to <strong>"   . htmlspecialchars($to_date)   . "</strong>" : '' ?>
-        <?= ($status !== 'All') ? " — status: <strong>" . htmlspecialchars($status) . "</strong>" : '' ?>
+        <?= ($status !== 'All') ? " — status: <strong>" . htmlspecialchars($status === 'Received' ? 'Completed' : $status) . "</strong>" : '' ?>
         <?= $sort_by === 'city'     ? " — sorted by <strong>City/Province</strong>" : '' ?>
         <?= $sort_by === 'district' ? " — sorted by <strong>District</strong>"      : '' ?>
       </div>
@@ -357,7 +361,7 @@ function pageUrl(array $overrides = []): string {
               <td>$<?= number_format($o['total_amount'], 2, '.', ',') ?></td>
               <td>
                 <span class="status <?= $status_class[$o['status']] ?? '' ?>">
-                  <?= htmlspecialchars($o['status']) ?>
+                  <?= htmlspecialchars($o['status'] === 'Received' ? 'Completed' : $o['status']) ?>
                 </span>
               </td>
               <td><a href="order_detail.php?id=<?= $o['id'] ?>" class="btn-view">View</a></td>

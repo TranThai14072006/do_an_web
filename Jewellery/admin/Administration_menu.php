@@ -23,7 +23,7 @@ if ($r) $total_customers = (int)$r->fetch_assoc()['cnt'];
 
 // Total orders & revenue
 $total_orders = 0; $total_revenue = 0; $pending_orders = 0;
-$r = $conn->query("SELECT COUNT(*) AS cnt, COALESCE(SUM(total_amount),0) AS rev FROM orders");
+$r = $conn->query("SELECT COUNT(*) AS cnt, COALESCE(SUM(total_amount),0) AS rev FROM orders WHERE status = 'Received'");
 if ($r) { $row = $r->fetch_assoc(); $total_orders = (int)$row['cnt']; $total_revenue = (float)$row['rev']; }
 $r = $conn->query("SELECT COUNT(*) AS cnt FROM orders WHERE status = 'Pending'");
 if ($r) $pending_orders = (int)$r->fetch_assoc()['cnt'];
@@ -35,7 +35,7 @@ if ($r) $low_stock = (int)$r->fetch_assoc()['cnt'];
 
 // Revenue this month
 $revenue_month = 0;
-$r = $conn->query("SELECT COALESCE(SUM(total_amount),0) AS rev FROM orders WHERE MONTH(order_date)=MONTH(CURDATE()) AND YEAR(order_date)=YEAR(CURDATE())");
+$r = $conn->query("SELECT COALESCE(SUM(total_amount),0) AS rev FROM orders WHERE status = 'Received' AND MONTH(order_date)=MONTH(CURDATE()) AND YEAR(order_date)=YEAR(CURDATE())");
 if ($r) $revenue_month = (float)$r->fetch_assoc()['rev'];
 
 // ──────────────────────────────────────────────
@@ -72,6 +72,8 @@ $r = $conn->query("
     SELECT p.name, p.image, p.category, SUM(oi.quantity) AS total_sold, SUM(oi.total_price) AS revenue
     FROM order_items oi
     JOIN products p ON oi.product_id = p.id
+    JOIN orders o ON oi.order_id = o.id
+    WHERE o.status = 'Received'
     GROUP BY p.id
     ORDER BY total_sold DESC
     LIMIT 5
@@ -286,7 +288,7 @@ if ($r) while ($row = $r->fetch_assoc()) {
     <div class="kpi-card orange">
       <div class="kpi-icon"><i class="fas fa-dollar-sign"></i></div>
       <div class="kpi-info">
-        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-label">Completed Orders Revenue</div>
         <div class="kpi-value">$<?php echo number_format($total_revenue, 0); ?></div>
         <div class="kpi-sub">This month: $<?php echo number_format($revenue_month, 0); ?></div>
       </div>

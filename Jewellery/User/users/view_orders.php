@@ -177,6 +177,13 @@ if ($user_info['customer_id']) {
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
+    .status-received {
+  background: rgba(248,206,134,.25);
+  border: 1px solid #f8ce86;
+  color: #f8ce86;
+  box-shadow: 0 0 12px rgba(248,206,134,.3);
+}
+
     .search-bar {
       width: 100%;
       max-width: 1400px;
@@ -516,10 +523,10 @@ if ($user_info['customer_id']) {
     }
 
     .status-received {
-      background: rgba(248, 206, 134, .25);
+      background: rgba(248,206,134,.25);
       border: 1px solid #f8ce86;
       color: #f8ce86;
-      box-shadow: 0 0 12px rgba(248, 206, 134, .3);
+      box-shadow: 0 0 12px rgba(248,206,134,.3);
     }
 
     /* Cancel button */
@@ -901,11 +908,12 @@ if ($user_info['customer_id']) {
             $badge_icon = 'fa-times-circle';
             $badge_label = 'Cancelled';
             break;
-          case 'Received':
+          case 'Received':    // ← đúng với giá trị trong DB
             $badge_class = 'status-received';
-            $badge_icon = 'fa-star';
+            $badge_icon  = 'fa-star';
             $badge_label = 'Completed';
             break;
+          
           default:
             $badge_class = 'status-pending';
             $badge_icon = 'fa-question-circle';
