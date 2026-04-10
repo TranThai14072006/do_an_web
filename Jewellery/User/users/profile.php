@@ -34,6 +34,7 @@ $link_search      = BASE_URL . 'User/Products/products_sp.php';
 $link_edit        = BASE_URL . 'User/users/edit_profile.php';
 $link_history     = BASE_URL . 'User/users/history.php';
 $link_view_orders = BASE_URL . 'User/users/view_orders.php';
+$link_shop        = BASE_URL . 'User/Products/products_sp.php';
 
 // ─────────────────────────────────────────────────────────
 // AVATAR UPLOAD HANDLING
@@ -724,7 +725,7 @@ body{
         <a href="<?= $link_edit ?>" class="qa-btn" id="qa-edit">
           <i class="fas fa-user-edit"></i> Edit Profile
         </a>
-        <a href="<?= $link_home ?>" class="qa-btn" id="qa-shop">
+        <a href="<?= $link_shop ?>" class="qa-btn" id="qa-shop">
           <i class="fas fa-gem"></i> Shop Now
         </a>
       </div>

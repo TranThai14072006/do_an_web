@@ -691,6 +691,8 @@ if ($user_info['customer_id']) {
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(4px);
+      min-height: 100vh;
+      overflow-y: auto;
     }
 
     .modal-overlay.active {
@@ -701,12 +703,13 @@ if ($user_info['customer_id']) {
       background: #fff;
       border-radius: 16px;
       padding: 32px 28px;
-      max-width: 400px;
-      width: 90%;
+      max-width: 420px;
+      width: min(95%, 420px);
       text-align: center;
       box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
       animation: popIn .25s ease;
       position: relative;
+      margin: 0 auto;
     }
 
     @keyframes popIn {
