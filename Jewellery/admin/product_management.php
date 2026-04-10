@@ -136,9 +136,9 @@ $q_string = !empty($q_params) ? '&' . http_build_query($q_params) : '';
                 <span class="no-image">No img</span>
               <?php endif; ?>
             </td>
-            <td>$<?php echo number_format((float)$p['price'], 2, '.', ','); ?></td>
             <td><?php echo htmlspecialchars($p['category']); ?></td>
             <td><?php echo htmlspecialchars($p['gender']); ?></td>
+            <td>$<?php echo number_format((float)$p['price'], 2, '.', ','); ?></td>
             <td><?php echo htmlspecialchars($p['stock']); ?></td>
             <td>
               <a href="edit_product.php?code=<?php echo urlencode($p['code']); ?>" class="btn small">Edit</a>

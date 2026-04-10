@@ -9,8 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $code        = trim($_POST['product_code'] ?? '');
     $name        = trim($_POST['product_name'] ?? '');
     $description = trim($_POST['description'] ?? '');
-    $price       = isset($_POST['price']) ? (float)$_POST['price'] : 0.00;
-    $stock       = isset($_POST['stock']) ? (int)$_POST['stock'] : 0;
+    $price       = 0.00;
+    $stock       = 0;
     $category    = trim($_POST['category'] ?? '');
     $gender      = trim($_POST['gender'] ?? 'Unisex');
 
@@ -30,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $error = 'Failed to upload image.';
             }
+        } else {
+            $error = 'Product Image is required.';
         }
 
         if (empty($error)) {
@@ -40,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $sql = "INSERT INTO products (id, name, price, stock, category, gender, image) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("ssdiss s", $code, $name, $price, $stock, $category, $gender, $imagePath);
+                $stmt->bind_param("ssdisss", $code, $name, $price, $stock, $category, $gender, $imagePath);
                 if ($stmt->execute()) {
                     $sql_details = "INSERT INTO product_details (product_id, description) VALUES (?, ?)";
                     $stmt_details = $conn->prepare($sql_details);
@@ -129,8 +131,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
               <label>Category:</label>
-              <input type="text" name="category" placeholder="Ring, Necklace, etc."
-                     value="<?php echo htmlspecialchars($_POST['category'] ?? ''); ?>">
+              <select name="category" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;" required>
+                <option value="Ring" <?php echo (($_POST['category']??'')=='Ring')?'selected':''; ?>>Ring</option>
+                <option value="Necklace" <?php echo (($_POST['category']??'')=='Necklace')?'selected':''; ?>>Necklace</option>
+                <option value="Earrings" <?php echo (($_POST['category']??'')=='Earrings')?'selected':''; ?>>Earrings</option>
+                <option value="Bracelet" <?php echo (($_POST['category']??'')=='Bracelet')?'selected':''; ?>>Bracelet</option>
+                <option value="Pendant" <?php echo (($_POST['category']??'')=='Pendant')?'selected':''; ?>>Pendant</option>
+                <option value="Bangle" <?php echo (($_POST['category']??'')=='Bangle')?'selected':''; ?>>Bangle</option>
+                <option value="Other" <?php echo (($_POST['category']??'')=='Other')?'selected':''; ?>>Other</option>
+              </select>
             </div>
             <div class="form-group">
               <label>Gender/Collection:</label>
@@ -144,18 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <label>Description:</label>
               <textarea name="description"><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
             </div>
-            <div style="display:flex; gap:15px;">
-              <div class="form-group" style="flex:1;">
-                <label>Price ($):</label>
-                <input type="number" name="price" step="0.01" min="0"
-                       value="<?php echo htmlspecialchars($_POST['price'] ?? '0.00'); ?>" required>
-              </div>
-              <div class="form-group" style="flex:1;">
-                <label>Initial Stock:</label>
-                <input type="number" name="stock" min="0"
-                       value="<?php echo htmlspecialchars($_POST['stock'] ?? '0'); ?>" required>
-              </div>
-            </div>
+
           </div>
 
           <!-- Right column (image) -->

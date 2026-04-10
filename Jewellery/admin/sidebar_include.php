@@ -19,8 +19,10 @@ function isActive($page, $dir = 'admin') {
 
 <div class="sidebar">
     <div class="logo">
-        <img src="<?php echo $image_path; ?>Admin_login.jpg" alt="Admin Logo">
-        <h2>Luxury Jewelry</h2>
+        <a href="<?php echo $base_path; ?>admin_detail.php" style="text-decoration: none; color: inherit; display: block;">
+            <img src="<?php echo $image_path; ?>Admin_login.jpg" alt="Admin Logo">
+            <h2>Luxury Jewelry</h2>
+        </a>
     </div>
     <div class="menu">
         <a href="<?php echo $base_path; ?>Administration_menu.php" class="<?php echo isActive('Administration_menu.php'); ?>">

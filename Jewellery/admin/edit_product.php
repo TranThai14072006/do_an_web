@@ -37,8 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newDescription = trim($_POST['description'] ?? '');
     $newCategory    = trim($_POST['category'] ?? '');
     $newGender      = trim($_POST['gender'] ?? 'Unisex');
-    $newPrice       = isset($_POST['price']) ? (float)$_POST['price'] : 0.00;
-    $newStock       = isset($_POST['stock']) ? (int)$_POST['stock'] : 0;
+
 
     if (empty($newName)) {
         $error = 'Product Name is required.';
@@ -59,9 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($error)) {
             // Update product in database
-            $update_sql = "UPDATE products SET name=?, category=?, gender=?, image=?, price=?, stock=? WHERE id=?";
+            $update_sql = "UPDATE products SET name=?, category=?, gender=?, image=? WHERE id=?";
             $stmt = $conn->prepare($update_sql);
-            $stmt->bind_param("ssssdss", $newName, $newCategory, $newGender, $product['image'], $newPrice, $newStock, $code);
+            $stmt->bind_param("sssss", $newName, $newCategory, $newGender, $product['image'], $code);
             
             if ($stmt->execute()) {
                 // Check if details exist
@@ -82,8 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $product['description'] = $newDescription;
                 $product['category']    = $newCategory;
                 $product['gender']      = $newGender;
-                $product['price']       = $newPrice;
-                $product['stock']       = $newStock;
+
                 $success = 'Product updated successfully!';
             } else {
                 $error = 'Failed to update product: ' . $conn->error;
@@ -168,8 +166,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="form-group">
               <label>Category:</label>
-              <input type="text" name="category" placeholder="Ring, Necklace, etc."
-                     value="<?php echo htmlspecialchars($product['category'] ?? ''); ?>">
+              <select name="category" style="padding:10px 12px; border:1px solid #ccc; border-radius:6px; font-size:15px;" required>
+                <option value="Ring" <?php echo (($product['category']??'')=='Ring')?'selected':''; ?>>Ring</option>
+                <option value="Necklace" <?php echo (($product['category']??'')=='Necklace')?'selected':''; ?>>Necklace</option>
+                <option value="Earrings" <?php echo (($product['category']??'')=='Earrings')?'selected':''; ?>>Earrings</option>
+                <option value="Bracelet" <?php echo (($product['category']??'')=='Bracelet')?'selected':''; ?>>Bracelet</option>
+                <option value="Pendant" <?php echo (($product['category']??'')=='Pendant')?'selected':''; ?>>Pendant</option>
+                <option value="Bangle" <?php echo (($product['category']??'')=='Bangle')?'selected':''; ?>>Bangle</option>
+                <option value="Other" <?php echo (($product['category']??'')=='Other')?'selected':''; ?>>Other</option>
+              </select>
             </div>
             <div class="form-group">
               <label>Gender/Collection:</label>
@@ -183,18 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <label>Description:</label>
               <textarea name="description"><?php echo htmlspecialchars($product['description'] ?? ''); ?></textarea>
             </div>
-            <div style="display:flex; gap:15px;">
-              <div class="form-group" style="flex:1;">
-                <label>Price ($):</label>
-                <input type="number" name="price" step="0.01" min="0"
-                       value="<?php echo htmlspecialchars($product['price'] ?? '0.00'); ?>" required>
-              </div>
-              <div class="form-group" style="flex:1;">
-                <label>Stock Count:</label>
-                <input type="number" name="stock" min="0"
-                       value="<?php echo htmlspecialchars($product['stock'] ?? '0'); ?>" required>
-              </div>
-            </div>
+
           </div>
 
           <!-- Right column (image) -->
