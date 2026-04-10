@@ -41,6 +41,13 @@ if ($result && $result->num_rows > 0) {
     .badge { padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: bold; text-transform: uppercase; }
     .badge-admin { background: #8e4b00; color: #fff; }
     .badge-active { background: #4CAF50; color: #fff; }
+    
+    /* New styles for credentials */
+    .credentials-card { border-top: 5px solid #8e4b00; margin-top: 30px; }
+    .password-container { display: flex; align-items: center; gap: 10px; }
+    .password-display { font-family: 'Courier New', Courier, monospace; background: #f4f4f4; padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; word-break: break-all; font-size: 13px; color: #444; }
+    .toggle-btn { background: #8e4b00; color: white; border: none; padding: 5px 12px; border-radius: 5px; cursor: pointer; transition: 0.3s; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+    .toggle-btn:hover { background: #a65900; }
   </style>
 </head>
 <body>
@@ -59,8 +66,8 @@ if ($result && $result->num_rows > 0) {
         <div class="profile-info">
           <?php foreach ($admin as $key => $value): ?>
             <?php 
-              // Hide sensible fields completely
-              if (in_array(strtolower($key), ['password', 'remember_token', 'reset_token'])) continue; 
+              // Hide sensible fields + password (handled separately below)
+              if (in_array(strtolower($key), ['password', 'remember_token', 'reset_token', 'id'])) continue; 
             ?>
             <div class="info-row">
               <span class="info-label"><?php echo str_replace('_', ' ', htmlspecialchars($key)); ?></span>
@@ -79,7 +86,58 @@ if ($result && $result->num_rows > 0) {
           <?php endforeach; ?>
         </div>
       </div>
+
+      <!-- Account Credentials Section -->
+      <div class="card credentials-card">
+        <h3><i class="fas fa-lock"></i> Account Credentials</h3>
+        <div class="profile-info">
+          <div class="info-row">
+            <span class="info-label">Username</span>
+            <span class="info-value"><strong><?php echo htmlspecialchars($admin['username'] ?? 'N/A'); ?></strong></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email Address</span>
+            <span class="info-value"><?php echo htmlspecialchars($admin['email'] ?? 'N/A'); ?></span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Password Hash</span>
+            <div class="info-value">
+              <div class="password-container">
+                <span id="pass-field" class="password-display">••••••••••••••••••••••••••••••</span>
+                <button type="button" class="toggle-btn" onclick="togglePass()">
+                  <i class="fas fa-eye" id="toggle-icon"></i> <span id="btn-text">Show</span>
+                </button>
+              </div>
+              <small style="color: #888; display: block; margin-top: 5px;">
+                <i class="fas fa-info-circle"></i> This is a secure hash. Plain text passwords are never stored.
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
+
+  <script>
+    let isHidden = true;
+    const passHash = "<?php echo $admin['password']; ?>";
+    const passField = document.getElementById('pass-field');
+    const toggleIcon = document.getElementById('toggle-icon');
+    const btnText = document.getElementById('btn-text');
+
+    function togglePass() {
+      if (isHidden) {
+        passField.textContent = passHash;
+        toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+        btnText.textContent = 'Hide';
+        isHidden = false;
+      } else {
+        passField.textContent = '••••••••••••••••••••••••••••••';
+        toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+        btnText.textContent = 'Show';
+        isHidden = true;
+      }
+    }
+  </script>
 </body>
 </html>
