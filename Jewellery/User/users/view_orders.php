@@ -685,31 +685,32 @@ if ($user_info['customer_id']) {
     .modal-overlay {
       display: none;
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: rgba(0, 0, 0, .55);
       z-index: 10000;
-      align-items: center;
-      justify-content: center;
       backdrop-filter: blur(4px);
-      min-height: 100vh;
-      overflow-y: auto;
     }
 
     .modal-overlay.active {
-      display: flex;
+      display: block;
     }
 
     .modal-box {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       background: #fff;
       border-radius: 16px;
       padding: 32px 28px;
       max-width: 420px;
-      width: min(95%, 420px);
+      width: 90%;
       text-align: center;
       box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
       animation: popIn .25s ease;
-      position: relative;
-      margin: 0 auto;
     }
 
     @keyframes popIn {
